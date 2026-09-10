@@ -1,0 +1,28 @@
+/* Diccionario de colores para el coloreado sintactico.
+   El backend debe enviar el campo "tipo" y el frontend mapea a estas clases :D
+   
+   Mapeo esperado del backend:
+   - keyword      -> lc-1  (palabras reservadas: esto, si, dum, per, etc.)
+   - type         -> lc-2  (tipos de datos: numerus, textum, decimalis, littera)
+   - identifier   -> lc-3  (nombres de variables, funciones, estructuras)
+   - number       -> lc-4  (literales numericos: 10, 9.81)
+   - string       -> lc-5  (cadenas entre comillas dobles)
+   - character    -> lc-6  (caracteres entre comillas simples)
+   - comment      -> lc-7  (comentarios ## ... ##)
+   - operator     -> lc-8  (operadores: +, -, *, /, ==, &&, etc.)
+   - bracket      -> lc-9  (llaves, corchetes, parentesis)
+   - delimiter    -> lc-10 (punto y coma, coma, dos puntos, punto)
+   - boolean      -> lc-1  (verum, falsus - comparte con keyword)
+   - function     -> lc-8  (llamadas a funciones - comparte con operator)
+*/
+
+.lc-1 { color: #d32f2f !important; }
+.lc-2 { color: #c2185b !important; }
+.lc-3 { color: #7b1fa2 !important; }
+.lc-4 { color: #303f9f !important; }
+.lc-5 { color: #1976d2 !important; }
+.lc-6 { color: #0097a7 !important; }
+.lc-7 { color: #388e3c !important; }
+.lc-8 { color: #f57c00 !important; }
+.lc-9 { color: #5d4037 !important; }
+.lc-10 { color: #455a64 !important; }
