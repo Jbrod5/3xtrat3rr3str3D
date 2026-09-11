@@ -35,3 +35,35 @@ export async function obtenerColores(codigo) {
   }
   return await respuesta.json();
 }
+
+export async function obtenerColoresPigLatin(codigo) {
+  const respuesta = await fetch(`${URL_BASE}/colores?lenguaje=piglatin`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain; charset=UTF-8' },
+    body: codigo
+  });
+  if (!respuesta.ok) {
+    throw new Error(`Error HTTP: ${respuesta.status}`);
+  }
+  return await respuesta.json();
+}
+
+export async function obtenerColoresZetariano(codigo) {
+  const respuesta = await fetch(`${URL_BASE}/colores?lenguaje=zetariano`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain; charset=UTF-8' },
+    body: codigo
+  });
+  if (!respuesta.ok) {
+    throw new Error(`Error HTTP: ${respuesta.status}`);
+  }
+  return await respuesta.json();
+}
+
+export async function obtenerColoresPorLenguaje(codigo, lenguaje) {
+  const lang = (lenguaje || 'piglatin').toLowerCase();
+  if (lang === 'zetariano' || lang === 'zet') {
+    return obtenerColoresZetariano(codigo);
+  }
+  return obtenerColoresPigLatin(codigo);
+}

@@ -25,8 +25,17 @@ public class ColoresController {
             // obtener el codigo recibido en el cuerpo de la peticion
             String codigo = ctx.body();
 
+            // obtener el lenguaje desde query param o header, por defecto piglatin
+            String lenguaje = ctx.queryParam("lenguaje");
+            if (lenguaje == null) {
+                lenguaje = ctx.header("X-Lenguaje");
+            }
+            if (lenguaje == null) {
+                lenguaje = "piglatin";
+            }
+
             // invocar el servicio para obtener la lista de colores
-            List<Object> colores = coloresService.obtenerColores(codigo);
+            List<Object> colores = coloresService.obtenerColores(codigo, lenguaje);
 
             // construir la respuesta exitosa con la clave colores
             Map<String, Object> respuesta = new HashMap<>();

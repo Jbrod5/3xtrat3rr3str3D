@@ -55,6 +55,7 @@ import org.jrg.model.pigLatin.variable_asignable.ValorAsignableArray;
 import org.jrg.model.pigLatin.variable_asignable.ValorAsignableMiembroEstructura;
 import org.jrg.model.pigLatin.variable_asignable.ValorAsignableSimple;
 import org.jrg.model.pigLatin.base.NodoAST;
+import org.jrg.model.base.TipoPrimitivo;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -485,39 +486,53 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
     public NodoAST visitExprPrimitivo(PigLatinParser.ExprPrimitivoContext ctx) {
         // visitar valor primitivo
         NodoAST valor = visit(ctx.valor_primitivo());
+        // obtener tipo de dato del valor primitivo
+        TipoPrimitivo tipoDato = TipoPrimitivo.DESCONOCIDO;
+        if (valor instanceof ValorPrimitivo) {
+            tipoDato = ((ValorPrimitivo) valor).getTipoDato();
+        }
         // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo expresion primitivo
-        return new ExprPrimitivo(valor, linea, columna);
+        return new ExprPrimitivo(valor, tipoDato, linea, columna);
     }
 
     @Override
     public NodoAST visitValor_primitivo(PigLatinParser.Valor_primitivoContext ctx) {
         // determinar valor segun token presente
         String valor;
+        TipoPrimitivo tipoDato;
         if (ctx.ENTERO() != null) {
             valor = ctx.ENTERO().getText();
+            tipoDato = TipoPrimitivo.ENTERO;
         } else if (ctx.DECIMAL() != null) {
             valor = ctx.DECIMAL().getText();
+            tipoDato = TipoPrimitivo.DECIMAL;
         } else if (ctx.CADENA() != null) {
             valor = ctx.CADENA().getText();
+            tipoDato = TipoPrimitivo.CADENA;
         } else if (ctx.CARACTER() != null) {
             valor = ctx.CARACTER().getText();
+            tipoDato = TipoPrimitivo.CARACTER;
         } else if (ctx.VERUM() != null) {
             valor = "verum";
+            tipoDato = TipoPrimitivo.BOOLEANO;
         } else if (ctx.FALSUS() != null) {
             valor = "falsus";
+            tipoDato = TipoPrimitivo.BOOLEANO;
         } else if (ctx.IDENTIFICADOR() != null) {
             valor = ctx.IDENTIFICADOR().getText();
+            tipoDato = TipoPrimitivo.IDENTIFICADOR;
         } else {
             valor = "";
+            tipoDato = TipoPrimitivo.DESCONOCIDO;
         }
         // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo valor primitivo
-        return new ValorPrimitivo(valor, linea, columna);
+        return new ValorPrimitivo(valor, tipoDato, linea, columna);
     }
 
     @Override

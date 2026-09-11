@@ -4,8 +4,8 @@
    Formato esperado del backend (POST /colores):
    {
      "colores": [
-       { "lineaInicio": 1, "colInicio": 1, "lineaFin": 1, "colFin": 5, "tipo": "keyword" },
-       { "lineaInicio": 1, "colInicio": 7, "lineaFin": 1, "colFin": 14, "tipo": "identifier" }
+       { "start": 0, "length": 5, "category": "keyword" },
+       { "start": 7, "length": 7, "category": "identifier" }
      ]
    }
 */
@@ -29,19 +29,53 @@ export function mapearTipoAClase(tipo) {
   return mapaTipoAClase[tipo] || 'lc-3';
 }
 
+/**
+ * Convierte la respuesta del backend (start/length) a decoraciones Monaco (range)
+ * @param {Array} coloresBackend - Array de {start, length, category}
+ * @param {Object} monaco - Referencia al objeto monaco
+ * @returns {Array} Decoraciones para Monaco Editor
+ */
 export function convertirAColorBackend(coloresBackend, monaco) {
   if (!coloresBackend || !Array.isArray(coloresBackend)) {
     return [];
   }
 
   return coloresBackend.map((item) => {
-    const clase = mapearTipoAClase(item.tipo);
+    const clase = mapearTipoAClase(item.category);
+    // El backend devuelve start/length, necesitamos convertir a Range
+    // Para esto necesitamos el modelo del editor para calcular line/column
+    // Retornamos un objeto con la info necesaria para que el editor la convierta
+    return {
+      start: item.start,
+      length: item.length,
+      category: item.category,
+      className: clase
+    };
+  });
+}
+
+/**
+ * Convierte posiciones absolutas (start/length) a rangos Monaco
+ * @param {Array} tokens - Tokens con start/length/category
+ * @param {monaco.editor.ITextModel} modelo - Modelo del editor
+ * @param {Object} monaco - Referencia al objeto monaco
+ * @returns {Array} Decoraciones Monaco
+ */
+export function convertirTokensADecoraciones(tokens, modelo, monaco) {
+  if (!tokens || !Array.isArray(tokens) || !modelo) {
+    return [];
+  }
+
+  return tokens.map((item) => {
+    const clase = mapearTipoAClase(item.category);
+    const startPos = modelo.getPositionAt(item.start);
+    const endPos = modelo.getPositionAt(item.start + item.length);
     return {
       range: new monaco.Range(
-        item.lineaInicio,
-        item.colInicio,
-        item.lineaFin,
-        item.colFin
+        startPos.lineNumber,
+        startPos.column,
+        endPos.lineNumber,
+        endPos.column
       ),
       options: { inlineClassName: clase }
     };

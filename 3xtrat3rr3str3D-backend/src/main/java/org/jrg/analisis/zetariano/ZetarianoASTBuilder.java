@@ -59,6 +59,7 @@ import org.jrg.model.zetariano.variable_asignable.VarArray;
 import org.jrg.model.zetariano.variable_asignable.VarMiembro;
 import org.jrg.model.zetariano.variable_asignable.VarSimple;
 import org.jrg.model.zetariano.base.NodoASTZetariano;
+import org.jrg.model.base.TipoPrimitivo;
 import org.jrg.model.zetariano.definicion_clase.DefClase;
 
 import java.util.ArrayList;
@@ -987,41 +988,56 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
     public NodoASTZetariano visitExprPrimitivo(ZetarianoParser.ExprPrimitivoContext ctx) {
         // visitar valor primitivo
         NodoASTZetariano valor = visit(ctx.valor_primitivo());
+        // obtener tipo de dato del valor primitivo
+        TipoPrimitivo tipoDato = TipoPrimitivo.DESCONOCIDO;
+        if (valor instanceof ValorPrimitivo) {
+            tipoDato = ((ValorPrimitivo) valor).getTipoDato();
+        }
         // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo expresion primitivo
-        return new ExprPrimitivo(valor, linea, columna);
+        return new ExprPrimitivo(valor, tipoDato, linea, columna);
     }
 
     @Override
     public NodoASTZetariano visitValor_primitivo(ZetarianoParser.Valor_primitivoContext ctx) {
         // determinar valor segun token presente
         String valor;
+        TipoPrimitivo tipoDato;
         if (ctx.NUMERO_ENTERO() != null) {
             valor = ctx.NUMERO_ENTERO().getText();
+            tipoDato = TipoPrimitivo.ENTERO;
         } else if (ctx.NUMERO_DECIMAL() != null) {
             valor = ctx.NUMERO_DECIMAL().getText();
+            tipoDato = TipoPrimitivo.DECIMAL;
         } else if (ctx.CADENA() != null) {
             valor = ctx.CADENA().getText();
+            tipoDato = TipoPrimitivo.CADENA;
         } else if (ctx.CARACTER() != null) {
             valor = ctx.CARACTER().getText();
+            tipoDato = TipoPrimitivo.CARACTER;
         } else if (ctx.TRUE() != null) {
             valor = "true";
+            tipoDato = TipoPrimitivo.BOOLEANO;
         } else if (ctx.FALSE() != null) {
             valor = "false";
+            tipoDato = TipoPrimitivo.BOOLEANO;
         } else if (ctx.NULL() != null) {
             valor = "null";
+            tipoDato = TipoPrimitivo.NULO;
         } else if (ctx.IDENTIFICADOR() != null) {
             valor = ctx.IDENTIFICADOR().getText();
+            tipoDato = TipoPrimitivo.IDENTIFICADOR;
         } else {
             valor = "";
+            tipoDato = TipoPrimitivo.DESCONOCIDO;
         }
         // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo valor primitivo
-        return new ValorPrimitivo(valor, linea, columna);
+        return new ValorPrimitivo(valor, tipoDato, linea, columna);
     }
 
     @Override
