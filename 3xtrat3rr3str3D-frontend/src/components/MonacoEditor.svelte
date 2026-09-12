@@ -16,7 +16,11 @@
   function detectarLenguaje(nombreArchivo) {
     if (!nombreArchivo) return 'piglatin';
     const ext = nombreArchivo.split('.').pop().toLowerCase();
-    if (ext === 'zet') return 'zetariano';
+//    if (ext === 'zet') return 'zetariano';
+    // detectar extension z para zetariano
+    if (ext === 'z' || ext === 'zet') {
+        return 'zetariano';
+    }
     return 'piglatin';
   }
   

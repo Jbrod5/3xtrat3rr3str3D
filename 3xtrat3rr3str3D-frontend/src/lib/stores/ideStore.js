@@ -5,10 +5,19 @@ function generarId() {
 }
 
 function crearEstadoInicial() {
+  //  const archivoInicial = {
+//    id: generarId(),
+//    nombre: 'principal.lat',
+//    ruta: 'principal.lat',      // ruta absoluta o relativa; se sobreescribe al abrir
+//    contenido: '',
+//    resultado: null,
+//    cursor: { linea: 1, columna: 1 },
+//    abierto: true
+//  };
   const archivoInicial = {
     id: generarId(),
-    nombre: 'principal.lat',
-    ruta: 'principal.lat',      // ruta absoluta o relativa; se sobreescribe al abrir
+    nombre: 'principal.z',
+    ruta: 'principal.z',
     contenido: '',
     resultado: null,
     cursor: { linea: 1, columna: 1 },
@@ -93,10 +102,19 @@ function crearIdeStore() {
     eliminarArchivo: (id) => update(s => {
       const filtrados = s.archivos.filter(a => a.id !== id);
       if (filtrados.length === 0) {
+        //        const nuevo = {
+//          id: generarId(),
+//          nombre: 'sin_titulo.lat',
+//          ruta: 'sin_titulo.lat',
+//          contenido: '',
+//          resultado: null,
+//          cursor: { linea: 1, columna: 1 },
+//          abierto: true
+//        };
         const nuevo = {
           id: generarId(),
-          nombre: 'sin_titulo.lat',
-          ruta: 'sin_titulo.lat',
+          nombre: 'sin_titulo.z',
+          ruta: 'sin_titulo.z',
           contenido: '',
           resultado: null,
           cursor: { linea: 1, columna: 1 },

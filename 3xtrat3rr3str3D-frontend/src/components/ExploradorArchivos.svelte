@@ -12,7 +12,7 @@
   function sinSlashFinal(p) { return p.replace(/\/+$/, ''); }
 
   function crearNuevoArchivo() {
-    const nombre = prompt('Nombre del archivo:', 'nuevo.lat');
+    const nombre = prompt('Nombre del archivo:', 'nuevo.z');
     if (!nombre || !nombre.trim()) return;
 
     const base = estado.rutaBaseProyecto;

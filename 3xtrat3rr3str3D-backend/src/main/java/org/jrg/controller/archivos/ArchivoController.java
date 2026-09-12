@@ -108,12 +108,19 @@ public class ArchivoController {
             String ruta = cuerpo.get("ruta");
             String contenido = cuerpo.get("contenido");
 
+            //              if (ruta == null || ruta.isEmpty()) {
+//                  if (archivo != null && !archivo.isEmpty()) {
+//                      ruta = archivo;
+//                  } else {
+//                      ruta = "principal.lat";
+//                  }
+//              }
             // asignar ruta por defecto si no viene
             if (ruta == null || ruta.isEmpty()) {
                 if (archivo != null && !archivo.isEmpty()) {
                     ruta = archivo;
                 } else {
-                    ruta = "principal.lat";
+                    ruta = "principal.z";
                 }
             }
 

@@ -151,7 +151,9 @@
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = archivoActivo.nombre.replace('.lat', '.pig');
+//    a.download = archivoActivo.nombre.replace('.lat', '.pig');
+    // usar extension .z para zetariano
+    a.download = archivoActivo.nombre.replace('.z', '.pig');
     a.click();
     URL.revokeObjectURL(url);
   }
