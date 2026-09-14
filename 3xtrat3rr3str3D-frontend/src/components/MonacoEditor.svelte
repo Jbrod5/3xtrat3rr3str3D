@@ -13,20 +13,27 @@
   let timeoutDebounce = null;
   let lenguajeActual = 'piglatin';
   
-  function detectarLenguaje(nombreArchivo) {
-    if (!nombreArchivo) return 'piglatin';
-    const ext = nombreArchivo.split('.').pop().toLowerCase();
-//    if (ext === 'zet') return 'zetariano';
-    // detectar extension z para zetariano
-    if (ext === 'z' || ext === 'zet') {
-        return 'zetariano';
-    }
-    return 'piglatin';
+function detectarLenguaje(nombreArchivo) {
+  if (!nombreArchivo) return 'piglatin';
+  const ext = nombreArchivo.split('.').pop().toLowerCase();
+  if (ext === 'z' || ext === 'zet') {
+    return 'zetariano';
   }
+  if (ext === 'y') {
+    return 'y';
+  }
+  return 'piglatin';
+}
   
-  function obtenerNombreLenguajeMonaco(lenguaje) {
-    return lenguaje === 'zetariano' ? 'zetariano' : 'piglatin';
+function obtenerNombreLenguajeMonaco(lenguaje) {
+  if (lenguaje === 'zetariano') {
+    return 'zetariano';
   }
+  if (lenguaje === 'y') {
+    return 'y';
+  }
+  return 'piglatin';
+}
   
   onMount(async () => {
     const monaco = await import('monaco-editor');
@@ -95,6 +102,40 @@
           [/[^*]+/, 'comment'],
           [/\*\//, 'comment', '@pop'],
           [/./, 'comment']
+        ]
+      }
+    });
+
+    // Registrar lenguaje Y
+    monaco.languages.register({ id: 'y' });
+    monaco.languages.setMonarchTokensProvider('y', {
+      keywords: [
+        'estructura','definir','retornar',
+        'entero','cadena','flotante','caracter','booleano',
+        'verdadero','falso',
+        'si','entonces','sino','contrario',
+        'elegir','caso','siempre',
+        'romper','continuar',
+        'para','mientras','hacer'
+      ],
+      operators: [
+        '==','!=','>=','<=','>','<',
+        '&&','||','!',
+        '->','++','--',
+        '=','+','-','*','/'
+      ],
+      symbols: /[=><!~?:&|+\-*\/\^%]+/,
+      tokenizer: {
+        root: [
+          [/[a-zA-Z_]\w*/, { cases: { '@keywords': 'keyword', '@default': 'identifier' }}],
+          [/[0-9]+\.[0-9]+/, 'number.float'],
+          [/[0-9]+/, 'number'],
+          [/".*?"/, 'string'],
+          [/'.*?'/, 'string'],
+          [/[{}()\[\]]/, '@brackets'],
+          [/[;,.:]/, 'delimiter'],
+          [/@symbols/, { cases: { '@operators': 'operator', '@default': '' }}],
+          [/\/\/.*$/, 'comment'],
         ]
       }
     });

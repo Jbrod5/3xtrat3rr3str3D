@@ -107,39 +107,62 @@
   }
 
   // ================= Compilar / Traducir =================
-  async function enviarCompilacion() {
-    if (!archivoActivo) return;
-    try {
-      const resultado = await analizarCodigo(archivoActivo.contenido);
-      ideStore.actualizarResultado(archivoActivo.id, resultado);
-      ideStore.cambiarPestanaInferior(resultado.exito ? 'resultados' : 'errores');
-      if (!estado.panelInferiorAbierto) ideStore.alternarPanelInferior();
-    } catch (err) {
-      ideStore.actualizarResultado(archivoActivo.id, {
-        exito: false, arbolSintactico: null, codigoPigLatin: null,
-        errores: [{ mensaje: 'Fallo de conexion con el servidor: ' + err.message }]
-      });
-      ideStore.cambiarPestanaInferior('errores');
-      if (!estado.panelInferiorAbierto) ideStore.alternarPanelInferior();
-    }
+  // detectar el lenguaje segun la extension del archivo activo
+function detectarLenguajeArchivo(nombreArchivo) {
+  if (!nombreArchivo) {
+    return 'piglatin';
   }
+  const partes = nombreArchivo.split('.');
+  if (partes.length < 2) {
+    return 'piglatin';
+  }
+  const ext = partes[partes.length - 1].toLowerCase();
+  if (ext === 'z' || ext === 'zet') {
+    return 'zetariano';
+  }
+  if (ext === 'y') {
+    return 'y';
+  }
+  return 'piglatin';
+}
 
-  async function enviarTraduccion() {
-    if (!archivoActivo) return;
-    try {
-      const resultado = await traducirCodigo(archivoActivo.contenido);
-      ideStore.actualizarResultado(archivoActivo.id, resultado);
-      ideStore.cambiarPestanaInferior('resultados');
-      if (!estado.panelInferiorAbierto) ideStore.alternarPanelInferior();
-    } catch (err) {
-      ideStore.actualizarResultado(archivoActivo.id, {
-        exito: false, arbolSintactico: null, codigoPigLatin: null,
-        errores: [{ mensaje: 'Fallo de conexion con el servidor: ' + err.message }]
-      });
-      ideStore.cambiarPestanaInferior('errores');
-      if (!estado.panelInferiorAbierto) ideStore.alternarPanelInferior();
-    }
+async function enviarCompilacion() {
+  if (!archivoActivo) return;
+  const lenguaje = detectarLenguajeArchivo(archivoActivo.nombre);
+  try {
+    const resultado = await analizarCodigo(archivoActivo.contenido, lenguaje);
+    ideStore.actualizarResultado(archivoActivo.id, resultado);
+    ideStore.cambiarPestanaInferior(resultado.exito ? 'resultados' : 'errores');
+    if (!estado.panelInferiorAbierto) ideStore.alternarPanelInferior();
+  } catch (err) {
+    ideStore.actualizarResultado(archivoActivo.id, {
+      exito: false, arbolSintactico: null, astMermaid: null, codigoPigLatin: null,
+      simbolos: [], tipos: [], pasosPila: [],
+      errores: [{ mensaje: 'Fallo de conexion con el servidor: ' + err.message }]
+    });
+    ideStore.cambiarPestanaInferior('errores');
+    if (!estado.panelInferiorAbierto) ideStore.alternarPanelInferior();
   }
+}
+
+async function enviarTraduccion() {
+  if (!archivoActivo) return;
+  const lenguaje = detectarLenguajeArchivo(archivoActivo.nombre);
+  try {
+    const resultado = await traducirCodigo(archivoActivo.contenido, lenguaje);
+    ideStore.actualizarResultado(archivoActivo.id, resultado);
+    ideStore.cambiarPestanaInferior('resultados');
+    if (!estado.panelInferiorAbierto) ideStore.alternarPanelInferior();
+  } catch (err) {
+    ideStore.actualizarResultado(archivoActivo.id, {
+      exito: false, arbolSintactico: null, astMermaid: null, codigoPigLatin: null,
+      simbolos: [], tipos: [], pasosPila: [],
+      errores: [{ mensaje: 'Fallo de conexion con el servidor: ' + err.message }]
+    });
+    ideStore.cambiarPestanaInferior('errores');
+    if (!estado.panelInferiorAbierto) ideStore.alternarPanelInferior();
+  }
+}
 
   // ================= .pig =================
   function descargarPig() {
