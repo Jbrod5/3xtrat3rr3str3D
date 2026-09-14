@@ -1,16 +1,21 @@
 package org.jrg.model.semantico;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class TipoResultado {
 
     private final String nombre;
     private final boolean esPrimitivo;
     private final int dimension;
     private final String nombreAmbito;
+    private final List<CampoTipoResultado> campos;
 
     /**
      * Crear una representacion de tipo para la respuesta HTTP.
      */
     public TipoResultado(Tipo tipo) {
+        this.campos = new ArrayList<>();
         if (tipo == null) {
             this.nombre = "";
             this.esPrimitivo = false;
@@ -26,40 +31,34 @@ public class TipoResultado {
         } else {
             this.nombreAmbito = tipo.getNombreAmbito();
         }
+        if (tipo.getCampos() != null) {
+            for (int i = 0; i < tipo.getCampos().size(); i++) {
+                this.campos.add(new CampoTipoResultado(tipo.getCampos().get(i)));
+            }
+        }
     }
 
-    /**
-     * Obtener el nombre del tipo.
-     */
     public String getNombre() {
-        return nombre;
+        return this.nombre;
     }
 
-    /**
-     * Verificar si el tipo es primitivo.
-     */
     public boolean isEsPrimitivo() {
-        return esPrimitivo;
+        return this.esPrimitivo;
     }
 
-    /**
-     * Verificar si el tipo es primitivo.
-     */
     public boolean esPrimitivo() {
-        return esPrimitivo;
+        return this.esPrimitivo;
     }
 
-    /**
-     * Obtener la dimension del tipo.
-     */
     public int getDimension() {
-        return dimension;
+        return this.dimension;
     }
 
-    /**
-     * Obtener el nombre del ambito del tipo.
-     */
     public String getNombreAmbito() {
-        return nombreAmbito;
+        return this.nombreAmbito;
+    }
+
+    public List<CampoTipoResultado> getCampos() {
+        return this.campos;
     }
 }

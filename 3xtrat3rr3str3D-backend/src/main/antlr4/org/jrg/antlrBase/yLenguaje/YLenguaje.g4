@@ -1,6 +1,6 @@
 grammar YLenguaje;
 
-
+tokens { INDENT, DEDENT }
 
 // ==============================================================================================================================
 // - - - - - - - - - - - - - - - - - - - - - - - -  REGLAS SINTACTICAS (Parser) - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -19,20 +19,22 @@ programa
     ;
 
 seccion_estructuras
-    // %estructuras
-    // estructura Persona:
-    //     entero edad
-    // la seccion completa es opcional, si no hay estructuras globales se omite
-    : ESTRUCTURAS_TAG definicion_struct*
+    // permitir lineas en blanco entre el tag y las definiciones
+    // seccion_estructuras
+    //     : ESTRUCTURAS_TAG definicion_struct*
+    //     ;
+    : ESTRUCTURAS_TAG (definicion_struct | NEWLINE)*
     ;
 
 seccion_funciones
-    // %funciones
-    // definir saludar():
-    //     imprimir("hola")
-    // esta seccion es obligatoria, todo archivo .y debe declarar al menos una funcion
-    : FUNCIONES_TAG definicion_funcion*
+    // permitir lineas en blanco entre el tag y las definiciones
+    // seccion_funciones
+    //     : FUNCIONES_TAG definicion_funcion*
+    //     ;
+    : FUNCIONES_TAG (definicion_funcion | NEWLINE)*
     ;
+
+
 
 
 // ==========================================
@@ -63,7 +65,7 @@ definicion_struct
     //     caracter letra
     //     entero miArray[10]
     //     MiEstructura miEstructura
-    : ESTRUCTURA IDENTIFICADOR DOS_PUNTOS INDENT atributo_struct+ DEDENT     # defEstructura
+    : ESTRUCTURA IDENTIFICADOR DOS_PUNTOS NEWLINE INDENT atributo_struct+ DEDENT     # defEstructura
     ;
 
 atributo_struct
@@ -71,10 +73,10 @@ atributo_struct
     // cadena nombre
     // MiEstructura miEstructura
     // tipo_dato tambien acepta el nombre de otra estructura, asi se anidan estructuras
-    : tipo_dato IDENTIFICADOR                                              # atributoSimple
+    : tipo_dato IDENTIFICADOR NEWLINE                                             # atributoSimple
     // entero miArray[10]
     // el tamano del arreglo debe ser una constante entera
-    | tipo_dato IDENTIFICADOR CORCHETE_IZQ NUMERO_ENTERO CORCHETE_DER       # atributoArray
+    | tipo_dato IDENTIFICADOR CORCHETE_IZQ NUMERO_ENTERO CORCHETE_DER NEWLINE      # atributoArray
     ;
 
 
@@ -110,7 +112,7 @@ parametro
 
 cuerpo_funcion
     // cuerpo indentado que contiene una o mas instrucciones
-    : INDENT instruccion+ DEDENT
+    : NEWLINE INDENT instruccion+ NEWLINE? DEDENT
     ;
 
 
@@ -205,7 +207,7 @@ condicional
 
 bloque
     // cuerpo indentado con una o mas instrucciones
-    : INDENT instruccion+ DEDENT
+    : NEWLINE INDENT instruccion+ NEWLINE? DEDENT
     // una sola instruccion en la misma linea, sin indentacion nueva
     | instruccion
     ;
@@ -223,21 +225,21 @@ seleccion
     //         romper
     // }
     // a diferencia de si/sino/contrario, elegir siempre usa llaves
-    : ELEGIR PAR_IZQ expresion PAR_DER LLAVE_IZQ caso_seleccion* caso_defecto? LLAVE_DER      # statementElegir
+    :  ELEGIR PAR_IZQ expresion PAR_DER DOS_PUNTOS NEWLINE INDENT caso_seleccion+ caso_defecto? DEDENT   # statementElegir
     ;
 
 caso_seleccion
     // caso 1:
     //     x = 10
     //     romper
-    : CASO valor_primitivo DOS_PUNTOS instruccion+
+    : CASO valor_primitivo DOS_PUNTOS NEWLINE INDENT instruccion+ DEDENT
     ;
 
 caso_defecto
     // siempre:
     //     x = 30
     //     romper
-    : SIEMPRE DOS_PUNTOS instruccion+
+    : SIEMPRE DOS_PUNTOS NEWLINE INDENT instruccion+ DEDENT
     ;
 
 
@@ -256,7 +258,7 @@ ciclo
     //     contador++
     //     si(contador == 2) entonces
     //         continuar
-    | MIENTRAS PAR_IZQ expresion PAR_DER HACER DOS_PUNTOS bloque                                         # cicloMientras
+    | MIENTRAS PAR_IZQ expresion PAR_DER HACER bloque                                         # cicloMientras
     // hacer:
     //     intentos++
     //     si(intentos == 4) entonces
@@ -476,3 +478,10 @@ NEWLINE
 ESPACIOS_BLANCO
     : [ \t]+ -> skip
     ;
+
+// ==========================================
+// TOKENS VIRTUALES
+// ==========================================
+// Para inicio y fin de indentacion :3
+INDENT : 'INDENT' { false }? ;
+DEDENT : 'DEDENT' { false }? ;

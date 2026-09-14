@@ -1,4 +1,4 @@
-package org.jrg.analisis.zetariano.semanticos;
+package org.jrg.analisis.zetariano.semantico;
 
 import org.jrg.model.semantico.Simbolo;
 import org.jrg.model.semantico.Tipo;

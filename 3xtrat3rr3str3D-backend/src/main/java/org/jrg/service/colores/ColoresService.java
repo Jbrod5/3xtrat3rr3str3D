@@ -19,6 +19,8 @@ public class ColoresService {
             coloresToken = ColorService.obtenerColoresPigLatin(codigo);
         } else if ("zetariano".equalsIgnoreCase(lenguaje) || "zet".equalsIgnoreCase(lenguaje)) {
             coloresToken = ColorService.obtenerColoresZetariano(codigo);
+        } else if ("y".equalsIgnoreCase(lenguaje)) {
+            coloresToken = ColorService.obtenerColoresY(codigo);
         } else {
             // por defecto intentar piglatin
             coloresToken = ColorService.obtenerColoresPigLatin(codigo);
@@ -35,7 +37,6 @@ public class ColoresService {
 
         return colores;
     }
-
     // compatibilidad con version anterior sin parametro lenguaje
     public List<Object> obtenerColores(String codigo) {
         return obtenerColores(codigo, "piglatin");

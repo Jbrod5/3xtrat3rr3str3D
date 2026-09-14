@@ -2,9 +2,13 @@ package org.jrg;
 
 import org.jrg.controller.archivos.ArchivoController;
 import org.jrg.controller.colores.ColoresController;
+import org.jrg.controller.compilador.CompiladorController;
 import org.jrg.service.archivos.GestorArchivosService;
 import org.jrg.service.colores.ColoresService;
 import io.javalin.Javalin;
+import org.jrg.service.compiler.CompiladorPigLatinService;
+import org.jrg.service.compiler.CompiladorYLenguajeService;
+import org.jrg.service.compiler.CompiladorZetarianoService;
 
 public class Main {
 
@@ -26,11 +30,17 @@ public class Main {
         ColoresService coloresService = new ColoresService();
 
 
+        CompiladorPigLatinService compiladorPigLatin = new CompiladorPigLatinService();
+        CompiladorZetarianoService compiladorZetariano = new CompiladorZetarianoService();
+        // instanciar el servicio del lenguaje Y
+        CompiladorYLenguajeService compiladorY = new CompiladorYLenguajeService();
 
         // instanciar los controladores con sus servicios - - - - - - - - - - - - - - - - - - - - - - - - - -
         ArchivoController archivoController = new ArchivoController(gestorArchivosService);
         ColoresController coloresController = new ColoresController(coloresService);
 
+
+        CompiladorController compiladorController = new CompiladorController(compiladorPigLatin, compiladorZetariano, compiladorY);
 
 
 
@@ -44,6 +54,12 @@ public class Main {
 
         // para colores
         app.post("/colores", coloresController::obtenerColores);
+
+        // para compilar zetariano, pig e y
+        app.post("/analizar", compiladorController::analizar);
+        app.post("/traducir", compiladorController::traducir);
+        app.post("/api/compilar", compiladorController::compilar);
+
 
         // registrar ruta raiz de verificacion
         app.get("/", ctx -> ctx.result("backend activo :D"));

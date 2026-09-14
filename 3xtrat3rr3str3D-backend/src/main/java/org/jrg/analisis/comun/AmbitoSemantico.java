@@ -1,4 +1,4 @@
-package org.jrg.analisis.zetariano.semantico;
+package org.jrg.analisis.comun;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,6 +15,7 @@ public class AmbitoSemantico {
 
     private final Ambito ambito;
     private final AmbitoSemantico padre;
+    private final List<AmbitoSemantico> hijos;
     private final Map<String, List<Simbolo>> simbolosPorNombre;
     private final Map<String, List<Simbolo>> metodosPorNombre;
     private final Map<String, List<Simbolo>> constructoresPorNombre;
@@ -32,12 +33,17 @@ public class AmbitoSemantico {
             this.ambito = new Ambito(nombre, padre.ambito);
         }
         this.padre = padre;
+        this.hijos = new ArrayList<>();
         this.simbolosPorNombre = new HashMap<>();
         this.metodosPorNombre = new HashMap<>();
         this.constructoresPorNombre = new HashMap<>();
         this.tiposPorNombre = new HashMap<>();
         this.simbolos = new ArrayList<>();
         this.tipos = new ArrayList<>();
+        // registrar este ambito en el padre para poder recorrer el arbol
+        if (padre != null) {
+            padre.hijos.add(this);
+        }
     }
 
     /**
@@ -271,6 +277,27 @@ public class AmbitoSemantico {
      */
     public List<Tipo> obtenerTipos() {
         return tipos;
+    }
+
+    /**
+     * Obtener los ambitos hijos registrados en este ambito.
+     */
+    public List<AmbitoSemantico> obtenerHijos() {
+        return hijos;
+    }
+
+    /**
+     * Obtener todos los metodos y constructores declarados en este ambito.
+     */
+    public List<Simbolo> obtenerTodosLosMetodos() {
+        List<Simbolo> resultado = new ArrayList<>();
+        for (List<Simbolo> lista : metodosPorNombre.values()) {
+            resultado.addAll(lista);
+        }
+        for (List<Simbolo> lista : constructoresPorNombre.values()) {
+            resultado.addAll(lista);
+        }
+        return resultado;
     }
 
     /**

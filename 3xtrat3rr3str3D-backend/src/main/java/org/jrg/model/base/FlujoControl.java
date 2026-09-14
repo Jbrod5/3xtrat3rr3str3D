@@ -1,4 +1,4 @@
-package org.jrg.analisis.zetariano;
+package org.jrg.model.base;
 
 
 public class FlujoControl {
