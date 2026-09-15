@@ -16,12 +16,16 @@ function detectarLenguaje(nombreArchivo) {
   return 'piglatin';
 }
 
-export async function analizarCodigo(codigo, lenguaje) {
+export async function analizarCodigo(codigo, lenguaje, ruta) {
   let lang = lenguaje;
   if (!lang) {
     lang = 'piglatin';
   }
-  const respuesta = await fetch(`${URL_BASE}/analizar?lenguaje=${lang}`, {
+  let url = `${URL_BASE}/analizar?lenguaje=${lang}`;
+  if (ruta) {
+    url = url + `&ruta=${encodeURIComponent(ruta)}`;
+  }
+  const respuesta = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain; charset=UTF-8' },
     body: codigo
@@ -32,12 +36,16 @@ export async function analizarCodigo(codigo, lenguaje) {
   return await respuesta.json();
 }
 
-export async function traducirCodigo(codigo, lenguaje) {
+export async function traducirCodigo(codigo, lenguaje, ruta) {
   let lang = lenguaje;
   if (!lang) {
     lang = 'piglatin';
   }
-  const respuesta = await fetch(`${URL_BASE}/traducir?lenguaje=${lang}`, {
+  let url = `${URL_BASE}/traducir?lenguaje=${lang}`;
+  if (ruta) {
+    url = url + `&ruta=${encodeURIComponent(ruta)}`;
+  }
+  const respuesta = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain; charset=UTF-8' },
     body: codigo

@@ -2,8 +2,11 @@ package org.jrg.model.resultado;
 
 import java.util.ArrayList;
 import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.jrg.model.error.ErrorCompilacion;
+import org.jrg.model.semantico.Simbolo;
 import org.jrg.model.semantico.SimboloResultado;
+import org.jrg.model.semantico.Tipo;
 import org.jrg.model.semantico.TipoResultado;
 
 /**
@@ -19,9 +22,11 @@ public class ResultadoAnalisis {
     private final List<SimboloResultado> simbolos;
     private final List<TipoResultado> tipos;
     private final List<Object> pasosPila;
+    private final List<Simbolo> simbolosCrudos;
+    private final List<Tipo> tiposCrudos;
 
     /**
-     * Crear un resultado de analisis con todos sus componentes.
+     * Crear un resultado de analisis sin simbolos crudos.
      */
     public ResultadoAnalisis(
             boolean exito,
@@ -32,6 +37,24 @@ public class ResultadoAnalisis {
             List<SimboloResultado> simbolos,
             List<TipoResultado> tipos,
             List<Object> pasosPila) {
+        this(exito, errores, arbolSintactico, astMermaid, codigoPigLatin,
+                simbolos, tipos, pasosPila, null, null);
+    }
+
+    /**
+     * Crear un resultado de analisis con simbolos crudos para uso interno.
+     */
+    public ResultadoAnalisis(
+            boolean exito,
+            List<ErrorCompilacion> errores,
+            String arbolSintactico,
+            String astMermaid,
+            String codigoPigLatin,
+            List<SimboloResultado> simbolos,
+            List<TipoResultado> tipos,
+            List<Object> pasosPila,
+            List<Simbolo> simbolosCrudos,
+            List<Tipo> tiposCrudos) {
         this.exito = exito;
         this.errores = new ArrayList<>();
         if (errores != null) {
@@ -63,6 +86,14 @@ public class ResultadoAnalisis {
         this.pasosPila = new ArrayList<>();
         if (pasosPila != null) {
             this.pasosPila.addAll(pasosPila);
+        }
+        this.simbolosCrudos = new ArrayList<>();
+        if (simbolosCrudos != null) {
+            this.simbolosCrudos.addAll(simbolosCrudos);
+        }
+        this.tiposCrudos = new ArrayList<>();
+        if (tiposCrudos != null) {
+            this.tiposCrudos.addAll(tiposCrudos);
         }
     }
 
@@ -120,5 +151,21 @@ public class ResultadoAnalisis {
      */
     public List<Object> getPasosPila() {
         return this.pasosPila;
+    }
+
+    /**
+     * Obtener los simbolos crudos para uso interno entre servicios.
+     */
+    @JsonIgnore
+    public List<Simbolo> getSimbolosCrudos() {
+        return this.simbolosCrudos;
+    }
+
+    /**
+     * Obtener los tipos crudos para uso interno entre servicios.
+     */
+    @JsonIgnore
+    public List<Tipo> getTiposCrudos() {
+        return this.tiposCrudos;
     }
 }

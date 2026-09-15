@@ -1,5 +1,6 @@
 package org.jrg.analisis.pigLatin.semantico;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.jrg.model.base.TipoPrimitivo;
@@ -67,9 +68,11 @@ import org.jrg.model.ast.pigLatin.paso_per.PasoPerExpr;
 import org.jrg.model.ast.pigLatin.variable_asignable.ValorAsignableArray;
 import org.jrg.model.ast.pigLatin.variable_asignable.ValorAsignableMiembroEstructura;
 import org.jrg.model.ast.pigLatin.variable_asignable.ValorAsignableSimple;
+import org.jrg.model.resultado.ResultadoAnalisis;
 import org.jrg.model.semantico.CategoriaSimbolo;
 import org.jrg.model.semantico.Simbolo;
 import org.jrg.model.semantico.Tipo;
+import org.jrg.service.compiler.GestorImports;
 import org.jrg.service.error.RecolectorErrores;
 import org.jrg.model.base.FlujoControl;
 
@@ -80,6 +83,12 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
 
     // almacenar el contexto semantico del analisis
     private final ContextoSemanticoPigLatin contexto;
+    // recolector de errores para pasarlo al gestor de imports
+    private final RecolectorErrores recolectorErrores;
+    // ruta base del proyecto para resolver imports
+    private String rutaBase;
+    // gestor de imports creado bajo demanda
+    private GestorImports gestorImports;
 
 
 
@@ -89,19 +98,35 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
      * Crear el analizador semantico para el lenguaje Pig Latin.
      */
     public AnalizadorSemanticoPigLatin(RecolectorErrores recolectorErrores) {
-        // crear el contexto semantico con el recolector de errores
-        this.contexto = new ContextoSemanticoPigLatin(recolectorErrores);
+        // guardar el recolector original o crear uno nuevo si viene nulo
+        if (recolectorErrores == null) {
+            this.recolectorErrores = new RecolectorErrores();
+        } else {
+            this.recolectorErrores = recolectorErrores;
+        }
+        this.contexto = new ContextoSemanticoPigLatin(this.recolectorErrores);
     }
 
     /**
      * Analizar el programa Pig Latin de forma semantica.
      */
     public void analizar(Programa programa) {
-        // iniciar el contexto semantico :D (o sea la memoria del analizador pe :p)
+        analizar(programa, null);
+    }
+
+    /**
+     * Analizar el programa Pig Latin con contexto de proyecto para imports.
+     */
+    public void analizar(Programa programa, String rutaBase) {
+        this.rutaBase = rutaBase;
         this.contexto.iniciar();
-        // verificar si el programa no es nulo
+        // crear el gestor de imports solo si hay ruta base
+        if (rutaBase != null && !rutaBase.isEmpty()) {
+            this.gestorImports = new GestorImports(rutaBase, this.recolectorErrores);
+        } else {
+            this.gestorImports = null;
+        }
         if (programa != null) {
-            // entrar a analizar el programa :D
             programa.accept(this);
         }
     }
@@ -426,8 +451,34 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
 
     @Override
     public Object visitRutaImportacion(RutaImportacion ruta) {
-        // no leer el archivo importado en este analisisss por ahora, solo registrar la existencia de la importacion y ver despuesss
-        // TODO: manejar archivos importados
+        // si no hay gestor de imports no se puede procesar
+        if (this.gestorImports == null) {
+            return new FlujoControl();
+        }
+
+        // procesar el import y obtener el resultado del archivo importado
+        ResultadoAnalisis resultado = this.gestorImports.procesarImport(ruta.getIdentificadores(), ruta.getLinea(), ruta.getColumna());
+
+        if (resultado == null) {
+            return new FlujoControl();
+        }
+
+        // propagar los errores del archivo importado al recolector actual
+        for (int i = 0; i < resultado.getErrores().size(); i++) {
+            org.jrg.model.error.ErrorCompilacion e = resultado.getErrores().get(i);
+            this.recolectorErrores.agregar(e.getTipo(), e.getLinea(), e.getColumna(), e.getDescripcion());
+        }
+
+        // registrar los simbolos crudos importados en el contexto
+        for (int i = 0; i < resultado.getSimbolosCrudos().size(); i++) {
+            this.contexto.registrarSimboloImportado(resultado.getSimbolosCrudos().get(i));
+        }
+
+        // registrar los tipos crudos importados en el contexto
+        for (int i = 0; i < resultado.getTiposCrudos().size(); i++) {
+            this.contexto.registrarTipoImportado(resultado.getTiposCrudos().get(i));
+        }
+
         return new FlujoControl();
     }
 
@@ -704,16 +755,43 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
 
     @Override
     public Object visitExprLlamadaFuncion(ExprLlamadaFuncion expr) {
-        // las funciones vienen de archivos .y importados
-        // no validar su firma porque el archivo no se lee en este analisis, ver eso despuessss
-        // TODO: manejar archivos importados
+        // analizar los argumentos primero
+        List<Tipo> tiposArgs = new ArrayList<>();
+        // los argumentos vienen envueltos en un ListaExpresiones
+        List<NodoAST> argumentos = new ArrayList<>();
 
-        // visitar los argumentos si existen
-        if (expr.getArgumentos() != null) {
-            expr.getArgumentos().accept(this);
+        if (expr.getArgumentos() instanceof ListaExpresiones) {
+            argumentos = ((ListaExpresiones) expr.getArgumentos()).getExpresiones();
         }
 
-        return null;
+        for (int i = 0; i < argumentos.size(); i++) {
+            Object tipoObj = argumentos.get(i).accept(this);
+            tiposArgs.add(extraerTipoDeExpresion(tipoObj));
+        }
+
+        // resolver la funcion en el ambito
+        Simbolo funcion = this.contexto.ambitoActual().buscarSimbolo(expr.getNombre());
+        if (funcion == null) {
+            this.contexto.agregarError(expr, "funcion '" + expr.getNombre() + "' no definida");
+            return null;
+        }
+
+        // validar la cantidad de argumentos
+        if (funcion.getNumParametros() != tiposArgs.size()) {
+            this.contexto.agregarError(expr, "numero de argumentos incorrecto, se esperaban "
+                    + funcion.getNumParametros() + " pero se dieron " + tiposArgs.size());
+        } else {
+
+            // validar la compatibilidad de cada argumento
+            for (int i = 0; i < tiposArgs.size(); i++) {
+                Tipo esperado = funcion.getTiposParametros().get(i);
+                Tipo real = tiposArgs.get(i);
+                if (esperado != null && real != null && !this.contexto.esCompatible(esperado, real)) {
+                    this.contexto.agregarError(argumentos.get(i), "tipo de argumento incompatible, se esperaba '" + esperado.getNombre() + "' pero se obtuvo '" + real.getNombre() + "'");
+                }
+            }
+        }
+        return funcion.getTipo();
     }
 
     @Override

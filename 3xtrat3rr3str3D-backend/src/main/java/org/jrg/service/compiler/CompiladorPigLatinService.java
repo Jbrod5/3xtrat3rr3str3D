@@ -9,10 +9,10 @@ import org.jrg.analisis.pigLatin.PigLatinASTBuilder;
 import org.jrg.analisis.pigLatin.semantico.AnalizadorSemanticoPigLatin;
 import org.jrg.antlrBase.pigLatin.PigLatinLexer;
 import org.jrg.antlrBase.pigLatin.PigLatinParser;
-import org.jrg.model.error.ErrorCompilacion;
-import org.jrg.model.error.TipoError;
 import org.jrg.model.ast.pigLatin.Programa;
 import org.jrg.model.ast.pigLatin.base.NodoAST;
+import org.jrg.model.error.ErrorCompilacion;
+import org.jrg.model.error.TipoError;
 import org.jrg.model.resultado.ResultadoAnalisis;
 import org.jrg.model.semantico.Simbolo;
 import org.jrg.model.semantico.SimboloResultado;
@@ -27,9 +27,17 @@ import org.jrg.service.error.RecolectorErrores;
 public class CompiladorPigLatinService {
 
     /**
-     * Analizar un programa Pig Latin y devolver el resultado completo.
+     * Analizar un programa Pig Latin sin contexto de proyecto.
      */
     public ResultadoAnalisis analizar(String codigoFuente) {
+        return analizar(codigoFuente, null);
+    }
+
+    /**
+     * Analizar un programa Pig Latin con contexto de proyecto para imports.
+     */
+    public ResultadoAnalisis analizar(String codigoFuente, String rutaBase) {
+
         // crear el recolector de errores del proceso
         RecolectorErrores recolector = new RecolectorErrores();
 
@@ -42,15 +50,13 @@ public class CompiladorPigLatinService {
         // crear el lexer y adjuntar la escucha de errores lexicos
         PigLatinLexer lexer = new PigLatinLexer(CharStreams.fromString(codigoFuente));
         lexer.removeErrorListeners();
-        EscuchaErroresAntlr escuchaLexica = new EscuchaErroresAntlr(recolector, TipoError.LEXICO);
-        lexer.addErrorListener(escuchaLexica);
+        lexer.addErrorListener(new EscuchaErroresAntlr(recolector, TipoError.LEXICO));
 
         // crear el stream de tokens y el parser
         CommonTokenStream tokens = new CommonTokenStream(lexer);
         PigLatinParser parser = new PigLatinParser(tokens);
         parser.removeErrorListeners();
-        EscuchaErroresAntlr escuchaSintactica = new EscuchaErroresAntlr(recolector, TipoError.SINTACTICO);
-        parser.addErrorListener(escuchaSintactica);
+        parser.addErrorListener(new EscuchaErroresAntlr(recolector, TipoError.SINTACTICO));
 
         // intentar parsear el programa
         PigLatinParser.ProgramaContext arbolCst = null;
@@ -69,8 +75,7 @@ public class CompiladorPigLatinService {
         // construir el arbol de sintaxis abstracta
         NodoAST ast = null;
         try {
-            PigLatinASTBuilder constructorAst = new PigLatinASTBuilder();
-            ast = arbolCst.accept(constructorAst);
+            ast = arbolCst.accept(new PigLatinASTBuilder());
         } catch (RuntimeException e) {
             recolector.agregar(TipoError.SEMANTICO, 1, 1, "error al construir el ast: " + e.getMessage());
             return construirResultado(recolector, "", "", "", null, null, new ArrayList<>());
@@ -85,7 +90,7 @@ public class CompiladorPigLatinService {
         if (ast instanceof Programa) {
             try {
                 AnalizadorSemanticoPigLatin analizador = new AnalizadorSemanticoPigLatin(recolector);
-                analizador.analizar((Programa) ast);
+                analizador.analizar((Programa) ast, rutaBase);
                 simbolos = analizador.obtenerSimbolos();
                 tipos = analizador.obtenerTipos();
             } catch (RuntimeException e) {
@@ -97,28 +102,25 @@ public class CompiladorPigLatinService {
     }
 
     // construir el resultado final del analisis
-    private ResultadoAnalisis construirResultado(
-            RecolectorErrores recolector,
-            String arbolTextual,
-            String astMermaid,
-            String codigoPigLatin,
-            List<Simbolo> simbolos,
-            List<Tipo> tipos,
-            List<Object> pasosPila) {
+    private ResultadoAnalisis construirResultado(RecolectorErrores recolector, String arbolTextual, String astMermaid, String codigoPigLatin, List<Simbolo> simbolos, List<Tipo> tipos, List<Object> pasosPila) {
+
         List<ErrorCompilacion> errores = recolector.obtenerErrores();
         List<SimboloResultado> simbolosResultado = new ArrayList<>();
+
         if (simbolos != null) {
             for (int i = 0; i < simbolos.size(); i++) {
                 simbolosResultado.add(new SimboloResultado(simbolos.get(i)));
             }
         }
+
         List<TipoResultado> tiposResultado = new ArrayList<>();
         if (tipos != null) {
             for (int i = 0; i < tipos.size(); i++) {
                 tiposResultado.add(new TipoResultado(tipos.get(i)));
             }
         }
+
         boolean exito = errores.isEmpty();
-        return new ResultadoAnalisis(exito, errores, arbolTextual, astMermaid, codigoPigLatin, simbolosResultado, tiposResultado, pasosPila);
+        return new ResultadoAnalisis(exito, errores, arbolTextual, astMermaid, codigoPigLatin, simbolosResultado, tiposResultado, pasosPila, simbolos, tipos);
     }
 }

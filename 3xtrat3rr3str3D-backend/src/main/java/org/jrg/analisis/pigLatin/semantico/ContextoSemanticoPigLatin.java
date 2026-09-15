@@ -152,10 +152,12 @@ class ContextoSemanticoPigLatin {
         String nombreAmbito = nombre + "_" + this.contadorAmbitos;
         Ambito nuevoAmbito = new Ambito(nombreAmbito, padre);
 
+        // el cosntructor de AmbitoSemantico y aregistra el hijo en el padre
+
         // enlazar el nuevo ambito con su padre
-        if (padre != null) {
-            padre.agregarAmbito(nuevoAmbito);
-        }
+        // if (padre != null) {
+        //     padre.agregarAmbito(nuevoAmbito);
+        // }
 
         // apilarlo como ambito actual
         this.ambitos.addLast(nuevoAmbito);
@@ -667,4 +669,85 @@ class ContextoSemanticoPigLatin {
     RecolectorErrores obtenerRecolectorErrores() {
         return this.recolectorErrores;
     }
+
+
+    // ==================== REGISTRO DE IMPORTACIONES ====================
+
+    // registrar un simbolo importado en el ambito global
+    void registrarSimboloImportado(Simbolo simbolo) {
+        if (simbolo == null) return;
+        if (this.ambitoGlobal == null) return;
+        if (this.ambitoGlobal.buscarSimboloLocal(simbolo.getNombre()) != null) return;
+
+        // mapear el tipo y los tipos de los parametros al vocabulario de Pig Latin
+        simbolo.setTipo(mapearTipoImportado(simbolo.getTipo()));
+        List<Tipo> tiposParams = new ArrayList<>();
+        for (int i = 0; i < simbolo.getTiposParametros().size(); i++) {
+            tiposParams.add(mapearTipoImportado(simbolo.getTiposParametros().get(i)));
+        }
+        simbolo.setTiposParametros(tiposParams);
+
+        simbolo.setAmbito(this.ambitoGlobal);
+        this.ambitoGlobal.agregarSimbolo(simbolo);
+    }
+
+    // traducir un tipo de otro lenguaje al vocabulario de Pig Latin
+    private Tipo mapearTipoImportado(Tipo tipo) {
+        if (tipo == null) return null;
+
+        // mapear segun el nombre
+        String nombre = tipo.getNombre();
+        String nombrePigLatin = nombre;
+        if ("entero".equals(nombre) || "int".equals(nombre)) {
+            nombrePigLatin = "numerus";
+        } else if ("flotante".equals(nombre) || "double".equals(nombre)) {
+            nombrePigLatin = "decimalis";
+        } else if ("cadena".equals(nombre) || "String".equals(nombre)) {
+            nombrePigLatin = "textum";
+        } else if ("caracter".equals(nombre) || "char".equals(nombre)) {
+            nombrePigLatin = "littera";
+        } else if ("booleano".equals(nombre) || "boolean".equals(nombre)) {
+            nombrePigLatin = "bool";
+        }
+
+        // resolver el primitivo en Pig Latin
+        Tipo primitivo = tipoPrimitivo(nombrePigLatin);
+        if (primitivo != null) {
+            return primitivo;
+        }
+
+        // si no es primitivo, es un tipo estructural o una clase
+        // conservar el nombre original pero con bandera de no primitivo
+        Tipo copia = new Tipo(nombre, false);
+        if (tipo.getDimension() > 0) {
+            copia.setDimension(tipo.getDimension());
+            copia.setTipoBase(mapearTipoImportado(tipo.getTipoBase()));
+        }
+        return copia;
+    }
+
+    // registrar un tipo importado en el mapa de tipos no primitivos
+    void registrarTipoImportado(Tipo tipo) {
+        if (tipo == null || tipo.getNombre() == null) {
+            return;
+        }
+        if (this.tiposNoPrimitivos.containsKey(tipo.getNombre())) {
+            return;
+        }
+
+        // mapear los tipos de los campos al vocabulario de Pig Latin
+        if (tipo.getCampos() != null) {
+            for (int i = 0; i < tipo.getCampos().size(); i++) {
+                Simbolo campo = tipo.getCampos().get(i);
+                campo.setTipo(mapearTipoImportado(campo.getTipo()));
+            }
+        }
+
+        this.tiposNoPrimitivos.put(tipo.getNombre(), tipo);
+        if (this.ambitoGlobal != null) {
+            this.ambitoGlobal.agregarTipo(tipo);
+        }
+    }
+
+
 }

@@ -16,6 +16,9 @@
   let refEditor;
   let traduciendo = false;
 
+  let compilandoProyecto = false;
+  let resultadoProyecto = null;
+
   const desuscribir = ideStore.subscribe((s) => {
     estado = s;
     archivoActivo = s.archivos.find(a => a.id === s.archivoActivoId);
@@ -130,7 +133,7 @@ async function enviarCompilacion() {
   if (!archivoActivo) return;
   const lenguaje = detectarLenguajeArchivo(archivoActivo.nombre);
   try {
-    const resultado = await analizarCodigo(archivoActivo.contenido, lenguaje);
+    const resultado = await analizarCodigo(archivoActivo.contenido, lenguaje, archivoActivo.ruta);
     ideStore.actualizarResultado(archivoActivo.id, resultado);
     ideStore.cambiarPestanaInferior(resultado.exito ? 'resultados' : 'errores');
     if (!estado.panelInferiorAbierto) ideStore.alternarPanelInferior();
@@ -149,7 +152,7 @@ async function enviarTraduccion() {
   if (!archivoActivo) return;
   const lenguaje = detectarLenguajeArchivo(archivoActivo.nombre);
   try {
-    const resultado = await traducirCodigo(archivoActivo.contenido, lenguaje);
+    const resultado = await traducirCodigo(archivoActivo.contenido, lenguaje, archivoActivo.ruta);
     ideStore.actualizarResultado(archivoActivo.id, resultado);
     ideStore.cambiarPestanaInferior('resultados');
     if (!estado.panelInferiorAbierto) ideStore.alternarPanelInferior();
@@ -163,6 +166,72 @@ async function enviarTraduccion() {
     if (!estado.panelInferiorAbierto) ideStore.alternarPanelInferior();
   }
 }
+
+  // compilar todos los archivos .pig del proyecto y agregar resultados
+  async function compilarProyecto() {
+    if (!estado.rutaBaseProyecto) {
+      alert('Primero abre una carpeta de proyecto para poder compilar.');
+      return;
+    }
+    if (compilandoProyecto) return;
+    compilandoProyecto = true;
+    // recolectar los archivos piglatin del proyecto
+    const archivosPig = estado.archivos.filter(a => a.nombre.endsWith('.pig'));
+    if (archivosPig.length === 0) {
+      alert('No hay archivos .pig en el proyecto.');
+      compilandoProyecto = false;
+      return;
+    }
+    // acumular errores de todos los archivos
+    const erroresTotales = [];
+    let exitoTotal = true;
+    for (let i = 0; i < archivosPig.length; i++) {
+      const archivo = archivosPig[i];
+      const lenguaje = 'piglatin';
+      try {
+        const resultado = await analizarCodigo(archivo.contenido, lenguaje, archivo.ruta);
+        if (!resultado.exito) {
+          exitoTotal = false;
+          for (let j = 0; j < resultado.errores.length; j++) {
+            const err = resultado.errores[j];
+            erroresTotales.push({
+              archivo: archivo.nombre,
+              linea: err.linea,
+              columna: err.columna,
+              tipo: err.tipo,
+              mensaje: err.mensaje
+            });
+          }
+        }
+      } catch (err) {
+        exitoTotal = false;
+        erroresTotales.push({
+          archivo: archivo.nombre,
+          linea: 0,
+          columna: 0,
+          tipo: 'CONEXION',
+          mensaje: err.message
+        });
+      }
+    }
+    // guardar el resultado agregado en el archivo activo
+    if (archivoActivo) {
+      ideStore.actualizarResultado(archivoActivo.id, {
+        exito: exitoTotal,
+        errores: erroresTotales,
+        arbolSintactico: null,
+        astMermaid: null,
+        codigoPigLatin: null,
+        simbolos: [],
+        tipos: [],
+        pasosPila: []
+      });
+    }
+    ideStore.cambiarPestanaInferior(erroresTotales.length > 0 ? 'errores' : 'resultados');
+    if (!estado.panelInferiorAbierto) ideStore.alternarPanelInferior();
+    compilandoProyecto = false;
+    alert('Proyecto compilado. Archivos: ' + archivosPig.length + ' Errores: ' + erroresTotales.length);
+  }
 
   // ================= .pig =================
   function descargarPig() {
@@ -265,6 +334,9 @@ async function enviarTraduccion() {
     <div class="ms-auto d-flex gap-2 align-items-center">
       <button class="btn btn-primary btn-sm" on:click={enviarCompilacion}>
         <i class="bi bi-play-fill"></i> Compilar
+      </button>
+      <button class="btn btn-success btn-sm" on:click={compilarProyecto} disabled={compilandoProyecto}>
+        <i class="bi bi-collection"></i> Compilar Proyecto
       </button>
       <button class="btn btn-outline-secondary btn-sm" on:click={enviarTraduccion}>
         <i class="bi bi-translate"></i> Traducir

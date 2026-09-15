@@ -143,6 +143,61 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         return tipoClaseActual;
     }
 
+    /**
+     * Obtener todos los simbolos registrados durante el analisis.
+     */
+    public List<Simbolo> obtenerSimbolos() {
+        List<Simbolo> resultado = new ArrayList<>();
+
+        if (this.ambitoGlobal != null) {
+            recolectarSimbolos(this.ambitoGlobal, resultado);
+        }
+
+        return resultado;
+    }
+
+    /**
+     * Obtener todos los tipos registrados durante el analisis.
+     */
+    public List<Tipo> obtenerTipos() {
+        List<Tipo> resultado = new ArrayList<>();
+
+        if (this.ambitoGlobal != null) {
+            recolectarTipos(this.ambitoGlobal, resultado);
+        }
+
+        return resultado;
+    }
+
+    // recorrer el ambito acumulando simbolos
+    private void recolectarSimbolos(AmbitoSemantico ambito, List<Simbolo> resultado) {
+        if (ambito == null) {
+            return;
+        }
+
+        resultado.addAll(ambito.obtenerSimbolos());
+        resultado.addAll(ambito.obtenerTodosLosMetodos());
+
+        for (int i = 0; i < ambito.obtenerHijos().size(); i++) {
+            recolectarSimbolos(ambito.obtenerHijos().get(i), resultado);
+        }
+
+    }
+
+    // recorrer el ambito acumulando tipos
+    private void recolectarTipos(AmbitoSemantico ambito, List<Tipo> resultado) {
+
+        if (ambito == null) {
+            return;
+        }
+
+        resultado.addAll(ambito.obtenerTipos());
+
+        for (int i = 0; i < ambito.obtenerHijos().size(); i++) {
+            recolectarTipos(ambito.obtenerHijos().get(i), resultado);
+        }
+    }
+
     // ==================== MANEJO DE ERRORES ====================
 
     // agregar un error semantico tomando linea y columna del nodo
@@ -173,10 +228,12 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         // crear el nuevo ambito con el padre actual
         AmbitoSemantico nuevo = new AmbitoSemantico(nombre, ambitoActual);
 
+        // el constructor de AmbitoSemantico ya registra el hijo en el padre :D
+
         // registrar el ambito en el padre si existe
-        if (ambitoActual != null) {
-            ambitoActual.obtenerAmbito().agregarAmbito(nuevo.obtenerAmbito());
-        }
+        //if (ambitoActual != null) {
+        //    ambitoActual.obtenerAmbito().agregarAmbito(nuevo.obtenerAmbito());
+        //}
 
         // actualizar el ambito actual
         ambitoActual = nuevo;
@@ -2004,7 +2061,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
             agregarError(expr.getOperandoDerecho(), "operando derecho debe ser numerico");
         }
 
-        return tipoPromovido(tIzq, tDer);
+        return tipoMayorJerarquia(tIzq, tDer);
     }
 
     @Override
@@ -2031,7 +2088,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
             return null;
         }
 
-        return tipoPromovido(tIzq, tDer);
+        return tipoMayorJerarquia(tIzq, tDer);
     }
 
     @Override
@@ -2110,7 +2167,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
             }
         }
 
-        return tipoPromovido(tipoVerdadero, tipoFalso);
+        return tipoMayorJerarquia(tipoVerdadero, tipoFalso);
     }
 
     @Override
@@ -2213,8 +2270,8 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         return tipo != null && "String".equals(tipo.getNombre());
     }
 
-    // calcular el tipo promovido entre dos tipos
-    private Tipo tipoPromovido(Tipo a, Tipo b) {
+    // calcular el tipo de mayor jerarquia entre dos tipos
+    private Tipo tipoMayorJerarquia(Tipo a, Tipo b) {
 
         // devolver b si a es nulo
         if (a == null) {

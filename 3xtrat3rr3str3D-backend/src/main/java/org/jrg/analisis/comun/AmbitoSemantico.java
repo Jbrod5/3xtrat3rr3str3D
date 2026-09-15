@@ -84,7 +84,7 @@ public class AmbitoSemantico {
             metodosPorNombre.put(nombre, existentes);
         }
         existentes.add(metodo);
-        simbolos.add(metodo);
+        //simbolos.add(metodo);
     }
 
     /**
@@ -101,7 +101,7 @@ public class AmbitoSemantico {
             constructoresPorNombre.put(nombre, existentes);
         }
         existentes.add(constructor);
-        simbolos.add(constructor);
+        //simbolos.add(constructor);
     }
 
     /**

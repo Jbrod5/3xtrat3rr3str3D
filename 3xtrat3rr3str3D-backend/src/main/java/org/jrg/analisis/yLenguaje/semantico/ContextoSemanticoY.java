@@ -122,10 +122,14 @@ public class ContextoSemanticoY {
         AmbitoSemantico padre = ambitoActual();
         AmbitoSemantico nuevo = new AmbitoSemantico(nombre, padre);
 
+
+        // el constructor de AmbitoSemantico ya registra el hijo en el padre :D
+
         // enlazar el nuevo ambito con su padre
-        if (padre != null) {
-            padre.obtenerAmbito().agregarAmbito(nuevo.obtenerAmbito());
-        }
+        //if (padre != null) {
+        //    padre.obtenerAmbito().agregarAmbito(nuevo.obtenerAmbito());
+        //}
+
 
         // apilarlo como ambito actual :D
         this.ambitos.addLast(nuevo);

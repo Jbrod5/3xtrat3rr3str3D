@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.jrg.analisis.comun.AmbitoSemantico;
 import org.jrg.analisis.zetariano.ZetarianoASTBuilder;
 import org.jrg.analisis.zetariano.semantico.AnalizadorSemanticoZetariano;
 import org.jrg.antlrBase.zetariano.ZetarianoLexer;
@@ -87,11 +88,13 @@ public class CompiladorZetarianoService {
             try {
                 AnalizadorSemanticoZetariano analizador = new AnalizadorSemanticoZetariano(recolector);
                 analizador.visitarPrograma((Programa) ast);
+
                 // recorrer el arbol de ambitos del global para recolectar los simbolos
                 if (analizador.obtenerAmbitoGlobal() != null) {
-                    Ambito raiz = analizador.obtenerAmbitoGlobal().obtenerAmbito();
+                    AmbitoSemantico raiz = analizador.obtenerAmbitoGlobal();
                     colectarSimbolos(raiz, simbolos, tipos);
                 }
+
             } catch (RuntimeException e) {
                 recolector.agregar(TipoError.SEMANTICO, 1, 1, "error durante el analisis semantico: " + e.getMessage());
             }
@@ -101,41 +104,44 @@ public class CompiladorZetarianoService {
     }
 
     // recorrer el arbol de ambitos y recolectar simbolos y tipos
-    private void colectarSimbolos(Ambito ambito, List<Simbolo> simbolos, List<Tipo> tipos) {
+    private void colectarSimbolos(AmbitoSemantico ambito, List<Simbolo> simbolos, List<Tipo> tipos) {
         if (ambito == null) {
             return;
         }
-        simbolos.addAll(ambito.getSimbolos());
-        tipos.addAll(ambito.getTipos());
-        List<Ambito> hijos = ambito.getAmbitos();
+
+        simbolos.addAll(ambito.obtenerSimbolos());
+        simbolos.addAll(ambito.obtenerTodosLosMetodos());
+        tipos.addAll(ambito.obtenerTipos());
+
+        List<AmbitoSemantico> hijos = ambito.obtenerHijos();
         for (int i = 0; i < hijos.size(); i++) {
             colectarSimbolos(hijos.get(i), simbolos, tipos);
         }
+
     }
 
     // construir el resultado final del analisis
-    private ResultadoAnalisis construirResultado(
-            RecolectorErrores recolector,
-            String arbolTextual,
-            String astMermaid,
-            String codigoPigLatin,
-            List<Simbolo> simbolos,
-            List<Tipo> tipos,
-            List<Object> pasosPila) {
+    private ResultadoAnalisis construirResultado(RecolectorErrores recolector, String arbolTextual, String astMermaid, String codigoPigLatin, List<Simbolo> simbolos, List<Tipo> tipos, List<Object> pasosPila) {
+
         List<ErrorCompilacion> errores = recolector.obtenerErrores();
         List<SimboloResultado> simbolosResultado = new ArrayList<>();
+
         if (simbolos != null) {
             for (int i = 0; i < simbolos.size(); i++) {
                 simbolosResultado.add(new SimboloResultado(simbolos.get(i)));
             }
         }
+
         List<TipoResultado> tiposResultado = new ArrayList<>();
         if (tipos != null) {
             for (int i = 0; i < tipos.size(); i++) {
                 tiposResultado.add(new TipoResultado(tipos.get(i)));
             }
         }
+
         boolean exito = errores.isEmpty();
-        return new ResultadoAnalisis(exito, errores, arbolTextual, astMermaid, codigoPigLatin, simbolosResultado, tiposResultado, pasosPila);
+
+        return new ResultadoAnalisis(exito, errores, arbolTextual, astMermaid, codigoPigLatin, simbolosResultado, tiposResultado, pasosPila, simbolos, tipos);
+
     }
 }

@@ -44,6 +44,7 @@ public class CompiladorYLenguajeService {
         // crear el lexer base y adjuntar la escucha de errores lexicos
         YLenguajeLexer lexerBase = new YLenguajeLexer(CharStreams.fromString(codigoFuente));
         lexerBase.removeErrorListeners();
+
         EscuchaErroresAntlr escuchaLexica = new EscuchaErroresAntlr(recolector, TipoError.LEXICO);
         lexerBase.addErrorListener(escuchaLexica);
 
@@ -55,6 +56,7 @@ public class CompiladorYLenguajeService {
         CommonTokenStream tokens = new CommonTokenStream(fuenteConIndentacion);
         YLenguajeParser parser = new YLenguajeParser(tokens);
         parser.removeErrorListeners();
+
         EscuchaErroresAntlr escuchaSintactica = new EscuchaErroresAntlr(recolector, TipoError.SINTACTICO);
         parser.addErrorListener(escuchaSintactica);
 
@@ -64,6 +66,7 @@ public class CompiladorYLenguajeService {
             arbolCst = parser.programa();
         } catch (RuntimeException e) {
             recolector.agregar(TipoError.SINTACTICO, 1, 1, "error inesperado en el parsing: " + e.getMessage());
+
             return construirResultado(recolector, "", "", "", null, null, new ArrayList<>());
         }
 
@@ -79,6 +82,7 @@ public class CompiladorYLenguajeService {
             ast = arbolCst.accept(constructorAst);
         } catch (RuntimeException e) {
             recolector.agregar(TipoError.SEMANTICO, 1, 1, "error al construir el ast: " + e.getMessage());
+
             return construirResultado(recolector, "", "", "", null, null, new ArrayList<>());
         }
 
@@ -88,6 +92,7 @@ public class CompiladorYLenguajeService {
         // ejecutar el analisis semantico sobre el ast
         List<Simbolo> simbolos = new ArrayList<>();
         List<Tipo> tipos = new ArrayList<>();
+
         if (ast instanceof Programa) {
             try {
                 AnalizadorSemanticoY analizador = new AnalizadorSemanticoY(recolector);
@@ -103,28 +108,26 @@ public class CompiladorYLenguajeService {
     }
 
     // construir el resultado final del analisis
-    private ResultadoAnalisis construirResultado(
-            RecolectorErrores recolector,
-            String arbolTextual,
-            String astMermaid,
-            String codigoPigLatin,
-            List<Simbolo> simbolos,
-            List<Tipo> tipos,
-            List<Object> pasosPila) {
+    private ResultadoAnalisis construirResultado(RecolectorErrores recolector, String arbolTextual, String astMermaid, String codigoPigLatin, List<Simbolo> simbolos, List<Tipo> tipos, List<Object> pasosPila) {
+
         List<ErrorCompilacion> errores = recolector.obtenerErrores();
         List<SimboloResultado> simbolosResultado = new ArrayList<>();
+
         if (simbolos != null) {
             for (int i = 0; i < simbolos.size(); i++) {
                 simbolosResultado.add(new SimboloResultado(simbolos.get(i)));
             }
         }
+
         List<TipoResultado> tiposResultado = new ArrayList<>();
         if (tipos != null) {
             for (int i = 0; i < tipos.size(); i++) {
                 tiposResultado.add(new TipoResultado(tipos.get(i)));
             }
         }
+
         boolean exito = errores.isEmpty();
-        return new ResultadoAnalisis(exito, errores, arbolTextual, astMermaid, codigoPigLatin, simbolosResultado, tiposResultado, pasosPila);
+
+        return new ResultadoAnalisis(exito, errores, arbolTextual, astMermaid, codigoPigLatin, simbolosResultado, tiposResultado, pasosPila, simbolos, tipos);
     }
 }
