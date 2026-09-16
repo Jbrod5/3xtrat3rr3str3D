@@ -1,7 +1,9 @@
 package org.jrg.analisis.pigLatin.cuartetas;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.jrg.model.ast.pigLatin.*;
 import org.jrg.model.ast.pigLatin.asignacion.AsignacionGeneral;
@@ -39,6 +41,8 @@ public class GeneradorCuartetasPigLatin implements LatinusAstVisitor<String> {
     private String etiquetaBreakActual;
     // etiqueta actual para continue
     private String etiquetaContinueActual;
+    // tipos conocidos de temporales y variables
+    private final Map<String, String> tiposConocidos;
 
     // crear el generador
     public GeneradorCuartetasPigLatin() {
@@ -47,11 +51,84 @@ public class GeneradorCuartetasPigLatin implements LatinusAstVisitor<String> {
         this.temporales = new GeneradorTemporales();
         this.etiquetaBreakActual = null;
         this.etiquetaContinueActual = null;
+        this.tiposConocidos = new HashMap<>();
     }
 
     // obtener la lista de cuartetas generadas
     public List<Cuarteta> getCuartetas() {
         return cuartetas;
+    }
+
+    // inferir el tipo de un literal por su forma
+    private String inferirTipoLiteral(String valor) {
+        // devolver guion bajo si el valor es nulo o vacio de tipo
+        if (valor == null || valor.equals("_")) {
+            return "_";
+        }
+        // detectar cadena por comilla doble inicial
+        if (valor.startsWith("\"")) {
+            return "cadena";
+        }
+        // detectar caracter por comilla simple inicial
+        if (valor.startsWith("'")) {
+            return "caracter";
+        }
+        // detectar booleanos de los tres lenguajes
+        if (valor.equals("verum") || valor.equals("verdadero") || valor.equals("true") || valor.equals("falsus") || valor.equals("falso") || valor.equals("false")) {
+            return "booleano";
+        }
+        // detectar flotante por punto decimal
+        if (valor.contains(".")) {
+            return "flotante";
+        }
+        // detectar entero si empieza con digito
+        if (valor.length() > 0 && Character.isDigit(valor.charAt(0))) {
+            return "entero";
+        }
+        // cualquier otra cosa es de tipo desconocido
+        return "_";
+    }
+
+    // inferir el tipo de un nombre usando el mapa o su forma literal
+    private String inferirTipoDe(String nombre, Map<String, String> tipos) {
+        // devolver guion bajo si el nombre es nulo o vacio de tipo
+        if (nombre == null || nombre.equals("_")) {
+            return "_";
+        }
+        // buscar en el mapa de tipos conocidos
+        String tipo = tipos.get(nombre);
+        if (tipo != null) {
+            return tipo;
+        }
+        // inferir por la forma del literal
+        return inferirTipoLiteral(nombre);
+    }
+
+    // inferir el tipo de un operando aritmetico con entero por defecto
+    private String tipoAritmetico(String nombre) {
+        // inferir el tipo conocido del operando
+        String tipo = inferirTipoDe(nombre, tiposConocidos);
+        // usar entero cuando el tipo es desconocido
+        if (tipo.equals("_")) {
+            return "entero";
+        }
+        return tipo;
+    }
+
+    // inferir el tipo resultado de una operacion aritmetica
+    private String tipoResultadoAritmetico(String a, String b) {
+        // inferir los tipos de ambos operandos
+        String tipoA = inferirTipoDe(a, tiposConocidos);
+        String tipoB = inferirTipoDe(b, tiposConocidos);
+        // usar el tipo comun cuando ambos coinciden y es conocido
+        if (tipoA.equals(tipoB)) {
+            if (tipoA.equals("_")) {
+                return "entero";
+            }
+            return tipoA;
+        }
+        // usar entero por defecto en caso mixto
+        return "entero";
     }
 
     // ==================== PROGRAMA Y SECCIONES ====================
@@ -64,7 +141,7 @@ public class GeneradorCuartetasPigLatin implements LatinusAstVisitor<String> {
         }
 
         // emitir marcador de inicio del main
-        cuartetas.add(new Cuarteta("func_begin", "main", "_", "void"));
+        cuartetas.add(new Cuarteta("func_begin", "main", "_", "void", "_", "_", "void"));
 
         // visitar seccion maior si existe
         if (nodo.getSeccionMaior() != null) {
@@ -72,7 +149,7 @@ public class GeneradorCuartetasPigLatin implements LatinusAstVisitor<String> {
         }
 
         // emitir marcador de fin del main
-        cuartetas.add(new Cuarteta("func_end", "main", "_", "_"));
+        cuartetas.add(new Cuarteta("func_end", "main", "_", "_", "_", "_", "_"));
 
         return null;
     }
@@ -216,11 +293,13 @@ public class GeneradorCuartetasPigLatin implements LatinusAstVisitor<String> {
         }
         // emitir parametros
         for (int i = 0; i < args.size(); i++) {
-            cuartetas.add(new Cuarteta("param", args.get(i), "_", "_"));
+            cuartetas.add(new Cuarteta("param", args.get(i), "_", "_", inferirTipoDe(args.get(i), tiposConocidos), "_", "_"));
         }
         // emitir instancia
         String temp = temporales.nuevoTemporal();
-        cuartetas.add(new Cuarteta("new", expr.getTipo(), String.valueOf(args.size()), temp));
+        // registrar el temporal con el tipo de la clase
+        tiposConocidos.put(temp, expr.getTipo());
+        cuartetas.add(new Cuarteta("new", expr.getTipo(), String.valueOf(args.size()), temp, expr.getTipo(), "_", expr.getTipo()));
         return temp;
     }
 
@@ -239,11 +318,11 @@ public class GeneradorCuartetasPigLatin implements LatinusAstVisitor<String> {
         }
         // emitir parametros
         for (int i = 0; i < args.size(); i++) {
-            cuartetas.add(new Cuarteta("param", args.get(i), "_", "_"));
+            cuartetas.add(new Cuarteta("param", args.get(i), "_", "_", inferirTipoDe(args.get(i), tiposConocidos), "_", "_"));
         }
         // emitir llamada
         String temp = temporales.nuevoTemporal();
-        cuartetas.add(new Cuarteta("call", expr.getNombre(), String.valueOf(args.size()), temp));
+        cuartetas.add(new Cuarteta("call", expr.getNombre(), String.valueOf(args.size()), temp, "_", "_", "_"));
         return temp;
     }
 
@@ -265,14 +344,14 @@ public class GeneradorCuartetasPigLatin implements LatinusAstVisitor<String> {
             }
         }
         // emitir parametro del objeto
-        cuartetas.add(new Cuarteta("param", obj != null ? obj : "_", "_", "_"));
+        cuartetas.add(new Cuarteta("param", obj != null ? obj : "_", "_", "_", inferirTipoDe(obj, tiposConocidos), "_", "_"));
         // emitir parametros de argumentos
         for (int i = 0; i < args.size(); i++) {
-            cuartetas.add(new Cuarteta("param", args.get(i), "_", "_"));
+            cuartetas.add(new Cuarteta("param", args.get(i), "_", "_", inferirTipoDe(args.get(i), tiposConocidos), "_", "_"));
         }
         // emitir llamada al metodo
         String temp = temporales.nuevoTemporal();
-        cuartetas.add(new Cuarteta("call_method", expr.getNombre(), String.valueOf(args.size() + 1), temp));
+        cuartetas.add(new Cuarteta("call_method", expr.getNombre(), String.valueOf(args.size() + 1), temp, "_", "_", "_"));
         return temp;
     }
 
@@ -289,7 +368,7 @@ public class GeneradorCuartetasPigLatin implements LatinusAstVisitor<String> {
         }
         // generar acceso a array con temporal
         String temp = temporales.nuevoTemporal();
-        cuartetas.add(new Cuarteta("=[]", arr != null ? arr : "_", idx != null ? idx : "_", temp));
+        cuartetas.add(new Cuarteta("=[]", arr != null ? arr : "_", idx != null ? idx : "_", temp, "_", "entero", "_"));
         return temp;
     }
 
@@ -302,21 +381,21 @@ public class GeneradorCuartetasPigLatin implements LatinusAstVisitor<String> {
         }
         // emitir acceso a miembro
         String temp = temporales.nuevoTemporal();
-        cuartetas.add(new Cuarteta(".", obj != null ? obj : "_", expr.getMiembro(), temp));
+        cuartetas.add(new Cuarteta(".", obj != null ? obj : "_", expr.getMiembro(), temp, "_", "_", "_"));
         return temp;
     }
 
     @Override
     public String visitExprPostIncremento(ExprPostIncremento expr) {
         String var = expr.getVariable().accept(this);
-        cuartetas.add(new Cuarteta("+", var != null ? var : "_", "1", var != null ? var : "_"));
+        cuartetas.add(new Cuarteta("+", var != null ? var : "_", "1", var != null ? var : "_", inferirTipoDe(var, tiposConocidos), "entero", inferirTipoDe(var, tiposConocidos)));
         return var;
     }
 
     @Override
     public String visitExprPostDecremento(ExprPostDecremento expr) {
         String var = expr.getVariable().accept(this);
-        cuartetas.add(new Cuarteta("-", var != null ? var : "_", "1", var != null ? var : "_"));
+        cuartetas.add(new Cuarteta("-", var != null ? var : "_", "1", var != null ? var : "_", inferirTipoDe(var, tiposConocidos), "entero", inferirTipoDe(var, tiposConocidos)));
         return var;
     }
 
@@ -336,7 +415,11 @@ public class GeneradorCuartetasPigLatin implements LatinusAstVisitor<String> {
         // usar el operador negativo
         String op = expr.getOperador();
         String temp = temporales.nuevoTemporal();
-        cuartetas.add(new Cuarteta(op, val != null ? val : "_", "_", temp));
+        // inferir el tipo desde el operando
+        String tipoNeg = inferirTipoDe(val, tiposConocidos);
+        // registrar el temporal con el tipo inferido
+        tiposConocidos.put(temp, tipoNeg);
+        cuartetas.add(new Cuarteta(op, val != null ? val : "_", "_", temp, tipoNeg, "_", tipoNeg));
         return temp;
     }
 
@@ -349,21 +432,23 @@ public class GeneradorCuartetasPigLatin implements LatinusAstVisitor<String> {
         }
         String op = expr.getOperador();
         String temp = temporales.nuevoTemporal();
-        cuartetas.add(new Cuarteta("!", val != null ? val : "_", "_", temp));
+        // registrar el temporal como booleano
+        tiposConocidos.put(temp, "booleano");
+        cuartetas.add(new Cuarteta("!", val != null ? val : "_", "_", temp, inferirTipoDe(val, tiposConocidos), "_", "booleano"));
         return temp;
     }
 
     @Override
     public String visitExprPreIncremento(ExprPreIncremento expr) {
         String var = expr.getVariable().accept(this);
-        cuartetas.add(new Cuarteta("+", var != null ? var : "_", "1", var != null ? var : "_"));
+        cuartetas.add(new Cuarteta("+", var != null ? var : "_", "1", var != null ? var : "_", inferirTipoDe(var, tiposConocidos), "entero", inferirTipoDe(var, tiposConocidos)));
         return var;
     }
 
     @Override
     public String visitExprPreDecremento(ExprPreDecremento expr) {
         String var = expr.getVariable().accept(this);
-        cuartetas.add(new Cuarteta("-", var != null ? var : "_", "1", var != null ? var : "_"));
+        cuartetas.add(new Cuarteta("-", var != null ? var : "_", "1", var != null ? var : "_", inferirTipoDe(var, tiposConocidos), "entero", inferirTipoDe(var, tiposConocidos)));
         return var;
     }
 
@@ -380,7 +465,11 @@ public class GeneradorCuartetasPigLatin implements LatinusAstVisitor<String> {
         }
         String op = expr.getOperador();
         String temp = temporales.nuevoTemporal();
-        cuartetas.add(new Cuarteta(op, izq != null ? izq : "_", der != null ? der : "_", temp));
+        // inferir el tipo resultado de la operacion
+        String tipoResMult = tipoResultadoAritmetico(izq, der);
+        // registrar el temporal con el tipo inferido
+        tiposConocidos.put(temp, tipoResMult);
+        cuartetas.add(new Cuarteta(op, izq != null ? izq : "_", der != null ? der : "_", temp, tipoAritmetico(izq), tipoAritmetico(der), tipoResMult));
         return temp;
     }
 
@@ -389,7 +478,11 @@ public class GeneradorCuartetasPigLatin implements LatinusAstVisitor<String> {
         String izq = expr.getOperandoIzquierdo().accept(this);
         String der = expr.getOperandoDerecho().accept(this);
         String temp = temporales.nuevoTemporal();
-        cuartetas.add(new Cuarteta(expr.getOperador(), izq, der, temp));
+        // inferir el tipo resultado de la operacion
+        String tipoResSuma = tipoResultadoAritmetico(izq, der);
+        // registrar el temporal con el tipo inferido
+        tiposConocidos.put(temp, tipoResSuma);
+        cuartetas.add(new Cuarteta(expr.getOperador(), izq, der, temp, tipoAritmetico(izq), tipoAritmetico(der), tipoResSuma));
         return temp;
     }
 
@@ -398,7 +491,9 @@ public class GeneradorCuartetasPigLatin implements LatinusAstVisitor<String> {
         String izq = expr.getOperandoIzquierdo().accept(this);
         String der = expr.getOperandoDerecho().accept(this);
         String temp = temporales.nuevoTemporal();
-        cuartetas.add(new Cuarteta(expr.getOperador(), izq, der, temp));
+        // registrar el temporal como booleano
+        tiposConocidos.put(temp, "booleano");
+        cuartetas.add(new Cuarteta(expr.getOperador(), izq, der, temp, inferirTipoDe(izq, tiposConocidos), inferirTipoDe(der, tiposConocidos), "booleano"));
         return temp;
     }
 
@@ -407,7 +502,9 @@ public class GeneradorCuartetasPigLatin implements LatinusAstVisitor<String> {
         String izq = expr.getOperandoIzquierdo().accept(this);
         String der = expr.getOperandoDerecho().accept(this);
         String temp = temporales.nuevoTemporal();
-        cuartetas.add(new Cuarteta("&&", izq, der, temp));
+        // registrar el temporal como booleano
+        tiposConocidos.put(temp, "booleano");
+        cuartetas.add(new Cuarteta("&&", izq, der, temp, inferirTipoDe(izq, tiposConocidos), inferirTipoDe(der, tiposConocidos), "booleano"));
         return temp;
     }
 
@@ -416,7 +513,9 @@ public class GeneradorCuartetasPigLatin implements LatinusAstVisitor<String> {
         String izq = expr.getOperandoIzquierdo().accept(this);
         String der = expr.getOperandoDerecho().accept(this);
         String temp = temporales.nuevoTemporal();
-        cuartetas.add(new Cuarteta("||", izq, der, temp));
+        // registrar el temporal como booleano
+        tiposConocidos.put(temp, "booleano");
+        cuartetas.add(new Cuarteta("||", izq, der, temp, inferirTipoDe(izq, tiposConocidos), inferirTipoDe(der, tiposConocidos), "booleano"));
         return temp;
     }
 
@@ -430,7 +529,11 @@ public class GeneradorCuartetasPigLatin implements LatinusAstVisitor<String> {
             }
             // si es literal, meterlo en un temporal
             String temp = temporales.nuevoTemporal();
-            cuartetas.add(new Cuarteta("=", vp.getValor(), "_", temp));
+            // inferir el tipo del literal
+            String tipoLiteral = inferirTipoLiteral(vp.getValor());
+            // registrar el temporal con el tipo inferido
+            tiposConocidos.put(temp, tipoLiteral);
+            cuartetas.add(new Cuarteta("=", vp.getValor(), "_", temp, tipoLiteral, "_", tipoLiteral));
             return temp;
         }
         return null;
@@ -467,13 +570,15 @@ public class GeneradorCuartetasPigLatin implements LatinusAstVisitor<String> {
         }
         // emitir parametros
         for (int i = 0; i < args.size(); i++) {
-            cuartetas.add(new Cuarteta("param", args.get(i), "_", "_"));
+            cuartetas.add(new Cuarteta("param", args.get(i), "_", "_", inferirTipoDe(args.get(i), tiposConocidos), "_", "_"));
         }
         // crear objeto
         String temp = temporales.nuevoTemporal();
-        cuartetas.add(new Cuarteta("new", nodo.getTipo(), String.valueOf(args.size()), temp));
+        // registrar el temporal con el tipo del objeto
+        tiposConocidos.put(temp, nodo.getTipo());
+        cuartetas.add(new Cuarteta("new", nodo.getTipo(), String.valueOf(args.size()), temp, nodo.getTipo(), "_", nodo.getTipo()));
         // asignar a variable
-        cuartetas.add(new Cuarteta(":=", temp, "_", nodo.getIdentificador()));
+        cuartetas.add(new Cuarteta(":=", temp, "_", nodo.getIdentificador(), inferirTipoDe(temp, tiposConocidos), "_", "_"));
         return null;
     }
 
@@ -481,17 +586,19 @@ public class GeneradorCuartetasPigLatin implements LatinusAstVisitor<String> {
     public String visitDeclEstructuraConValores(DeclEstructuraConValores nodo) {
         // crear nueva instancia de estructura
         String temp = temporales.nuevoTemporal();
-        cuartetas.add(new Cuarteta("new_struct", nodo.getTipo(), "_", temp));
+        // registrar el temporal con el tipo de la estructura
+        tiposConocidos.put(temp, nodo.getTipo());
+        cuartetas.add(new Cuarteta("new_struct", nodo.getTipo(), "_", temp, nodo.getTipo(), "_", nodo.getTipo()));
         // evaluar los atributos
         if (nodo.getAtributos() instanceof ListaAtributosInstancia) {
             List<NodoAST> attrs = ((ListaAtributosInstancia) nodo.getAtributos()).getAtributos();
             for (int i = 0; i < attrs.size(); i++) {
                 String val = attrs.get(i).accept(this);
-                cuartetas.add(new Cuarteta(".,=", temp, String.valueOf(i), val != null ? val : "_"));
+                cuartetas.add(new Cuarteta(".,=", temp, String.valueOf(i), val != null ? val : "_", "_", "_", inferirTipoDe(val, tiposConocidos)));
             }
         }
         // asignar la estructura a la variable
-        cuartetas.add(new Cuarteta(":=", temp, "_", nodo.getIdentificador()));
+        cuartetas.add(new Cuarteta(":=", temp, "_", nodo.getIdentificador(), inferirTipoDe(temp, tiposConocidos), "_", "_"));
         return null;
     }
 
@@ -500,7 +607,7 @@ public class GeneradorCuartetasPigLatin implements LatinusAstVisitor<String> {
         // si hay valor inicial, emitir asignacion
         if (nodo.getValor() != null) {
             String val = nodo.getValor().accept(this);
-            cuartetas.add(new Cuarteta(":=", val != null ? val : "_", "_", nodo.getIdentificador()));
+            cuartetas.add(new Cuarteta(":=", val != null ? val : "_", "_", nodo.getIdentificador(), inferirTipoDe(val, tiposConocidos), "_", "_"));
         }
         return null;
     }
@@ -508,7 +615,7 @@ public class GeneradorCuartetasPigLatin implements LatinusAstVisitor<String> {
     @Override
     public String visitDeclBooleanaImplicita(DeclBooleanaImplicita nodo) {
         // emitir asignacion con el valor implicito del nodo
-        cuartetas.add(new Cuarteta(":=", nodo.getValor(), "_", nodo.getIdentificador()));
+        cuartetas.add(new Cuarteta(":=", nodo.getValor(), "_", nodo.getIdentificador(), inferirTipoLiteral(nodo.getValor()), "_", "_"));
         return null;
     }
 
@@ -518,7 +625,7 @@ public class GeneradorCuartetasPigLatin implements LatinusAstVisitor<String> {
         if (nodo.getTamano() != null) {
             tamano = nodo.getTamano().accept(this);
         }
-        cuartetas.add(new Cuarteta("alloc", tamano != null ? tamano : "_", "_", nodo.getIdentificador()));
+        cuartetas.add(new Cuarteta("alloc", tamano != null ? tamano : "_", "_", nodo.getIdentificador(), inferirTipoDe(tamano, tiposConocidos), "_", "_"));
         return null;
     }
 
@@ -528,11 +635,11 @@ public class GeneradorCuartetasPigLatin implements LatinusAstVisitor<String> {
         if (nodo.getTamano() != null) {
             tamano = nodo.getTamano().accept(this);
         }
-        cuartetas.add(new Cuarteta("alloc", tamano != null ? tamano : "_", "_", nodo.getIdentificador()));
+        cuartetas.add(new Cuarteta("alloc", tamano != null ? tamano : "_", "_", nodo.getIdentificador(), inferirTipoDe(tamano, tiposConocidos), "_", "_"));
         if (nodo.getValores() != null) {
             for (int i = 0; i < nodo.getValores().size(); i++) {
                 String val = nodo.getValores().get(i).accept(this);
-                cuartetas.add(new Cuarteta("[]=", nodo.getIdentificador(), String.valueOf(i), val != null ? val : "_"));
+                cuartetas.add(new Cuarteta("[]=", nodo.getIdentificador(), String.valueOf(i), val != null ? val : "_", "_", "entero", "_"));
             }
         }
         return null;
@@ -544,7 +651,7 @@ public class GeneradorCuartetasPigLatin implements LatinusAstVisitor<String> {
         if (nodo.getTamano() != null) {
             tamano = nodo.getTamano().accept(this);
         }
-        cuartetas.add(new Cuarteta("alloc", tamano != null ? tamano : "_", "_", nodo.getIdentificador()));
+        cuartetas.add(new Cuarteta("alloc", tamano != null ? tamano : "_", "_", nodo.getIdentificador(), inferirTipoDe(tamano, tiposConocidos), "_", "_"));
         return null;
     }
 
@@ -554,7 +661,7 @@ public class GeneradorCuartetasPigLatin implements LatinusAstVisitor<String> {
     public String visitAsignacionGeneral(AsignacionGeneral a) {
         String izq = a.getVariable().accept(this);
         String der = a.getValor().accept(this);
-        cuartetas.add(new Cuarteta(":=", der, "_", izq));
+        cuartetas.add(new Cuarteta(":=", der, "_", izq, inferirTipoDe(der, tiposConocidos), "_", "_"));
         return null;
     }
 
@@ -605,7 +712,7 @@ public class GeneradorCuartetasPigLatin implements LatinusAstVisitor<String> {
     public String visitStmtInterrumpe(StmtInterrumpe stmt) {
         // emitir salto a la etiqueta de break actual si existe
         if (this.etiquetaBreakActual != null) {
-            cuartetas.add(new Cuarteta("goto", this.etiquetaBreakActual, "_", "_"));
+            cuartetas.add(new Cuarteta("goto", this.etiquetaBreakActual, "_", "_", "_", "_", "_"));
         }
         return null;
     }
@@ -614,7 +721,7 @@ public class GeneradorCuartetasPigLatin implements LatinusAstVisitor<String> {
     public String visitStmtPerge(StmtPerge stmt) {
         // emitir salto a la etiqueta de continue actual si existe
         if (this.etiquetaContinueActual != null) {
-            cuartetas.add(new Cuarteta("goto", this.etiquetaContinueActual, "_", "_"));
+            cuartetas.add(new Cuarteta("goto", this.etiquetaContinueActual, "_", "_", "_", "_", "_"));
         }
         return null;
     }
@@ -639,21 +746,21 @@ public class GeneradorCuartetasPigLatin implements LatinusAstVisitor<String> {
         String Lelse = temporales.nuevaEtiqueta();
         String Lfin = temporales.nuevaEtiqueta();
         // generar salto a else si es falso
-        cuartetas.add(new Cuarteta("if_false", cond != null ? cond : "_", Lelse, "_"));
+        cuartetas.add(new Cuarteta("if_false", cond != null ? cond : "_", Lelse, "_", "booleano", "_", "_"));
         // bloque principal
         if (stmt.getBloque() != null) {
             stmt.getBloque().accept(this);
         }
         // salto al final
-        cuartetas.add(new Cuarteta("goto", Lfin, "_", "_"));
+        cuartetas.add(new Cuarteta("goto", Lfin, "_", "_", "_", "_", "_"));
         // etiqueta else
-        cuartetas.add(new Cuarteta("label", Lelse, "_", "_"));
+        cuartetas.add(new Cuarteta("label", Lelse, "_", "_", "_", "_", "_"));
         // bloque else
         if (stmt.getBloqueAliter() != null) {
             stmt.getBloqueAliter().accept(this);
         }
         // etiqueta final
-        cuartetas.add(new Cuarteta("label", Lfin, "_", "_"));
+        cuartetas.add(new Cuarteta("label", Lfin, "_", "_", "_", "_", "_"));
         return null;
     }
 
@@ -668,22 +775,22 @@ public class GeneradorCuartetasPigLatin implements LatinusAstVisitor<String> {
         this.etiquetaBreakActual = Lfin;
         this.etiquetaContinueActual = Linicio;
         // etiqueta inicio
-        cuartetas.add(new Cuarteta("label", Linicio, "_", "_"));
+        cuartetas.add(new Cuarteta("label", Linicio, "_", "_", "_", "_", "_"));
         // evaluar condicion
         String cond = null;
         if (ciclo.getCondicion() != null) {
             cond = ciclo.getCondicion().accept(this);
         }
         // salto si es falso
-        cuartetas.add(new Cuarteta("if_false", cond != null ? cond : "_", Lfin, "_"));
+        cuartetas.add(new Cuarteta("if_false", cond != null ? cond : "_", Lfin, "_", "booleano", "_", "_"));
         // bloque
         if (ciclo.getBloque() != null) {
             ciclo.getBloque().accept(this);
         }
         // salto al inicio
-        cuartetas.add(new Cuarteta("goto", Linicio, "_", "_"));
+        cuartetas.add(new Cuarteta("goto", Linicio, "_", "_", "_", "_", "_"));
         // etiqueta final
-        cuartetas.add(new Cuarteta("label", Lfin, "_", "_"));
+        cuartetas.add(new Cuarteta("label", Lfin, "_", "_", "_", "_", "_"));
         // restaurar etiquetas
         this.etiquetaBreakActual = anteriorBreak;
         this.etiquetaContinueActual = anteriorContinue;
@@ -701,23 +808,23 @@ public class GeneradorCuartetasPigLatin implements LatinusAstVisitor<String> {
         this.etiquetaBreakActual = Lfin;
         this.etiquetaContinueActual = Lcont;
         // etiqueta inicio
-        cuartetas.add(new Cuarteta("label", Linicio, "_", "_"));
+        cuartetas.add(new Cuarteta("label", Linicio, "_", "_", "_", "_", "_"));
         // bloque (se ejecuta al menos una vez)
         if (ciclo.getBloque() != null) {
             ciclo.getBloque().accept(this);
         }
         // etiqueta continue (donde salta perge)
-        cuartetas.add(new Cuarteta("label", Lcont, "_", "_"));
+        cuartetas.add(new Cuarteta("label", Lcont, "_", "_", "_", "_", "_"));
         // evaluar condicion
         String cond = null;
         if (ciclo.getCondicion() != null) {
             cond = ciclo.getCondicion().accept(this);
         }
         // si la condicion es verdadera, volver al inicio
-        cuartetas.add(new Cuarteta("if_false", cond != null ? cond : "_", Lfin, "_"));
-        cuartetas.add(new Cuarteta("goto", Linicio, "_", "_"));
+        cuartetas.add(new Cuarteta("if_false", cond != null ? cond : "_", Lfin, "_", "booleano", "_", "_"));
+        cuartetas.add(new Cuarteta("goto", Linicio, "_", "_", "_", "_", "_"));
         // etiqueta final
-        cuartetas.add(new Cuarteta("label", Lfin, "_", "_"));
+        cuartetas.add(new Cuarteta("label", Lfin, "_", "_", "_", "_", "_"));
         // restaurar etiquetas
         this.etiquetaBreakActual = anteriorBreak;
         this.etiquetaContinueActual = anteriorContinue;
@@ -737,14 +844,14 @@ public class GeneradorCuartetasPigLatin implements LatinusAstVisitor<String> {
             ciclo.getInicializacion().accept(this);
         }
         // etiqueta inicio
-        cuartetas.add(new Cuarteta("label", Linicio, "_", "_"));
+        cuartetas.add(new Cuarteta("label", Linicio, "_", "_", "_", "_", "_"));
         // evaluar condicion
         String cond = null;
         if (ciclo.getCondicion() != null) {
             cond = ciclo.getCondicion().accept(this);
         }
         // salto si falso
-        cuartetas.add(new Cuarteta("if_false", cond != null ? cond : "_", Lfin, "_"));
+        cuartetas.add(new Cuarteta("if_false", cond != null ? cond : "_", Lfin, "_", "booleano", "_", "_"));
         // bloque
         if (ciclo.getBloque() != null) {
             ciclo.getBloque().accept(this);
@@ -754,9 +861,9 @@ public class GeneradorCuartetasPigLatin implements LatinusAstVisitor<String> {
             ciclo.getPaso().accept(this);
         }
         // salto al inicio
-        cuartetas.add(new Cuarteta("goto", Linicio, "_", "_"));
+        cuartetas.add(new Cuarteta("goto", Linicio, "_", "_", "_", "_", "_"));
         // etiqueta final
-        cuartetas.add(new Cuarteta("label", Lfin, "_", "_"));
+        cuartetas.add(new Cuarteta("label", Lfin, "_", "_", "_", "_", "_"));
         // restaurar etiquetas
         this.etiquetaBreakActual = anteriorBreak;
         this.etiquetaContinueActual = anteriorContinue;
@@ -770,7 +877,7 @@ public class GeneradorCuartetasPigLatin implements LatinusAstVisitor<String> {
         // si hay valor inicial, emitir asignacion
         if (init.getValor() != null) {
             String val = init.getValor().accept(this);
-            cuartetas.add(new Cuarteta(":=", val != null ? val : "_", "_", init.getIdentificador()));
+            cuartetas.add(new Cuarteta(":=", val != null ? val : "_", "_", init.getIdentificador(), inferirTipoDe(val, tiposConocidos), "_", "_"));
         }
         return null;
     }
@@ -779,7 +886,7 @@ public class GeneradorCuartetasPigLatin implements LatinusAstVisitor<String> {
     public String visitInitPerAsig(InitPerAsig init) {
         String var = init.getVariable().accept(this);
         String val = init.getValor().accept(this);
-        cuartetas.add(new Cuarteta(":=", val != null ? val : "_", "_", var != null ? var : "_"));
+        cuartetas.add(new Cuarteta(":=", val != null ? val : "_", "_", var != null ? var : "_", inferirTipoDe(val, tiposConocidos), "_", "_"));
         return null;
     }
 
@@ -795,7 +902,7 @@ public class GeneradorCuartetasPigLatin implements LatinusAstVisitor<String> {
     public String visitPasoPerAsig(PasoPerAsig paso) {
         String var = paso.getVariable().accept(this);
         String val = paso.getValor().accept(this);
-        cuartetas.add(new Cuarteta(":=", val != null ? val : "_", "_", var != null ? var : "_"));
+        cuartetas.add(new Cuarteta(":=", val != null ? val : "_", "_", var != null ? var : "_", inferirTipoDe(val, tiposConocidos), "_", "_"));
         return null;
     }
 
@@ -804,7 +911,7 @@ public class GeneradorCuartetasPigLatin implements LatinusAstVisitor<String> {
     @Override
     public String visitLecturaConsolaSimple(LecturaConsolaSimple lectura) {
         // emitir lectura sin variable destino
-        cuartetas.add(new Cuarteta("read", "_", "_", "_"));
+        cuartetas.add(new Cuarteta("read", "_", "_", "_", "_", "_", "_"));
         return null;
     }
 
@@ -815,7 +922,7 @@ public class GeneradorCuartetasPigLatin implements LatinusAstVisitor<String> {
         if (lectura.getVariable() != null) {
             var = lectura.getVariable().accept(this);
         }
-        cuartetas.add(new Cuarteta("read", "_", "_", var != null ? var : "_"));
+        cuartetas.add(new Cuarteta("read", "_", "_", var != null ? var : "_", "_", "_", "_"));
         return null;
     }
 
@@ -828,7 +935,7 @@ public class GeneradorCuartetasPigLatin implements LatinusAstVisitor<String> {
             for (NodoAST elem : impresion.getElementos()) {
                 if (elem != null) {
                     String val = elem.accept(this);
-                    cuartetas.add(new Cuarteta("print", val != null ? val : "_", "_", "_"));
+                    cuartetas.add(new Cuarteta("print", val != null ? val : "_", "_", "_", inferirTipoDe(val, tiposConocidos), "_", "_"));
                 }
             }
         }

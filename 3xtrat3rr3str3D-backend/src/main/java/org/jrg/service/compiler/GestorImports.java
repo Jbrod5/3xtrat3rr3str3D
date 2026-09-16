@@ -114,7 +114,7 @@ public class GestorImports {
         // convertir cada CuartetaResultado a Cuarteta y acumular
         for (int i = 0; i < cuartetasResultado.size(); i++) {
             CuartetaResultado cr = cuartetasResultado.get(i);
-            Cuarteta c = new Cuarteta(cr.getOperador(), cr.getArg1(), cr.getArg2(), cr.getResultado());
+            Cuarteta c = new Cuarteta(cr.getOperador(), cr.getArg1(), cr.getArg2(), cr.getResultado(), cr.getTipoArg1(), cr.getTipoArg2(), cr.getTipoResultado());
             this.cuartetasAcumuladas.add(c);
         }
     }
