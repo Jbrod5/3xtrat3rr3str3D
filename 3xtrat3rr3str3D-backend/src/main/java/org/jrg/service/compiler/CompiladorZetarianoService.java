@@ -7,11 +7,14 @@ import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.jrg.analisis.comun.AmbitoSemantico;
 import org.jrg.analisis.zetariano.ZetarianoASTBuilder;
+import org.jrg.analisis.zetariano.cuartetas.GeneradorCuartetasZetariano;
 import org.jrg.analisis.zetariano.semantico.AnalizadorSemanticoZetariano;
 import org.jrg.antlrBase.zetariano.ZetarianoLexer;
 import org.jrg.antlrBase.zetariano.ZetarianoParser;
+import org.jrg.model.cuarteta.Cuarteta;
 import org.jrg.model.error.ErrorCompilacion;
 import org.jrg.model.error.TipoError;
+import org.jrg.model.resultado.CuartetaResultado;
 import org.jrg.model.resultado.ResultadoAnalisis;
 import org.jrg.model.semantico.Ambito;
 import org.jrg.model.semantico.Simbolo;
@@ -84,6 +87,7 @@ public class CompiladorZetarianoService {
         // ejecutar el analisis semantico sobre el ast
         List<Simbolo> simbolos = new ArrayList<>();
         List<Tipo> tipos = new ArrayList<>();
+        List<CuartetaResultado> cuartetas = new ArrayList<>();
         if (ast instanceof Programa) {
             try {
                 AnalizadorSemanticoZetariano analizador = new AnalizadorSemanticoZetariano(recolector);
@@ -95,12 +99,21 @@ public class CompiladorZetarianoService {
                     colectarSimbolos(raiz, simbolos, tipos);
                 }
 
+                // generar cuartetas a partir del ast
+                GeneradorCuartetasZetariano generadorCuartetas = new GeneradorCuartetasZetariano();
+                ast.accept(generadorCuartetas);
+                List<Cuarteta> cuartetasCrudas = generadorCuartetas.getCuartetas();
+                for (int i = 0; i < cuartetasCrudas.size(); i++) {
+                    cuartetas.add(new CuartetaResultado(cuartetasCrudas.get(i)));
+                }
+
             } catch (RuntimeException e) {
                 recolector.agregar(TipoError.SEMANTICO, 1, 1, "error durante el analisis semantico: " + e.getMessage());
             }
         }
 
-        return construirResultado(recolector, arbolTextual, "", "", simbolos, tipos, new ArrayList<>());
+        // return construirResultado(recolector, arbolTextual, "", "", simbolos, tipos, new ArrayList<>());
+        return construirResultado(recolector, arbolTextual, "", "", simbolos, tipos, new ArrayList<>(), cuartetas);
     }
 
     // recorrer el arbol de ambitos y recolectar simbolos y tipos
@@ -120,8 +133,13 @@ public class CompiladorZetarianoService {
 
     }
 
-    // construir el resultado final del analisis
+    // construir el resultado final del analisis sin cuartetas
     private ResultadoAnalisis construirResultado(RecolectorErrores recolector, String arbolTextual, String astMermaid, String codigoPigLatin, List<Simbolo> simbolos, List<Tipo> tipos, List<Object> pasosPila) {
+        return construirResultado(recolector, arbolTextual, astMermaid, codigoPigLatin, simbolos, tipos, pasosPila, null);
+    }
+
+    // construir el resultado final del analisis con cuartetas
+    private ResultadoAnalisis construirResultado(RecolectorErrores recolector, String arbolTextual, String astMermaid, String codigoPigLatin, List<Simbolo> simbolos, List<Tipo> tipos, List<Object> pasosPila, List<CuartetaResultado> cuartetas) {
 
         List<ErrorCompilacion> errores = recolector.obtenerErrores();
         List<SimboloResultado> simbolosResultado = new ArrayList<>();
@@ -141,7 +159,8 @@ public class CompiladorZetarianoService {
 
         boolean exito = errores.isEmpty();
 
-        return new ResultadoAnalisis(exito, errores, arbolTextual, astMermaid, codigoPigLatin, simbolosResultado, tiposResultado, pasosPila, simbolos, tipos);
+        // return new ResultadoAnalisis(exito, errores, arbolTextual, astMermaid, codigoPigLatin, simbolosResultado, tiposResultado, pasosPila, simbolos, tipos);
+        return new ResultadoAnalisis(exito, errores, arbolTextual, astMermaid, codigoPigLatin, simbolosResultado, tiposResultado, pasosPila, simbolos, tipos, cuartetas);
 
     }
 }
