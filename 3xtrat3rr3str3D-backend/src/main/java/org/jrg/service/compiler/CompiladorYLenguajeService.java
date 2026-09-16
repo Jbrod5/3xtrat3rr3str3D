@@ -7,14 +7,17 @@ import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.TokenSource;
 import org.jrg.analisis.yLenguaje.YLenguajeASTBuilder;
+import org.jrg.analisis.yLenguaje.cuartetas.GeneradorCuartetasY;
 import org.jrg.analisis.yLenguaje.lexer.YLenguajeIndentTokenSource;
 import org.jrg.analisis.yLenguaje.semantico.AnalizadorSemanticoY;
 import org.jrg.antlrBase.yLenguaje.YLenguajeLexer;
 import org.jrg.antlrBase.yLenguaje.YLenguajeParser;
 import org.jrg.model.ast.yLenguaje.Programa;
 import org.jrg.model.ast.yLenguaje.base.NodoASTY;
+import org.jrg.model.cuarteta.Cuarteta;
 import org.jrg.model.error.ErrorCompilacion;
 import org.jrg.model.error.TipoError;
+import org.jrg.model.resultado.CuartetaResultado;
 import org.jrg.model.resultado.ResultadoAnalisis;
 import org.jrg.model.semantico.Simbolo;
 import org.jrg.model.semantico.SimboloResultado;
@@ -92,6 +95,7 @@ public class CompiladorYLenguajeService {
         // ejecutar el analisis semantico sobre el ast
         List<Simbolo> simbolos = new ArrayList<>();
         List<Tipo> tipos = new ArrayList<>();
+        List<CuartetaResultado> cuartetas = new ArrayList<>();
 
         if (ast instanceof Programa) {
             try {
@@ -99,16 +103,30 @@ public class CompiladorYLenguajeService {
                 analizador.analizar((Programa) ast);
                 simbolos = analizador.obtenerSimbolos();
                 tipos = analizador.obtenerTipos();
+
+                // generar cuartetas a partir del ast
+                GeneradorCuartetasY generadorCuartetas = new GeneradorCuartetasY();
+                ast.accept(generadorCuartetas);
+                List<Cuarteta> cuartetasCrudas = generadorCuartetas.getCuartetas();
+                for (int i = 0; i < cuartetasCrudas.size(); i++) {
+                    cuartetas.add(new CuartetaResultado(cuartetasCrudas.get(i)));
+                }
             } catch (RuntimeException e) {
                 recolector.agregar(TipoError.SEMANTICO, 1, 1, "error durante el analisis semantico: " + e.getMessage());
             }
         }
 
-        return construirResultado(recolector, arbolTextual, "", "", simbolos, tipos, new ArrayList<>());
+        // return construirResultado(recolector, arbolTextual, "", "", simbolos, tipos, new ArrayList<>());
+        return construirResultado(recolector, arbolTextual, "", "", simbolos, tipos, new ArrayList<>(), cuartetas);
     }
 
-    // construir el resultado final del analisis
+    // construir el resultado final del analisis sin cuartetas
     private ResultadoAnalisis construirResultado(RecolectorErrores recolector, String arbolTextual, String astMermaid, String codigoPigLatin, List<Simbolo> simbolos, List<Tipo> tipos, List<Object> pasosPila) {
+        return construirResultado(recolector, arbolTextual, astMermaid, codigoPigLatin, simbolos, tipos, pasosPila, null);
+    }
+
+    // construir el resultado final del analisis con cuartetas
+    private ResultadoAnalisis construirResultado(RecolectorErrores recolector, String arbolTextual, String astMermaid, String codigoPigLatin, List<Simbolo> simbolos, List<Tipo> tipos, List<Object> pasosPila, List<CuartetaResultado> cuartetas) {
 
         List<ErrorCompilacion> errores = recolector.obtenerErrores();
         List<SimboloResultado> simbolosResultado = new ArrayList<>();
@@ -128,6 +146,7 @@ public class CompiladorYLenguajeService {
 
         boolean exito = errores.isEmpty();
 
-        return new ResultadoAnalisis(exito, errores, arbolTextual, astMermaid, codigoPigLatin, simbolosResultado, tiposResultado, pasosPila, simbolos, tipos);
+        // return new ResultadoAnalisis(exito, errores, arbolTextual, astMermaid, codigoPigLatin, simbolosResultado, tiposResultado, pasosPila, simbolos, tipos);
+        return new ResultadoAnalisis(exito, errores, arbolTextual, astMermaid, codigoPigLatin, simbolosResultado, tiposResultado, pasosPila, simbolos, tipos, cuartetas);
     }
 }
