@@ -82,6 +82,8 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
     private String etiquetaBreakActual;
     // etiqueta actual para continuar
     private String etiquetaContinueActual;
+    // nombre de la clase actual para prefijar funciones
+    private String nombreClaseActual;
 
     /**
      * Crear el generador de cuartetas para el lenguaje Zetariano.
@@ -92,6 +94,7 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
         this.temporales = new GeneradorTemporales();
         this.etiquetaBreakActual = null;
         this.etiquetaContinueActual = null;
+        this.nombreClaseActual = null;
     }
 
     /**
@@ -182,6 +185,8 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
 
     @Override
     public String visitarDefClase(DefClase nodo) {
+        // guardar el nombre de la clase actual
+        this.nombreClaseActual = nodo.getNombre();
         // recorrer cada miembro de la clase
         if (nodo.getMiembros() != null) {
             for (NodoASTZetariano miembro : nodo.getMiembros()) {
@@ -191,6 +196,8 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
                 }
             }
         }
+        // limpiar el nombre de la clase actual
+        this.nombreClaseActual = null;
         return null;
     }
 
@@ -234,44 +241,126 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
 
     @Override
     public String visitarDefConstructor(DefConstructor nodo) {
+        // construir el string de tipos de parametros
+        String tiposParams = extraerTiposParametrosZet(nodo.getParametros());
+        // construir el nombre completo incluyendo el nombre del constructor
+        String nombreFuncion = nodo.getNombre() + "_" + nodo.getNombre();
+        // emitir marcador de inicio
+        cuartetas.add(new Cuarteta("func_begin", nombreFuncion, tiposParams, "void"));
         // recorrer las instrucciones del cuerpo
         if (nodo.getInstrucciones() != null) {
             for (NodoASTZetariano instruccion : nodo.getInstrucciones()) {
-                // visitar la instruccion actual si existe
                 if (instruccion != null) {
                     instruccion.accept(this);
                 }
             }
         }
+        // emitir marcador de fin
+        cuartetas.add(new Cuarteta("func_end", nombreFuncion, "_", "_"));
         return null;
     }
 
     @Override
     public String visitarMetodoSinRetorno(MetodoSinRetorno nodo) {
+        // construir el string de tipos de parametros
+        String tiposParams = extraerTiposParametrosZet(nodo.getParametros());
+        // construir el prefijo con el nombre de la clase actual
+        String prefijo = "Clase";
+        if (this.nombreClaseActual != null) {
+            prefijo = this.nombreClaseActual;
+        }
+        // construir el nombre completo
+        String nombreFuncion = prefijo + "_" + nodo.getNombre();
+        // emitir marcador de inicio
+        cuartetas.add(new Cuarteta("func_begin", nombreFuncion, tiposParams, "void"));
         // recorrer las instrucciones del cuerpo
         if (nodo.getInstrucciones() != null) {
             for (NodoASTZetariano instruccion : nodo.getInstrucciones()) {
-                // visitar la instruccion actual si existe
                 if (instruccion != null) {
                     instruccion.accept(this);
                 }
             }
         }
+        // emitir marcador de fin
+        cuartetas.add(new Cuarteta("func_end", nombreFuncion, "_", "_"));
         return null;
     }
 
     @Override
     public String visitarMetodoConRetorno(MetodoConRetorno nodo) {
+        // construir el string de tipos de parametros
+        String tiposParams = extraerTiposParametrosZet(nodo.getParametros());
+        // extraer el tipo de retorno
+        String tipoRetorno = "_";
+        if (nodo.getTipo() instanceof TipoDato) {
+            tipoRetorno = ((TipoDato) nodo.getTipo()).getTipo();
+        }
+        if (tipoRetorno == null) {
+            tipoRetorno = "_";
+        }
+        // construir el prefijo con el nombre de la clase actual
+        String prefijo = "Clase";
+        if (this.nombreClaseActual != null) {
+            prefijo = this.nombreClaseActual;
+        }
+        // construir el nombre completo
+        String nombreFuncion = prefijo + "_" + nodo.getNombre();
+        // emitir marcador de inicio
+        cuartetas.add(new Cuarteta("func_begin", nombreFuncion, tiposParams, tipoRetorno));
         // recorrer las instrucciones del cuerpo
         if (nodo.getInstrucciones() != null) {
             for (NodoASTZetariano instruccion : nodo.getInstrucciones()) {
-                // visitar la instruccion actual si existe
                 if (instruccion != null) {
                     instruccion.accept(this);
                 }
             }
         }
+        // emitir marcador de fin
+        cuartetas.add(new Cuarteta("func_end", nombreFuncion, "_", "_"));
         return null;
+    }
+
+    // construir el string de tipos de parametros separados por coma
+    private String extraerTiposParametrosZet(NodoASTZetariano parametrosNodo) {
+        // devolver guion bajo si no hay parametros
+        if (parametrosNodo == null) {
+            return "_";
+        }
+        // verificar que sea Parametros
+        if (!(parametrosNodo instanceof Parametros)) {
+            return "_";
+        }
+        // convertir al tipo concreto
+        Parametros parametros = (Parametros) parametrosNodo;
+        // verificar que la lista no sea nula
+        if (parametros.getParametros() == null || parametros.getParametros().isEmpty()) {
+            return "_";
+        }
+        // acumular los tipos separados por coma
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < parametros.getParametros().size(); i++) {
+            NodoASTZetariano p = parametros.getParametros().get(i);
+            String tipo = "_";
+            if (p instanceof ParamSimple) {
+                NodoASTZetariano tipoNodo = ((ParamSimple) p).getTipo();
+                if (tipoNodo instanceof TipoDato) {
+                    tipo = ((TipoDato) tipoNodo).getTipo();
+                }
+            } else if (p instanceof ParamArray) {
+                NodoASTZetariano tipoNodo = ((ParamArray) p).getTipo();
+                if (tipoNodo instanceof TipoDato) {
+                    tipo = ((TipoDato) tipoNodo).getTipo() + "[]";
+                }
+            }
+            if (tipo == null) {
+                tipo = "_";
+            }
+            if (i > 0) {
+                sb.append(",");
+            }
+            sb.append(tipo);
+        }
+        return sb.toString();
     }
 
     @Override

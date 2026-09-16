@@ -98,6 +98,12 @@ public class CompiladorPigLatinService {
                 simbolos = analizador.obtenerSimbolos();
                 tipos = analizador.obtenerTipos();
 
+                // primero agregar las cuartetas de los imports (funciones importadas)
+                List<Cuarteta> cuartetasImportadas = analizador.getCuartetasImportadas();
+                for (int i = 0; i < cuartetasImportadas.size(); i++) {
+                    cuartetas.add(new CuartetaResultado(cuartetasImportadas.get(i)));
+                }
+                // luego las cuartetas del archivo principal
                 // generar cuartetas a partir del ast
                 GeneradorCuartetasPigLatin generadorCuartetas = new GeneradorCuartetasPigLatin();
                 ast.accept(generadorCuartetas);

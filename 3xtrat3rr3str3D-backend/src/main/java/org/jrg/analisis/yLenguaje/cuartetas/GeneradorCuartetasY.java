@@ -272,20 +272,85 @@ public class GeneradorCuartetasY implements YAstVisitor<String> {
 
     @Override
     public String visitarDefFuncionSinRetorno(DefFuncionSinRetorno nodo) {
+        // construir el string de tipos de parametros
+        String tiposParams = extraerTiposParametros(nodo.getParametros());
+        // emitir marcador de inicio
+        cuartetas.add(new Cuarteta("func_begin", nodo.getNombre(), tiposParams, "void"));
         // visitar el cuerpo de la funcion si existe
         if (nodo.getCuerpo() != null) {
             nodo.getCuerpo().accept(this);
         }
+        // emitir marcador de fin
+        cuartetas.add(new Cuarteta("func_end", nodo.getNombre(), "_", "_"));
         return null;
     }
 
     @Override
     public String visitarDefFuncionConRetorno(DefFuncionConRetorno nodo) {
+        // construir el string de tipos de parametros
+        String tiposParams = extraerTiposParametros(nodo.getParametros());
+        // extraer el tipo de retorno
+        String tipoRetorno = "_";
+        if (nodo.getTipoRetorno() instanceof TipoDato) {
+            tipoRetorno = ((TipoDato) nodo.getTipoRetorno()).getNombre();
+        }
+        if (tipoRetorno == null) {
+            tipoRetorno = "_";
+        }
+        // emitir marcador de inicio
+        cuartetas.add(new Cuarteta("func_begin", nodo.getNombre(), tiposParams, tipoRetorno));
         // visitar el cuerpo de la funcion si existe
         if (nodo.getCuerpo() != null) {
             nodo.getCuerpo().accept(this);
         }
+        // emitir marcador de fin
+        cuartetas.add(new Cuarteta("func_end", nodo.getNombre(), "_", "_"));
         return null;
+    }
+
+    // construir el string de tipos de parametros separados por coma
+    private String extraerTiposParametros(NodoASTY parametrosNodo) {
+        // devolver guion bajo si no hay parametros
+        if (parametrosNodo == null) {
+            return "_";
+        }
+        // verificar que sea Parametros
+        if (!(parametrosNodo instanceof Parametros)) {
+            return "_";
+        }
+        // convertir al tipo concreto
+        Parametros parametros = (Parametros) parametrosNodo;
+        // verificar que la lista no sea nula
+        if (parametros.getParametros() == null || parametros.getParametros().isEmpty()) {
+            return "_";
+        }
+        // acumular los tipos separados por coma
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < parametros.getParametros().size(); i++) {
+            NodoASTY p = parametros.getParametros().get(i);
+            String tipo = "_";
+            if (p instanceof ParamSimple) {
+                NodoASTY tipoNodo = ((ParamSimple) p).getTipo();
+                if (tipoNodo instanceof TipoDato) {
+                    tipo = ((TipoDato) tipoNodo).getNombre();
+                }
+            } else if (p instanceof ParamArray) {
+                NodoASTY tipoNodo = ((ParamArray) p).getTipo();
+                if (tipoNodo instanceof TipoDato) {
+                    tipo = ((TipoDato) tipoNodo).getNombre() + "[]";
+                }
+            } else if (p instanceof ParamEstructura) {
+                tipo = ((ParamEstructura) p).getTipoEstructura();
+            }
+            if (tipo == null) {
+                tipo = "_";
+            }
+            if (i > 0) {
+                sb.append(",");
+            }
+            sb.append(tipo);
+        }
+        return sb.toString();
     }
 
     @Override

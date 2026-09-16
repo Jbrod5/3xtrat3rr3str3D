@@ -68,6 +68,7 @@ import org.jrg.model.ast.pigLatin.paso_per.PasoPerExpr;
 import org.jrg.model.ast.pigLatin.variable_asignable.ValorAsignableArray;
 import org.jrg.model.ast.pigLatin.variable_asignable.ValorAsignableMiembroEstructura;
 import org.jrg.model.ast.pigLatin.variable_asignable.ValorAsignableSimple;
+import org.jrg.model.cuarteta.Cuarteta;
 import org.jrg.model.resultado.ResultadoAnalisis;
 import org.jrg.model.semantico.CategoriaSimbolo;
 import org.jrg.model.semantico.Simbolo;
@@ -89,6 +90,8 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
     private String rutaBase;
     // gestor de imports creado bajo demanda
     private GestorImports gestorImports;
+    // cuartetas importadas desde otros lenguajes
+    private final List<Cuarteta> cuartetasImportadas;
 
 
 
@@ -105,6 +108,7 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
             this.recolectorErrores = recolectorErrores;
         }
         this.contexto = new ContextoSemanticoPigLatin(this.recolectorErrores);
+        this.cuartetasImportadas = new ArrayList<>();
     }
 
     /**
@@ -129,6 +133,18 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
         if (programa != null) {
             programa.accept(this);
         }
+        // copiar las cuartetas acumuladas por el gestor
+        if (this.gestorImports != null) {
+            this.cuartetasImportadas.addAll(this.gestorImports.getCuartetasAcumuladas());
+        }
+    }
+
+    /**
+     * Obtener las cuartetas importadas desde otros lenguajes.
+     */
+    public List<Cuarteta> getCuartetasImportadas() {
+        // devolver las cuartetas importadas
+        return this.cuartetasImportadas;
     }
 
     /**

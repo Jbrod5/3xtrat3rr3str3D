@@ -63,10 +63,16 @@ public class GeneradorCuartetasPigLatin implements LatinusAstVisitor<String> {
             nodo.getSeccionGlobalVariables().accept(this);
         }
 
+        // emitir marcador de inicio del main
+        cuartetas.add(new Cuarteta("func_begin", "main", "_", "void"));
+
         // visitar seccion maior si existe
         if (nodo.getSeccionMaior() != null) {
             nodo.getSeccionMaior().accept(this);
         }
+
+        // emitir marcador de fin del main
+        cuartetas.add(new Cuarteta("func_end", "main", "_", "_"));
 
         return null;
     }

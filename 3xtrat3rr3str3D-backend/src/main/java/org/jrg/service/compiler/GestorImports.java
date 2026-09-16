@@ -4,11 +4,14 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.jrg.model.cuarteta.Cuarteta;
 import org.jrg.model.error.TipoError;
+import org.jrg.model.resultado.CuartetaResultado;
 import org.jrg.model.resultado.ResultadoAnalisis;
 import org.jrg.service.error.RecolectorErrores;
 
@@ -19,6 +22,8 @@ public class GestorImports {
     private final Set<String> archivosYaProcesados;
     private final CompiladorYLenguajeService compiladorY;
     private final CompiladorZetarianoService compiladorZ;
+    // cuartetas acumuladas de todos los imports procesados
+    private final List<Cuarteta> cuartetasAcumuladas;
 
     /**
      * Crear un gestor de imports para un proyecto en la ruta base indicada.
@@ -29,6 +34,14 @@ public class GestorImports {
         this.archivosYaProcesados = new HashSet<>();
         this.compiladorY = new CompiladorYLenguajeService();
         this.compiladorZ = new CompiladorZetarianoService();
+        this.cuartetasAcumuladas = new ArrayList<>();
+    }
+
+    /**
+     * Obtener las cuartetas acumuladas de los imports procesados.
+     */
+    public List<Cuarteta> getCuartetasAcumuladas() {
+        return this.cuartetasAcumuladas;
     }
 
     /**
@@ -73,15 +86,37 @@ public class GestorImports {
         }
 
         if ("y".equals(extension)) {
-            return this.compiladorY.analizar(contenido);
+            ResultadoAnalisis resultado = this.compiladorY.analizar(contenido);
+            acumularCuartetas(resultado);
+            return resultado;
         }
         if ("z".equals(extension)) {
-            return this.compiladorZ.analizar(contenido);
+            ResultadoAnalisis resultado = this.compiladorZ.analizar(contenido);
+            acumularCuartetas(resultado);
+            return resultado;
         }
 
         this.recolectorErrores.agregar(TipoError.SEMANTICO, linea, columna,
                 "extension no soportada en import: " + extension);
         return null;
+    }
+
+    // acumular las cuartetas del resultado importado
+    private void acumularCuartetas(ResultadoAnalisis resultado) {
+        if (resultado == null) {
+            return;
+        }
+        // obtener las cuartetas como CuartetaResultado
+        List<CuartetaResultado> cuartetasResultado = resultado.getCuartetas();
+        if (cuartetasResultado == null) {
+            return;
+        }
+        // convertir cada CuartetaResultado a Cuarteta y acumular
+        for (int i = 0; i < cuartetasResultado.size(); i++) {
+            CuartetaResultado cr = cuartetasResultado.get(i);
+            Cuarteta c = new Cuarteta(cr.getOperador(), cr.getArg1(), cr.getArg2(), cr.getResultado());
+            this.cuartetasAcumuladas.add(c);
+        }
     }
 
     // resolver la ruta relativa contra la ruta base del proyecto
