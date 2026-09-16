@@ -58,10 +58,16 @@ public class GeneradorCuartetasPigLatin implements LatinusAstVisitor<String> {
 
     @Override
     public String visitPrograma(Programa nodo) {
+        // visitar seccion de variables globales si existe
+        if (nodo.getSeccionGlobalVariables() != null) {
+            nodo.getSeccionGlobalVariables().accept(this);
+        }
+
         // visitar seccion maior si existe
         if (nodo.getSeccionMaior() != null) {
             nodo.getSeccionMaior().accept(this);
         }
+
         return null;
     }
 

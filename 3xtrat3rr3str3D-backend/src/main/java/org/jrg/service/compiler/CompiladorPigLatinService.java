@@ -6,13 +6,16 @@ import java.util.List;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.jrg.analisis.pigLatin.PigLatinASTBuilder;
+import org.jrg.analisis.pigLatin.cuartetas.GeneradorCuartetasPigLatin;
 import org.jrg.analisis.pigLatin.semantico.AnalizadorSemanticoPigLatin;
 import org.jrg.antlrBase.pigLatin.PigLatinLexer;
 import org.jrg.antlrBase.pigLatin.PigLatinParser;
 import org.jrg.model.ast.pigLatin.Programa;
 import org.jrg.model.ast.pigLatin.base.NodoAST;
+import org.jrg.model.cuarteta.Cuarteta;
 import org.jrg.model.error.ErrorCompilacion;
 import org.jrg.model.error.TipoError;
+import org.jrg.model.resultado.CuartetaResultado;
 import org.jrg.model.resultado.ResultadoAnalisis;
 import org.jrg.model.semantico.Simbolo;
 import org.jrg.model.semantico.SimboloResultado;
@@ -87,22 +90,36 @@ public class CompiladorPigLatinService {
         // ejecutar el analisis semantico sobre el ast
         List<Simbolo> simbolos = new ArrayList<>();
         List<Tipo> tipos = new ArrayList<>();
+        List<CuartetaResultado> cuartetas = new ArrayList<>();
         if (ast instanceof Programa) {
             try {
                 AnalizadorSemanticoPigLatin analizador = new AnalizadorSemanticoPigLatin(recolector);
                 analizador.analizar((Programa) ast, rutaBase);
                 simbolos = analizador.obtenerSimbolos();
                 tipos = analizador.obtenerTipos();
+
+                // generar cuartetas a partir del ast
+                GeneradorCuartetasPigLatin generadorCuartetas = new GeneradorCuartetasPigLatin();
+                ast.accept(generadorCuartetas);
+                List<Cuarteta> cuartetasCrudas = generadorCuartetas.getCuartetas();
+                for (int i = 0; i < cuartetasCrudas.size(); i++) {
+                    cuartetas.add(new CuartetaResultado(cuartetasCrudas.get(i)));
+                }
             } catch (RuntimeException e) {
                 recolector.agregar(TipoError.SEMANTICO, 1, 1, "error durante el analisis semantico: " + e.getMessage());
             }
         }
 
-        return construirResultado(recolector, arbolTextual, "", "", simbolos, tipos, new ArrayList<>());
+        return construirResultado(recolector, arbolTextual, "", "", simbolos, tipos, new ArrayList<>(), cuartetas);
     }
 
-    // construir el resultado final del analisis
+    // construir el resultado final del analisis sin cuartetas
     private ResultadoAnalisis construirResultado(RecolectorErrores recolector, String arbolTextual, String astMermaid, String codigoPigLatin, List<Simbolo> simbolos, List<Tipo> tipos, List<Object> pasosPila) {
+        return construirResultado(recolector, arbolTextual, astMermaid, codigoPigLatin, simbolos, tipos, pasosPila, null);
+    }
+
+    // construir el resultado final del analisis con cuartetas
+    private ResultadoAnalisis construirResultado(RecolectorErrores recolector, String arbolTextual, String astMermaid, String codigoPigLatin, List<Simbolo> simbolos, List<Tipo> tipos, List<Object> pasosPila, List<CuartetaResultado> cuartetas) {
 
         List<ErrorCompilacion> errores = recolector.obtenerErrores();
         List<SimboloResultado> simbolosResultado = new ArrayList<>();
@@ -121,6 +138,6 @@ public class CompiladorPigLatinService {
         }
 
         boolean exito = errores.isEmpty();
-        return new ResultadoAnalisis(exito, errores, arbolTextual, astMermaid, codigoPigLatin, simbolosResultado, tiposResultado, pasosPila, simbolos, tipos);
+        return new ResultadoAnalisis(exito, errores, arbolTextual, astMermaid, codigoPigLatin, simbolosResultado, tiposResultado, pasosPila, simbolos, tipos, cuartetas);
     }
 }

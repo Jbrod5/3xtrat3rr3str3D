@@ -141,6 +141,15 @@ function mostrarTamano(simbolo) {
     </button>
     <button 
       class="btn btn-sm rounded-0 flex-fill"
+      class:btn-light={estado.pestanaDerechaActiva !== 'cuartetas'}
+      class:btn-white={estado.pestanaDerechaActiva === 'cuartetas'}
+      class:active-pestaña={estado.pestanaDerechaActiva === 'cuartetas'}
+      on:click={() => ideStore.cambiarPestanaDerecha('cuartetas')}
+    >
+      <i class="bi bi-list-ol"></i> Cuartetas
+    </button>
+    <button 
+      class="btn btn-sm rounded-0 flex-fill"
       class:btn-light={estado.pestanaDerechaActiva !== 'tabla'}
       class:btn-white={estado.pestanaDerechaActiva === 'tabla'}
       class:active-pestaña={estado.pestanaDerechaActiva === 'tabla'}
@@ -242,6 +251,25 @@ function mostrarTamano(simbolo) {
       <p class="small">Compilar el código para generar el árbol.</p>
     </div>
   {/if}
+
+    <!-- ================= PESTAÑA CUARTETAS ================= -->
+    {:else if estado.pestanaDerechaActiva === 'cuartetas'}
+      {#if archivoActivo?.resultado?.cuartetas && archivoActivo.resultado.cuartetas.length > 0}
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h6 class="fw-bold mb-0 text-dark">
+            <i class="bi bi-list-ol me-1"></i> Cuartetas
+          </h6>
+          <span class="badge bg-secondary">{archivoActivo.resultado.cuartetas.length} registros</span>
+        </div>
+        <pre class="bg-light p-2 rounded border text-dark mb-0" style="border-color: #e9ecef !important; font-size: 12px; white-space: pre-wrap;">{#each archivoActivo.resultado.cuartetas as c, i}{i + 1}: ({c.operador}, {c.arg1}, {c.arg2}, {c.resultado})
+{/each}</pre>
+      {:else}
+        <div class="text-center text-muted py-5">
+          <i class="bi bi-list-ol fs-1"></i>
+          <p class="mt-2">No hay cuartetas disponibles.</p>
+          <p class="small">Compila un archivo Pig Latin para generarlas.</p>
+        </div>
+      {/if}
 
     <!-- ================= PESTAÑA TABLA ================= -->
     {:else if estado.pestanaDerechaActiva === 'tabla'}

@@ -24,6 +24,7 @@ public class ResultadoAnalisis {
     private final List<Object> pasosPila;
     private final List<Simbolo> simbolosCrudos;
     private final List<Tipo> tiposCrudos;
+    private final List<CuartetaResultado> cuartetas;
 
     /**
      * Crear un resultado de analisis sin simbolos crudos.
@@ -38,7 +39,7 @@ public class ResultadoAnalisis {
             List<TipoResultado> tipos,
             List<Object> pasosPila) {
         this(exito, errores, arbolSintactico, astMermaid, codigoPigLatin,
-                simbolos, tipos, pasosPila, null, null);
+                simbolos, tipos, pasosPila, null, null, null);
     }
 
     /**
@@ -55,6 +56,25 @@ public class ResultadoAnalisis {
             List<Object> pasosPila,
             List<Simbolo> simbolosCrudos,
             List<Tipo> tiposCrudos) {
+        this(exito, errores, arbolSintactico, astMermaid, codigoPigLatin,
+                simbolos, tipos, pasosPila, simbolosCrudos, tiposCrudos, null);
+    }
+
+    /**
+     * Crear un resultado de analisis con simbolos crudos y cuartetas.
+     */
+    public ResultadoAnalisis(
+            boolean exito,
+            List<ErrorCompilacion> errores,
+            String arbolSintactico,
+            String astMermaid,
+            String codigoPigLatin,
+            List<SimboloResultado> simbolos,
+            List<TipoResultado> tipos,
+            List<Object> pasosPila,
+            List<Simbolo> simbolosCrudos,
+            List<Tipo> tiposCrudos,
+            List<CuartetaResultado> cuartetas) {
         this.exito = exito;
         this.errores = new ArrayList<>();
         if (errores != null) {
@@ -94,6 +114,10 @@ public class ResultadoAnalisis {
         this.tiposCrudos = new ArrayList<>();
         if (tiposCrudos != null) {
             this.tiposCrudos.addAll(tiposCrudos);
+        }
+        this.cuartetas = new ArrayList<>();
+        if (cuartetas != null) {
+            this.cuartetas.addAll(cuartetas);
         }
     }
 
@@ -167,5 +191,12 @@ public class ResultadoAnalisis {
     @JsonIgnore
     public List<Tipo> getTiposCrudos() {
         return this.tiposCrudos;
+    }
+
+    /**
+     * Obtener las cuartetas generadas por el compilador.
+     */
+    public List<CuartetaResultado> getCuartetas() {
+        return this.cuartetas;
     }
 }
