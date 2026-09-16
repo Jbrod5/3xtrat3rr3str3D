@@ -150,6 +150,15 @@ function mostrarTamano(simbolo) {
     </button>
     <button 
       class="btn btn-sm rounded-0 flex-fill"
+      class:btn-light={estado.pestanaDerechaActiva !== 'c'}
+      class:btn-white={estado.pestanaDerechaActiva === 'c'}
+      class:active-pestaña={estado.pestanaDerechaActiva === 'c'}
+      on:click={() => ideStore.cambiarPestanaDerecha('c')}
+    >
+      <i class="bi bi-filetype-c"></i> C
+    </button>
+    <button 
+      class="btn btn-sm rounded-0 flex-fill"
       class:btn-light={estado.pestanaDerechaActiva !== 'tabla'}
       class:btn-white={estado.pestanaDerechaActiva === 'tabla'}
       class:active-pestaña={estado.pestanaDerechaActiva === 'tabla'}
@@ -268,6 +277,37 @@ function mostrarTamano(simbolo) {
           <i class="bi bi-list-ol fs-1"></i>
           <p class="mt-2">No hay cuartetas disponibles.</p>
           <p class="small">Compila un archivo Pig Latin para generarlas.</p>
+        </div>
+      {/if}
+
+    <!-- ================= PESTAÑA C ================= -->
+    {:else if estado.pestanaDerechaActiva === 'c'}
+      {#if archivoActivo?.resultado?.codigoC && archivoActivo.resultado.codigoC.length > 0}
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h6 class="fw-bold mb-0 text-dark">
+            <i class="bi bi-filetype-c me-1"></i> Codigo C generado
+          </h6>
+          <button 
+            class="btn btn-sm btn-outline-secondary"
+            on:click={() => {
+              const blob = new Blob([archivoActivo.resultado.codigoC], { type: 'text/plain' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = 'programa.c';
+              a.click();
+              URL.revokeObjectURL(url);
+            }}
+          >
+            <i class="bi bi-download"></i> Descargar
+          </button>
+        </div>
+        <pre class="bg-light p-2 rounded border text-dark mb-0" style="border-color: #e9ecef !important; font-size: 12px; white-space: pre-wrap;">{archivoActivo.resultado.codigoC}</pre>
+      {:else}
+        <div class="text-center text-muted py-5">
+          <i class="bi bi-filetype-c fs-1"></i>
+          <p class="mt-2">No hay codigo C generado.</p>
+          <p class="small">Compila un archivo para generarlo.</p>
         </div>
       {/if}
 

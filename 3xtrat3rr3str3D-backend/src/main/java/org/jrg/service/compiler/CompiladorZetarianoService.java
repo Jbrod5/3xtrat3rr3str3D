@@ -112,8 +112,13 @@ public class CompiladorZetarianoService {
             }
         }
 
+        // generar codigo C a partir de las cuartetas
+        TraductorC traductorC = new TraductorC();
+        String codigoC = traductorC.traducir(cuartetas);
+
         // return construirResultado(recolector, arbolTextual, "", "", simbolos, tipos, new ArrayList<>());
-        return construirResultado(recolector, arbolTextual, "", "", simbolos, tipos, new ArrayList<>(), cuartetas);
+        // return construirResultado(recolector, arbolTextual, "", "", simbolos, tipos, new ArrayList<>(), cuartetas);
+        return construirResultado(recolector, arbolTextual, "", "", simbolos, tipos, new ArrayList<>(), cuartetas, codigoC);
     }
 
     // recorrer el arbol de ambitos y recolectar simbolos y tipos
@@ -135,11 +140,18 @@ public class CompiladorZetarianoService {
 
     // construir el resultado final del analisis sin cuartetas
     private ResultadoAnalisis construirResultado(RecolectorErrores recolector, String arbolTextual, String astMermaid, String codigoPigLatin, List<Simbolo> simbolos, List<Tipo> tipos, List<Object> pasosPila) {
-        return construirResultado(recolector, arbolTextual, astMermaid, codigoPigLatin, simbolos, tipos, pasosPila, null);
+        // return construirResultado(recolector, arbolTextual, astMermaid, codigoPigLatin, simbolos, tipos, pasosPila, null);
+        return construirResultado(recolector, arbolTextual, astMermaid, codigoPigLatin, simbolos, tipos, pasosPila, null, null);
     }
 
     // construir el resultado final del analisis con cuartetas
     private ResultadoAnalisis construirResultado(RecolectorErrores recolector, String arbolTextual, String astMermaid, String codigoPigLatin, List<Simbolo> simbolos, List<Tipo> tipos, List<Object> pasosPila, List<CuartetaResultado> cuartetas) {
+        // return construirResultado(recolector, arbolTextual, astMermaid, codigoPigLatin, simbolos, tipos, pasosPila, cuartetas, null);
+        return construirResultado(recolector, arbolTextual, astMermaid, codigoPigLatin, simbolos, tipos, pasosPila, cuartetas, null);
+    }
+
+    // construir el resultado final del analisis con cuartetas y codigo C
+    private ResultadoAnalisis construirResultado(RecolectorErrores recolector, String arbolTextual, String astMermaid, String codigoPigLatin, List<Simbolo> simbolos, List<Tipo> tipos, List<Object> pasosPila, List<CuartetaResultado> cuartetas, String codigoC) {
 
         List<ErrorCompilacion> errores = recolector.obtenerErrores();
         List<SimboloResultado> simbolosResultado = new ArrayList<>();
@@ -160,7 +172,8 @@ public class CompiladorZetarianoService {
         boolean exito = errores.isEmpty();
 
         // return new ResultadoAnalisis(exito, errores, arbolTextual, astMermaid, codigoPigLatin, simbolosResultado, tiposResultado, pasosPila, simbolos, tipos);
-        return new ResultadoAnalisis(exito, errores, arbolTextual, astMermaid, codigoPigLatin, simbolosResultado, tiposResultado, pasosPila, simbolos, tipos, cuartetas);
+        // return new ResultadoAnalisis(exito, errores, arbolTextual, astMermaid, codigoPigLatin, simbolosResultado, tiposResultado, pasosPila, simbolos, tipos, cuartetas);
+        return new ResultadoAnalisis(exito, errores, arbolTextual, astMermaid, codigoPigLatin, simbolosResultado, tiposResultado, pasosPila, simbolos, tipos, cuartetas, codigoC);
 
     }
 }

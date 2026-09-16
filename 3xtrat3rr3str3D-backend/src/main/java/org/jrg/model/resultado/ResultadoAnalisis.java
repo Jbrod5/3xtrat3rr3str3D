@@ -25,6 +25,7 @@ public class ResultadoAnalisis {
     private final List<Simbolo> simbolosCrudos;
     private final List<Tipo> tiposCrudos;
     private final List<CuartetaResultado> cuartetas;
+    private final String codigoC;
 
     /**
      * Crear un resultado de analisis sin simbolos crudos.
@@ -38,8 +39,10 @@ public class ResultadoAnalisis {
             List<SimboloResultado> simbolos,
             List<TipoResultado> tipos,
             List<Object> pasosPila) {
+        // this(exito, errores, arbolSintactico, astMermaid, codigoPigLatin,
+        //         simbolos, tipos, pasosPila, null, null, null);
         this(exito, errores, arbolSintactico, astMermaid, codigoPigLatin,
-                simbolos, tipos, pasosPila, null, null, null);
+                simbolos, tipos, pasosPila, null, null, null, null);
     }
 
     /**
@@ -56,8 +59,10 @@ public class ResultadoAnalisis {
             List<Object> pasosPila,
             List<Simbolo> simbolosCrudos,
             List<Tipo> tiposCrudos) {
+        // this(exito, errores, arbolSintactico, astMermaid, codigoPigLatin,
+        //         simbolos, tipos, pasosPila, simbolosCrudos, tiposCrudos, null);
         this(exito, errores, arbolSintactico, astMermaid, codigoPigLatin,
-                simbolos, tipos, pasosPila, simbolosCrudos, tiposCrudos, null);
+                simbolos, tipos, pasosPila, simbolosCrudos, tiposCrudos, null, null);
     }
 
     /**
@@ -75,6 +80,28 @@ public class ResultadoAnalisis {
             List<Simbolo> simbolosCrudos,
             List<Tipo> tiposCrudos,
             List<CuartetaResultado> cuartetas) {
+        // this(exito, errores, arbolSintactico, astMermaid, codigoPigLatin,
+        //         simbolos, tipos, pasosPila, simbolosCrudos, tiposCrudos, cuartetas, null);
+        this(exito, errores, arbolSintactico, astMermaid, codigoPigLatin,
+                simbolos, tipos, pasosPila, simbolosCrudos, tiposCrudos, cuartetas, null);
+    }
+
+    /**
+     * Crear un resultado de analisis con simbolos crudos cuartetas y codigo C.
+     */
+    public ResultadoAnalisis(
+            boolean exito,
+            List<ErrorCompilacion> errores,
+            String arbolSintactico,
+            String astMermaid,
+            String codigoPigLatin,
+            List<SimboloResultado> simbolos,
+            List<TipoResultado> tipos,
+            List<Object> pasosPila,
+            List<Simbolo> simbolosCrudos,
+            List<Tipo> tiposCrudos,
+            List<CuartetaResultado> cuartetas,
+            String codigoC) {
         this.exito = exito;
         this.errores = new ArrayList<>();
         if (errores != null) {
@@ -118,6 +145,11 @@ public class ResultadoAnalisis {
         this.cuartetas = new ArrayList<>();
         if (cuartetas != null) {
             this.cuartetas.addAll(cuartetas);
+        }
+        if (codigoC == null) {
+            this.codigoC = "";
+        } else {
+            this.codigoC = codigoC;
         }
     }
 
@@ -198,5 +230,12 @@ public class ResultadoAnalisis {
      */
     public List<CuartetaResultado> getCuartetas() {
         return this.cuartetas;
+    }
+
+    /**
+     * Obtener el codigo C generado a partir de las cuartetas.
+     */
+    public String getCodigoC() {
+        return this.codigoC;
     }
 }
