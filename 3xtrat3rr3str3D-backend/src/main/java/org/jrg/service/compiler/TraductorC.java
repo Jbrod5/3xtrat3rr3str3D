@@ -48,6 +48,8 @@ public class TraductorC {
     private Map<String, String> tiposParamsActuales;
     // tipos de nombres declarados por nombre
     private Map<String, String> tiposDeclarados;
+    // contador global de temporales de string para concat
+    private int contadorTempsString;
     // campos por nombre de struct con tipo fuente
     private Map<String, Map<String, String>> structs;
     // orden de campos por nombre de struct
@@ -80,6 +82,7 @@ public class TraductorC {
         this.preMain = new ArrayList<>();
         this.tiposParamsActuales = new HashMap<>();
         this.tiposDeclarados = new HashMap<>();
+        this.contadorTempsString = 0;
         this.structs = new HashMap<>();
         this.ordenCampos = new HashMap<>();
         this.ordenStructs = new ArrayList<>();
@@ -818,12 +821,14 @@ public class TraductorC {
         // traducir concatenacion de strings con malloc strcpy strcat
         if ("+".equals(operador) && esTipoTexto(c.getTipoResultado())) {
             String destinoConcat = c.getResultado();
-            String primero = traducirValor(c.getArg1());
-            String segundo = traducirValor(c.getArg2());
+            // convertir operandos numericos a string antes de concatenar
+            StringBuilder previasConcat = new StringBuilder();
+            String primero = prepararOperandoParaConcat(c.getArg1(), c.getTipoArg1(), previasConcat);
+            String segundo = prepararOperandoParaConcat(c.getArg2(), c.getTipoArg2(), previasConcat);
             // declarar el temporal solo la primera vez
             String prefijo = prefijoDeclaracion(destinoConcat, "char*");
-            // emitir reserva copia y concatenado en tres lineas
-            return prefijo + " = malloc(strlen(" + primero + ") + strlen(" + segundo + ") + 1);\n    strcpy(" + destinoConcat + ", " + primero + ");\n    strcat(" + destinoConcat + ", " + segundo + ");";
+            // emitir conversiones previas mas reserva copia y concatenado
+            return previasConcat.toString() + prefijo + " = malloc(strlen(" + primero + ") + strlen(" + segundo + ") + 1);\n    strcpy(" + destinoConcat + ", " + primero + ");\n    strcat(" + destinoConcat + ", " + segundo + ");";
         }
         // traducir operaciones aritmeticas
         if ("+".equals(operador) || "-".equals(operador) || "*".equals(operador) || "/".equals(operador) || "%".equals(operador)) {
@@ -1102,6 +1107,37 @@ public class TraductorC {
             return true;
         }
         return false;
+    }
+
+    // preparar un operando para concatenacion convirtiendo numericos a string
+    private String prepararOperandoParaConcat(String valor, String tipo, StringBuilder lineas) {
+        // conservar cadenas y desconocidos sin conversion
+        if (tipo == null || esTipoTexto(tipo) || "_".equals(tipo)) {
+            return valor;
+        }
+        // determinar el formato de sprintf segun el tipo
+        String formato = "";
+        if ("entero".equals(tipo) || "numerus".equals(tipo) || "int".equals(tipo)) {
+            formato = "%d";
+        } else if ("flotante".equals(tipo) || "decimalis".equals(tipo) || "double".equals(tipo)) {
+            formato = "%f";
+        } else if ("caracter".equals(tipo) || "littera".equals(tipo) || "char".equals(tipo)) {
+            formato = "%c";
+        } else if ("booleano".equals(tipo) || "bool".equals(tipo) || "boolean".equals(tipo)) {
+            formato = "%d";
+        }
+        // devolver el valor original si no necesita conversion
+        if (formato.isEmpty()) {
+            return traducirValor(valor);
+        }
+        // generar un nombre unico para el temporal de string
+        String tempStr = "__str_" + this.contadorTempsString;
+        this.contadorTempsString = this.contadorTempsString + 1;
+        // emitir la reserva y la conversion con indentacion propia
+        lineas.append("char* ").append(tempStr).append(" = malloc(32);\n    ");
+        lineas.append("sprintf(").append(tempStr).append(", \"").append(formato).append("\", ").append(traducirValor(valor)).append(");\n    ");
+        // devolver el nombre del temporal de string
+        return tempStr;
     }
 
     // unir los params pendientes separados por coma

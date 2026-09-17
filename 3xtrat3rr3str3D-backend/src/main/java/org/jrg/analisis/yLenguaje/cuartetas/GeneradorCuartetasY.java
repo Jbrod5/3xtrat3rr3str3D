@@ -200,8 +200,25 @@ public class GeneradorCuartetasY implements YAstVisitor<String> {
             }
             return tipoA;
         }
+        // promocionar a flotante cuando se mezcla entero con flotante
+        if (esTipoNumerico(tipoA) && esTipoNumerico(tipoB)) {
+            return "flotante";
+        }
         // usar entero por defecto en caso mixto
         return "entero";
+    }
+
+    // verificar si un tipo es numerico para promocion aritmetica
+    private boolean esTipoNumerico(String tipo) {
+        // comparar contra enteros de los tres lenguajes
+        if ("entero".equals(tipo) || "numerus".equals(tipo) || "int".equals(tipo)) {
+            return true;
+        }
+        // comparar contra flotantes de los tres lenguajes
+        if ("flotante".equals(tipo) || "decimalis".equals(tipo) || "double".equals(tipo)) {
+            return true;
+        }
+        return false;
     }
 
     // ==================== PROGRAMA Y SECCIONES ====================
