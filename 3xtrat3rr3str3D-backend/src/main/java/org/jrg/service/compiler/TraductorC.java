@@ -58,6 +58,14 @@ public class TraductorC {
     private List<String> ordenStructs;
     // struct al que pertenece cada temporal o variable
     private Map<String, String> structDeNombre;
+    // nombres de clases de Zetariano detectadas por prefijo Clase_
+    private final Set<String> clases;
+    // nombres de funciones conocidas por func_begin
+    private final Set<String> funcionesConocidas;
+    // temporales y variables que guardan punteros a heap
+    private final Set<String> punteros;
+    // clase del metodo en proceso o vacio fuera de metodos
+    private String nombreClaseActual;
 
     /**
      * Crear un traductor de cuartetas a codigo C.
@@ -87,6 +95,10 @@ public class TraductorC {
         this.ordenCampos = new HashMap<>();
         this.ordenStructs = new ArrayList<>();
         this.structDeNombre = new HashMap<>();
+        this.clases = new HashSet<>();
+        this.funcionesConocidas = new HashSet<>();
+        this.punteros = new HashSet<>();
+        this.nombreClaseActual = "";
     }
 
     /**
@@ -103,12 +115,19 @@ public class TraductorC {
         this.funcionActual = "";
         this.primeraFuncionEmitida = false;
         this.dentroDeFuncion = false;
+        // reiniciar la deteccion de clases y punteros
+        this.clases.clear();
+        this.funcionesConocidas.clear();
+        this.punteros.clear();
+        this.nombreClaseActual = "";
         // devolver un programa minimo si no hay cuartetas
         if (cuartetas == null || cuartetas.isEmpty()) {
             return encabezado() + "int main(void) {\n    return 0;\n}\n";
         }
         // preprocesar definiciones de structs y sus temporales
         preprocesarStructs(cuartetas);
+        // detectar clases de Zetariano por prefijo en funciones
+        detectarClases(cuartetas);
         // acumular el cuerpo de las funciones
         StringBuilder cuerpo = new StringBuilder();
         // recorrer cada cuarteta de la lista
@@ -210,6 +229,85 @@ public class TraductorC {
         }
     }
 
+    // detectar clases de Zetariano por prefijo Clase_ en funciones
+    private void detectarClases(List<CuartetaResultado> cuartetas) {
+        // reiniciar los conjuntos de deteccion
+        this.clases.clear();
+        this.funcionesConocidas.clear();
+        // recoger todos los nombres de struct_def
+        Set<String> nombresStruct = new HashSet<>();
+        for (int i = 0; i < cuartetas.size(); i++) {
+            CuartetaResultado c = cuartetas.get(i);
+            // omitir cuartetas nulas
+            if (c == null) {
+                continue;
+            }
+            if ("struct_def".equals(c.getOperador())) {
+                if (c.getArg1() != null && c.getArg1().isEmpty() == false) {
+                    nombresStruct.add(c.getArg1());
+                }
+            }
+        }
+        // buscar func_begin con prefijo de struct
+        for (int i = 0; i < cuartetas.size(); i++) {
+            CuartetaResultado c = cuartetas.get(i);
+            // omitir cuartetas nulas
+            if (c == null) {
+                continue;
+            }
+            if ("func_begin".equals(c.getOperador())) {
+                String nombreFunc = c.getArg1();
+                // registrar toda funcion conocida
+                if (nombreFunc != null && nombreFunc.isEmpty() == false) {
+                    funcionesConocidas.add(nombreFunc);
+                }
+                // extraer el posible prefijo de clase
+                String posibleClase = prefijoFuncion(nombreFunc);
+                // marcar la clase solo si tiene struct_def propio
+                if (posibleClase != null && nombresStruct.contains(posibleClase)) {
+                    clases.add(posibleClase);
+                }
+            }
+        }
+    }
+
+    // extraer el prefijo crudo antes del primer guion bajo
+    private String prefijoFuncion(String nombreFuncion) {
+        // omitir nombres nulos o vacios
+        if (nombreFuncion == null || nombreFuncion.isEmpty()) {
+            return null;
+        }
+        int guion = nombreFuncion.indexOf('_');
+        // omitir nombres sin prefijo antes del guion
+        if (guion <= 0) {
+            return null;
+        }
+        return nombreFuncion.substring(0, guion);
+    }
+
+    // extraer la clase desde un nombre con formato Clase_metodo
+    private String claseDeFuncion(String nombreFuncion) {
+        String prefijo = prefijoFuncion(nombreFuncion);
+        // omitir prefijos nulos
+        if (prefijo == null) {
+            return null;
+        }
+        // aceptar solo prefijos marcados como clase
+        if (clases.contains(prefijo) == false) {
+            return null;
+        }
+        return prefijo;
+    }
+
+    // mapear un tipo a C resolviendo clases como punteros a heap
+    private String mapearTipoConClases(String tipo) {
+        // usar puntero a struct para clases detectadas
+        if (tipo != null && clases.contains(tipo)) {
+            return "struct " + tipo + "*";
+        }
+        return mapearTipo(tipo);
+    }
+
     // generar los includes del programa
     private String encabezado() {
         // concatenar los includes necesarios
@@ -276,6 +374,12 @@ public class TraductorC {
         this.dentroDeFuncion = true;
         // guardar el nombre de la funcion actual
         this.funcionActual = c.getArg1();
+        // detectar la clase actual desde el prefijo del nombre
+        String claseDetectada = claseDeFuncion(c.getArg1());
+        this.nombreClaseActual = "";
+        if (claseDetectada != null) {
+            this.nombreClaseActual = claseDetectada;
+        }
         // guardar los tipos y el retorno del marcador
         this.tiposParamsFuncion = c.getArg2();
         this.tipoRetornoFuncion = c.getResultado();
@@ -295,9 +399,11 @@ public class TraductorC {
         }
         // reiniciar el mapa de structs por ambito de funcion
         this.structDeNombre = new HashMap<>();
-        // limpiar params pendientes por seguridad
-        this.paramsPendientes = new ArrayList<>();
-        this.tiposParamsPendientes = new ArrayList<>();
+        // reiniciar los punteros locales de la funcion
+        this.punteros.clear();
+        // conservar los params pendientes porque preMain los necesita
+        // this.paramsPendientes = new ArrayList<>();
+        // this.tiposParamsPendientes = new ArrayList<>();
         // crear el buffer del cuerpo y las listas de apoyo
         this.bufferFuncion = new StringBuilder();
         this.crudasFuncion = new ArrayList<>();
@@ -356,6 +462,18 @@ public class TraductorC {
         for (int i = 0; i < nombresParams.size(); i++) {
             tiposParamsActuales.put(nombresParams.get(i), tiposParamsC.get(i));
         }
+        // agregar this como primer parametro en metodos de clase
+        String claseMetodo = claseDeFuncion(funcionActual);
+        if (claseMetodo != null) {
+            nombresParams.add(0, "this");
+            tiposParamsC.add(0, "struct " + claseMetodo + "*");
+            tiposParamsActuales.put("this", "struct " + claseMetodo + "*");
+        }
+        // marcar los params como declarados para no redeclararlos
+        for (int i = 0; i < nombresParams.size(); i++) {
+            declaradas.add(nombresParams.get(i));
+            tiposDeclarados.put(nombresParams.get(i), tiposParamsC.get(i));
+        }
         // construir la firma con los nombres reales
         String firma = firmaConListas(funcionActual, tipoRetornoFuncion, nombresParams, tiposParamsC);
         // separar funciones con linea en blanco
@@ -372,6 +490,8 @@ public class TraductorC {
         // reemitir las cuartetas previas y traducir el cuerpo
         traducirRaws(preMain);
         preMain = new ArrayList<>();
+        // limpiar params de preMain para no contaminar el cuerpo
+        limpiarParams();
         traducirRaws(crudasFuncion);
         // vaciar el cuerpo acumulado
         cuerpo.append(bufferFuncion.toString());
@@ -383,6 +503,7 @@ public class TraductorC {
         }
         // limpiar el estado de la funcion actual
         this.funcionActual = "";
+        this.nombreClaseActual = "";
         this.dentroDeFuncion = false;
         this.bufferFuncion = null;
         this.crudasFuncion = new ArrayList<>();
@@ -424,7 +545,8 @@ public class TraductorC {
             }
             // guardar el par nombre tipo mapeado a C
             nombres.add(nombre);
-            tipos.add(mapearTipo(tipo));
+            // usar puntero a heap para params de tipo clase
+            tipos.add(mapearTipoConClases(tipo));
         }
     }
 
@@ -471,7 +593,8 @@ public class TraductorC {
         if (lista.isEmpty()) {
             lista = "void";
         }
-        return mapearTipo(tipoRetorno) + " " + nombre + "(" + lista + ")";
+        // usar puntero a heap cuando el retorno es una clase
+        return mapearTipoConClases(tipoRetorno) + " " + nombre + "(" + lista + ")";
     }
 
     // traducir una lista de cuartetas crudas al buffer de la funcion
@@ -582,6 +705,10 @@ public class TraductorC {
         if (nombre == null || nombre.isEmpty() || nombre.equals("_")) {
             return;
         }
+        // omitir el receptor implicito de metodos
+        if (nombre.equals("this")) {
+            return;
+        }
         // omitir temporales generados
         if (esTemporal(nombre)) {
             return;
@@ -646,6 +773,13 @@ public class TraductorC {
     // calcular el tipo C para declarar un destino de asignacion
     private String tipoDestinoPara(CuartetaResultado c) {
         String destino = c.getResultado();
+        // usar puntero a heap cuando el valor viene de un objeto
+        if (c.getArg1() != null && punteros.contains(c.getArg1())) {
+            String structOrigen = structDeNombre.get(c.getArg1());
+            if (structOrigen != null) {
+                return "struct " + structOrigen + "*";
+            }
+        }
         // usar struct cuando el valor viene de un temporal de struct
         if (c.getArg1() != null) {
             String structOrigen = structDeNombre.get(c.getArg1());
@@ -664,7 +798,14 @@ public class TraductorC {
 
     // calcular el tipo C para declarar una variable global
     private String tipoGlobalPara(CuartetaResultado c) {
-        // usar struct cuando el valor viene de un temporal de struct
+        // usar puntero a heap cuando el valor viene de un objeto
+        if (c.getArg1() != null && punteros.contains(c.getArg1())) {
+            String structOrigen = structDeNombre.get(c.getArg1());
+            if (structOrigen != null) {
+                return "struct " + structOrigen + "*";
+            }
+        }
+        // usar struct por valor cuando el temporal es de struct
         if (c.getArg1() != null) {
             String structOrigen = structDeNombre.get(c.getArg1());
             if (structOrigen != null && structs.containsKey(structOrigen)) {
@@ -704,6 +845,148 @@ public class TraductorC {
         return mapearTipo(tipoFuente);
     }
 
+    // verificar si un nombre es campo de la clase actual sin sombra local
+    private boolean esCampoActual(String nombre) {
+        // omitir nulos vacios y guiones
+        if (nombre == null || nombre.isEmpty() || nombre.equals("_")) {
+            return false;
+        }
+        // solo aplica dentro de un metodo de clase
+        if (nombreClaseActual == null || nombreClaseActual.isEmpty()) {
+            return false;
+        }
+        // respetar variables locales y params que sombrean el campo
+        if (declaradas.contains(nombre)) {
+            return false;
+        }
+        if (tiposParamsActuales.containsKey(nombre)) {
+            return false;
+        }
+        // buscar el nombre entre los campos de la clase
+        Map<String, String> campos = structs.get(nombreClaseActual);
+        if (campos == null) {
+            return false;
+        }
+        return campos.containsKey(nombre);
+    }
+
+    // construir el lado izquierdo con this para campos de clase
+    private String ladoIzquierdo(String nombre, String tipo) {
+        // usar this sin declarar cuando es campo de la clase actual
+        if (esCampoActual(nombre)) {
+            return "this->" + nombre;
+        }
+        return prefijoDeclaracion(nombre, tipo);
+    }
+
+    // traducir un valor leyendo campos de clase con this
+    private String accesoCampo(String nombre) {
+        // usar this cuando es campo de la clase actual
+        if (esCampoActual(nombre)) {
+            return "this->" + nombre;
+        }
+        return nombre;
+    }
+
+    // resolver la clase de un objeto por sus marcas de puntero
+    private String claseDeObjeto(String nombre) {
+        // omitir nulos vacios y guiones
+        if (nombre == null || nombre.isEmpty() || nombre.equals("_")) {
+            return null;
+        }
+        // resolver this con la clase actual
+        if ("this".equals(nombre)) {
+            if (nombreClaseActual == null || nombreClaseActual.isEmpty()) {
+                return null;
+            }
+            return nombreClaseActual;
+        }
+        // buscar el struct del temporal o variable
+        String structOrigen = structDeNombre.get(nombre);
+        if (structOrigen != null && clases.contains(structOrigen)) {
+            // exigir marca de puntero para objetos en heap
+            if (punteros.contains(nombre)) {
+                return structOrigen;
+            }
+            // aceptar el tipo declarado como puntero a struct
+            String tipo = tiposDeclarados.get(nombre);
+            if (tipo != null && tipo.equals("struct " + structOrigen + "*")) {
+                return structOrigen;
+            }
+            return null;
+        }
+        // buscar el tipo declarado como puntero a struct
+        String tipo = tiposDeclarados.get(nombre);
+        if (tipo != null && tipo.startsWith("struct ") && tipo.endsWith("*")) {
+            String base = tipo.substring(7, tipo.length() - 1).trim();
+            if (clases.contains(base)) {
+                return base;
+            }
+        }
+        return null;
+    }
+
+    // verificar si un nombre guarda un puntero a objeto en heap
+    private boolean esPuntero(String nombre) {
+        // omitir nulos vacios y guiones
+        if (nombre == null || nombre.isEmpty() || nombre.equals("_")) {
+            return false;
+        }
+        // tratar this como puntero dentro de metodos de clase
+        if ("this".equals(nombre)) {
+            return nombreClaseActual != null && nombreClaseActual.isEmpty() == false;
+        }
+        // usar la marca directa de puntero
+        if (punteros.contains(nombre)) {
+            return true;
+        }
+        // usar la clase resuelta del objeto
+        return claseDeObjeto(nombre) != null;
+    }
+
+    // adivinar el struct duenio de un campo por su nombre
+    private String structPorCampo(String campo) {
+        // omitir campos nulos o vacios
+        if (campo == null || campo.isEmpty()) {
+            return null;
+        }
+        // buscar primero structs por valor
+        for (int i = 0; i < ordenStructs.size(); i++) {
+            String nombre = ordenStructs.get(i);
+            if (clases.contains(nombre)) {
+                continue;
+            }
+            Map<String, String> campos = structs.get(nombre);
+            if (campos != null && campos.containsKey(campo)) {
+                return nombre;
+            }
+        }
+        // aceptar clases como respaldo
+        for (int i = 0; i < ordenStructs.size(); i++) {
+            String nombre = ordenStructs.get(i);
+            Map<String, String> campos = structs.get(nombre);
+            if (campos != null && campos.containsKey(campo)) {
+                return nombre;
+            }
+        }
+        return null;
+    }
+
+    // resolver el tipo C de un acceso a miembro de objeto
+    private String tipoMiembro(String objeto, String campo, String tipoRespaldo) {
+        String clase = claseDeObjeto(objeto);
+        if (clase != null && campo != null) {
+            Map<String, String> campos = structs.get(clase);
+            if (campos != null) {
+                String tipoFuente = campos.get(campo);
+                if (tipoFuente != null) {
+                    return mapearTipoConClases(tipoFuente);
+                }
+            }
+        }
+        return mapearTipo(tipoRespaldo);
+    }
+
     // resolver el nombre del campo por indice dentro de un struct
     private String nombreCampoPorIndice(String objeto, String indice) {
         // buscar el struct del objeto
@@ -737,6 +1020,18 @@ public class TraductorC {
     // procesar una cuarteta fuera de funciones
     private void procesarLineaGlobal(CuartetaResultado c) {
         String operador = c.getOperador();
+        // marcar objetos creados con new para el heap
+        if ("new".equals(operador)) {
+            if (c.getArg1() != null && c.getResultado() != null) {
+                if (clases.contains(c.getArg1()) || structs.containsKey(c.getArg1())) {
+                    structDeNombre.put(c.getResultado(), c.getArg1());
+                    punteros.add(c.getResultado());
+                }
+            }
+            // guardar la cuarteta para reemitirla despues
+            preMain.add(c);
+            return;
+        }
         // mapear el resultado de new_struct a su struct
         if ("new_struct".equals(operador)) {
             if (c.getArg1() != null && structs.containsKey(c.getArg1()) && c.getResultado() != null) {
@@ -786,35 +1081,89 @@ public class TraductorC {
         if ("call".equals(operador)) {
             return traducirLlamada(c);
         }
-        // traducir llamadas a metodo
+        // traducir llamadas a metodo con receptor como primer arg
         if ("call_method".equals(operador)) {
+            String metodo = c.getArg1();
+            // resolver la clase desde el tipo del objeto receptor
+            String receptorTipo = null;
+            if (paramsPendientes.isEmpty() == false && tiposParamsPendientes.isEmpty() == false) {
+                receptorTipo = tiposParamsPendientes.get(0);
+            }
+            // calificar el metodo con la clase del receptor
+            String nombreLlamada = metodo;
+            if (receptorTipo != null && clases.contains(receptorTipo) && metodo != null && metodo.indexOf('_') < 0) {
+                nombreLlamada = receptorTipo + "_" + metodo;
+            }
             String args = unirParams();
             limpiarParams();
-            String tipo = mapearTipo(c.getTipoResultado());
-            return prefijoDeclaracion(c.getResultado(), tipo) + " = " + c.getArg1() + "(" + args + ");";
+            // emitir llamada directa para metodos void conocidos
+            String retornoConocido = retornosFuncion.get(nombreLlamada);
+            if ("void".equals(retornoConocido)) {
+                return nombreLlamada + "(" + args + ");";
+            }
+            // usar el retorno conocido cuando trae tipo valido
+            String tipoCall = mapearTipo(c.getTipoResultado());
+            if (retornoConocido != null && retornoConocido.isEmpty() == false && retornoConocido.equals("_") == false) {
+                tipoCall = mapearTipoConClases(retornoConocido);
+            }
+            return ladoIzquierdo(c.getResultado(), tipoCall) + " = " + nombreLlamada + "(" + args + ");";
         }
         // traducir carga de literal
         if ("=".equals(operador)) {
             String tipo = mapearTipo(c.getTipoResultado());
-            return prefijoDeclaracion(c.getResultado(), tipo) + " = " + traducirValor(c.getArg1()) + ";";
+            return ladoIzquierdo(c.getResultado(), tipo) + " = " + traducirValor(c.getArg1()) + ";";
         }
         // traducir asignacion simple
         if (":=".equals(operador)) {
             String destino = c.getResultado();
             String linea = "";
+            // escribir en miembro con punto cuando el destino trae objeto
+            if (destino != null && destino.contains(".")) {
+                int corte = destino.indexOf('.');
+                String objetoDest = destino.substring(0, corte).trim();
+                String campoDest = destino.substring(corte + 1).trim();
+                String accesoDest = ".";
+                if (esPuntero(objetoDest)) {
+                    accesoDest = "->";
+                }
+                // declarar el objeto si aun no existe y no es campo ni this
+                String declObj = "";
+                if (esPuntero(objetoDest) == false && "this".equals(objetoDest) == false && declaradas.contains(objetoDest) == false && globales.containsKey(objetoDest) == false && esCampoActual(objetoDest) == false) {
+                    String structAdivinado = structPorCampo(campoDest);
+                    if (structAdivinado != null) {
+                        declObj = "struct " + structAdivinado + " " + objetoDest + ";\n    ";
+                        declaradas.add(objetoDest);
+                        tiposDeclarados.put(objetoDest, "struct " + structAdivinado);
+                        structDeNombre.put(objetoDest, structAdivinado);
+                    }
+                }
+                return declObj + traducirValor(objetoDest) + accesoDest + campoDest + " = " + traducirValor(c.getArg1()) + ";";
+            }
             // propagar el struct del valor al destino
             if (c.getArg1() != null && destino != null) {
                 String structOrigen = structDeNombre.get(c.getArg1());
                 if (structOrigen != null) {
                     structDeNombre.put(destino, structOrigen);
+                    // propagar la marca de puntero a heap
+                    if (punteros.contains(c.getArg1())) {
+                        punteros.add(destino);
+                    }
                 }
             }
+            // escribir en el campo con this sin declarar nada
+            if (esCampoActual(destino)) {
+                return "this->" + destino + " = " + traducirValor(c.getArg1()) + ";";
+            }
             // declarar la variable si aun no existe
-            if (declaradas.contains(destino) == false) {
+            if (destino != null && declaradas.contains(destino) == false) {
                 String tipo = tipoDestinoPara(c);
                 linea = tipo + " " + destino + ";\n    ";
                 declaradas.add(destino);
                 tiposDeclarados.put(destino, tipo);
+            }
+            // omitir asignaciones sin destino valido
+            if (destino == null) {
+                return linea;
             }
             return linea + destino + " = " + traducirValor(c.getArg1()) + ";";
         }
@@ -833,24 +1182,24 @@ public class TraductorC {
         // traducir operaciones aritmeticas
         if ("+".equals(operador) || "-".equals(operador) || "*".equals(operador) || "/".equals(operador) || "%".equals(operador)) {
             String tipo = mapearTipo(c.getTipoResultado());
-            return prefijoDeclaracion(c.getResultado(), tipo) + " = " + traducirValor(c.getArg1()) + " " + operador + " " + traducirValor(c.getArg2()) + ";";
+            return ladoIzquierdo(c.getResultado(), tipo) + " = " + traducirValor(c.getArg1()) + " " + operador + " " + traducirValor(c.getArg2()) + ";";
         }
         // traducir comparaciones
         if ("==".equals(operador) || "!=".equals(operador) || "<".equals(operador) || ">".equals(operador) || "<=".equals(operador) || ">=".equals(operador)) {
-            return prefijoDeclaracion(c.getResultado(), "bool") + " = (" + traducirValor(c.getArg1()) + " " + operador + " " + traducirValor(c.getArg2()) + ");";
+            return ladoIzquierdo(c.getResultado(), "bool") + " = (" + traducirValor(c.getArg1()) + " " + operador + " " + traducirValor(c.getArg2()) + ");";
         }
         // traducir operadores logicos binarios
         if ("&&".equals(operador) || "||".equals(operador)) {
-            return prefijoDeclaracion(c.getResultado(), "bool") + " = (" + traducirValor(c.getArg1()) + " " + operador + " " + traducirValor(c.getArg2()) + ");";
+            return ladoIzquierdo(c.getResultado(), "bool") + " = (" + traducirValor(c.getArg1()) + " " + operador + " " + traducirValor(c.getArg2()) + ");";
         }
         // traducir negacion logica
         if ("!".equals(operador)) {
-            return prefijoDeclaracion(c.getResultado(), "bool") + " = !" + traducirValor(c.getArg1()) + ";";
+            return ladoIzquierdo(c.getResultado(), "bool") + " = !" + traducirValor(c.getArg1()) + ";";
         }
         // traducir menos unario con opcode propio
         if ("uminus".equals(operador)) {
             String tipoUni = mapearTipo(c.getTipoResultado());
-            return prefijoDeclaracion(c.getResultado(), tipoUni) + " = -" + traducirValor(c.getArg1()) + ";";
+            return ladoIzquierdo(c.getResultado(), tipoUni) + " = -" + traducirValor(c.getArg1()) + ";";
         }
         // traducir etiquetas y saltos
         if ("label".equals(operador)) {
@@ -889,10 +1238,14 @@ public class TraductorC {
             }
             return linea + "scanf(\"%d\", &" + destino + ");";
         }
-        // traducir acceso a miembro
+        // traducir acceso a miembro con flecha para punteros
         if (".".equals(operador)) {
-            String tipo = mapearTipo(c.getTipoResultado());
-            return prefijoDeclaracion(c.getResultado(), tipo) + " = " + c.getArg1() + "." + c.getArg2() + ";";
+            String acceso = ".";
+            if (esPuntero(c.getArg1())) {
+                acceso = "->";
+            }
+            String tipo = tipoMiembro(c.getArg1(), c.getArg2(), c.getTipoResultado());
+            return ladoIzquierdo(c.getResultado(), tipo) + " = " + traducirValor(c.getArg1()) + acceso + c.getArg2() + ";";
         }
         // traducir asignacion a miembro con indice o nombre
         if (".,=".equals(operador)) {
@@ -905,27 +1258,59 @@ public class TraductorC {
             if (campo == null) {
                 campo = "campo0";
             }
-            return c.getArg1() + "." + campo + " = " + traducirValor(c.getResultado()) + ";";
+            // usar flecha cuando el objeto es puntero a heap
+            String accesoMiembro = ".";
+            if (esPuntero(c.getArg1())) {
+                accesoMiembro = "->";
+            }
+            return traducirValor(c.getArg1()) + accesoMiembro + campo + " = " + traducirValor(c.getResultado()) + ";";
         }
         // traducir acceso a arreglo
         if ("=[]".equals(operador)) {
             String tipo = mapearTipo(c.getTipoResultado());
-            return prefijoDeclaracion(c.getResultado(), tipo) + " = " + c.getArg1() + "[" + traducirValor(c.getArg2()) + "];";
+            return ladoIzquierdo(c.getResultado(), tipo) + " = " + accesoCampo(c.getArg1()) + "[" + traducirValor(c.getArg2()) + "];";
         }
         // traducir asignacion a arreglo
         if ("[]=".equals(operador)) {
-            return c.getArg1() + "[" + traducirValor(c.getArg2()) + "] = " + traducirValor(c.getResultado()) + ";";
+            return accesoCampo(c.getArg1()) + "[" + traducirValor(c.getArg2()) + "] = " + traducirValor(c.getResultado()) + ";";
         }
         // traducir reserva de memoria
         if ("alloc".equals(operador)) {
             String tipo = mapearTipo(c.getArg1());
             return prefijoDeclaracion(c.getResultado(), tipo + "*") + " = malloc(sizeof(" + tipo + ") * " + expresionDimension(c.getArg2()) + ");";
         }
-        // traducir instanciacion de objeto como placeholder
+        // traducir instanciacion de objeto en heap con malloc
         if ("new".equals(operador)) {
+            String nombreClase = c.getArg1();
+            String destinoNew = c.getResultado();
+            // reservar heap solo para tipos con struct conocido
+            if (nombreClase != null && (clases.contains(nombreClase) || structs.containsKey(nombreClase))) {
+                String argsNew = unirParams();
+                limpiarParams();
+                // marcar el destino como puntero a la clase
+                if (destinoNew != null) {
+                    structDeNombre.put(destinoNew, nombreClase);
+                    punteros.add(destinoNew);
+                }
+                String lineaNew = ladoIzquierdo(destinoNew, "struct " + nombreClase + "*") + " = malloc(sizeof(struct " + nombreClase + "));";
+                // llamar al constructor cuando existe en las cuartetas
+                String ctor = nombreClase + "_" + nombreClase;
+                if (funcionesConocidas.contains(ctor)) {
+                    lineaNew = lineaNew + "\n    " + ctor + "(" + destinoNew;
+                    if (argsNew.isEmpty() == false) {
+                        lineaNew = lineaNew + ", " + argsNew;
+                    }
+                    lineaNew = lineaNew + ");";
+                }
+                return lineaNew;
+            }
+            // usar placeholder cuando el tipo es desconocido
+            // limpiarParams();
+            // String tipo = mapearTipo(c.getArg1());
+            // return prefijoDeclaracion(c.getResultado(), tipo) + " = 0;";
             limpiarParams();
-            String tipo = mapearTipo(c.getArg1());
-            return prefijoDeclaracion(c.getResultado(), tipo) + " = 0;";
+            String tipoNew = mapearTipo(c.getArg1());
+            return ladoIzquierdo(c.getResultado(), tipoNew) + " = 0;";
         }
         // traducir instanciacion de struct con su tipo real
         if ("new_struct".equals(operador)) {
@@ -1221,7 +1606,8 @@ public class TraductorC {
         if (valor.equals("null") || valor.equals("NULL")) {
             return "NULL";
         }
-        return valor;
+        // leer campos de la clase actual con this
+        return accesoCampo(valor);
     }
 
     // traducir un print segun el tipo del argumento
