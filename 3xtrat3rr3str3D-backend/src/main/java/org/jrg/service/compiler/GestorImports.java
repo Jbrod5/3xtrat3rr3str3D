@@ -132,7 +132,23 @@ public class GestorImports {
             base = base.getParent();
         }
 
-        Path resuelta = base.resolve(rutaRelativa);
-        return resuelta.toString().replace("\\", "/");
+        // primero probar la ruta relativa al archivo
+        Path directa = base.resolve(rutaRelativa);
+        if (Files.exists(directa)) {
+            return directa.toString().replace("\\", "/");
+        }
+
+        // si no existe subir por los directorios padres buscando el archivo
+        Path actual = base.getParent();
+        while (actual != null) {
+            Path candidata = actual.resolve(rutaRelativa);
+            if (Files.exists(candidata)) {
+                return candidata.toString().replace("\\", "/");
+            }
+            actual = actual.getParent();
+        }
+
+        // devolver la ruta directa para un mensaje de error entendible
+        return directa.toString().replace("\\", "/");
     }
 }

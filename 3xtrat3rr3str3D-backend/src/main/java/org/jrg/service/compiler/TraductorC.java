@@ -815,6 +815,16 @@ public class TraductorC {
             }
             return linea + destino + " = " + traducirValor(c.getArg1()) + ";";
         }
+        // traducir concatenacion de strings con malloc strcpy strcat
+        if ("+".equals(operador) && esTipoTexto(c.getTipoResultado())) {
+            String destinoConcat = c.getResultado();
+            String primero = traducirValor(c.getArg1());
+            String segundo = traducirValor(c.getArg2());
+            // declarar el temporal solo la primera vez
+            String prefijo = prefijoDeclaracion(destinoConcat, "char*");
+            // emitir reserva copia y concatenado en tres lineas
+            return prefijo + " = malloc(strlen(" + primero + ") + strlen(" + segundo + ") + 1);\n    strcpy(" + destinoConcat + ", " + primero + ");\n    strcat(" + destinoConcat + ", " + segundo + ");";
+        }
         // traducir operaciones aritmeticas
         if ("+".equals(operador) || "-".equals(operador) || "*".equals(operador) || "/".equals(operador) || "%".equals(operador)) {
             String tipo = mapearTipo(c.getTipoResultado());
@@ -831,6 +841,11 @@ public class TraductorC {
         // traducir negacion logica
         if ("!".equals(operador)) {
             return prefijoDeclaracion(c.getResultado(), "bool") + " = !" + traducirValor(c.getArg1()) + ";";
+        }
+        // traducir menos unario con opcode propio
+        if ("uminus".equals(operador)) {
+            String tipoUni = mapearTipo(c.getTipoResultado());
+            return prefijoDeclaracion(c.getResultado(), tipoUni) + " = -" + traducirValor(c.getArg1()) + ";";
         }
         // traducir etiquetas y saltos
         if ("label".equals(operador)) {
@@ -1078,6 +1093,15 @@ public class TraductorC {
             formato = "%d";
         }
         return "void " + variante + "(" + tipo + " x) { printf(\"" + formato + "\\n\", x); }\n";
+    }
+
+    // verificar si un tipo corresponde a texto para concatenar
+    private boolean esTipoTexto(String tipo) {
+        // comparar contra los nombres de texto de los tres lenguajes
+        if ("cadena".equals(tipo) || "textum".equals(tipo) || "String".equals(tipo)) {
+            return true;
+        }
+        return false;
     }
 
     // unir los params pendientes separados por coma

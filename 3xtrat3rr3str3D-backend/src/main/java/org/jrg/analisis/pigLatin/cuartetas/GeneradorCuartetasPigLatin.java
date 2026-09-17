@@ -45,6 +45,8 @@ public class GeneradorCuartetasPigLatin implements LatinusAstVisitor<String> {
     private final Map<String, String> tiposConocidos;
     // nombres de campos por nombre de struct en orden
     private final Map<String, List<String>> camposDeStructs;
+    // tipos de variables declaradas por nombre
+    private final Map<String, String> tiposDeVariables;
 
     // crear el generador
     public GeneradorCuartetasPigLatin() {
@@ -55,6 +57,7 @@ public class GeneradorCuartetasPigLatin implements LatinusAstVisitor<String> {
         this.etiquetaContinueActual = null;
         this.tiposConocidos = new HashMap<>();
         this.camposDeStructs = new HashMap<>();
+        this.tiposDeVariables = new HashMap<>();
     }
 
     // obtener la lista de cuartetas generadas
@@ -70,6 +73,16 @@ public class GeneradorCuartetasPigLatin implements LatinusAstVisitor<String> {
         }
         // guardar los campos para resolver escrituras por nombre
         this.camposDeStructs.put(nombreStruct, campos);
+    }
+
+    // registrar el tipo de una variable declarada
+    public void registrarTipoVariable(String nombre, String tipo) {
+        // omitir nombres o tipos nulos
+        if (nombre == null || tipo == null) {
+            return;
+        }
+        // guardar el tipo para usos posteriores
+        this.tiposDeVariables.put(nombre, tipo);
     }
 
     // inferir el tipo de un literal por su forma
@@ -113,8 +126,22 @@ public class GeneradorCuartetasPigLatin implements LatinusAstVisitor<String> {
         if (tipo != null) {
             return tipo;
         }
+        // buscar en los tipos de variables declaradas
+        String tipoVariable = tiposDeVariables.get(nombre);
+        if (tipoVariable != null) {
+            return tipoVariable;
+        }
         // inferir por la forma del literal
         return inferirTipoLiteral(nombre);
+    }
+
+    // verificar si un tipo corresponde a cadena de texto
+    private boolean esTipoCadena(String tipo) {
+        // comparar contra los nombres de cadena de los tres lenguajes
+        if ("cadena".equals(tipo) || "textum".equals(tipo) || "String".equals(tipo)) {
+            return true;
+        }
+        return false;
     }
 
     // inferir el tipo de un operando aritmetico con entero por defecto
@@ -425,14 +452,14 @@ public class GeneradorCuartetasPigLatin implements LatinusAstVisitor<String> {
         if (expr.getExpresion() != null) {
             val = expr.getExpresion().accept(this);
         }
-        // usar el operador negativo
-        String op = expr.getOperador();
+        // crear temporal para el resultado
         String temp = temporales.nuevoTemporal();
         // inferir el tipo desde el operando
         String tipoNeg = inferirTipoDe(val, tiposConocidos);
         // registrar el temporal con el tipo inferido
         tiposConocidos.put(temp, tipoNeg);
-        cuartetas.add(new Cuarteta(op, val != null ? val : "_", "_", temp, tipoNeg, "_", tipoNeg));
+        // emitir menos unario con opcode propio
+        cuartetas.add(new Cuarteta("uminus", val != null ? val : "_", "_", temp, tipoNeg, "_", tipoNeg));
         return temp;
     }
 
@@ -491,8 +518,19 @@ public class GeneradorCuartetasPigLatin implements LatinusAstVisitor<String> {
         String izq = expr.getOperandoIzquierdo().accept(this);
         String der = expr.getOperandoDerecho().accept(this);
         String temp = temporales.nuevoTemporal();
+        // inferir los tipos de los operandos
+        String tipoIzq = inferirTipoDe(izq, tiposConocidos);
+        String tipoDer = inferirTipoDe(der, tiposConocidos);
         // inferir el tipo resultado de la operacion
         String tipoResSuma = tipoResultadoAritmetico(izq, der);
+        // usar cadena cuando se concatena texto con mas
+        if ("+".equals(expr.getOperador())) {
+            boolean izqEsCadena = esTipoCadena(tipoIzq);
+            boolean derEsCadena = esTipoCadena(tipoDer);
+            if (izqEsCadena || derEsCadena) {
+                tipoResSuma = "cadena";
+            }
+        }
         // registrar el temporal con el tipo inferido
         tiposConocidos.put(temp, tipoResSuma);
         cuartetas.add(new Cuarteta(expr.getOperador(), izq, der, temp, tipoAritmetico(izq), tipoAritmetico(der), tipoResSuma));
@@ -957,7 +995,20 @@ public class GeneradorCuartetasPigLatin implements LatinusAstVisitor<String> {
             for (NodoAST elem : impresion.getElementos()) {
                 if (elem != null) {
                     String val = elem.accept(this);
-                    cuartetas.add(new Cuarteta("print", val != null ? val : "_", "_", "_", inferirTipoDe(val, tiposConocidos), "_", "_"));
+                    // inferir el tipo del valor a imprimir
+                    String tipoValor = inferirTipoDe(val, tiposConocidos);
+                    // buscar en variables si el tipo sigue desconocido
+                    if (tipoValor == null || "_".equals(tipoValor)) {
+                        String tipoVar = this.tiposDeVariables.get(val);
+                        if (tipoVar != null) {
+                            tipoValor = tipoVar;
+                        }
+                    }
+                    // usar guion bajo si el tipo sigue nulo
+                    if (tipoValor == null) {
+                        tipoValor = "_";
+                    }
+                    cuartetas.add(new Cuarteta("print", val != null ? val : "_", "_", "_", tipoValor, "_", "_"));
                 }
             }
         }

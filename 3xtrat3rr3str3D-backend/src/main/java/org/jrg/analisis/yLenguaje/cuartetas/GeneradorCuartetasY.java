@@ -85,6 +85,8 @@ public class GeneradorCuartetasY implements YAstVisitor<String> {
     private String etiquetaContinueActual;
     // tipos conocidos de temporales y variables
     private final Map<String, String> tiposConocidos;
+    // tipos de variables declaradas por nombre
+    private final Map<String, String> tiposDeVariables;
 
     /**
      * Crear el generador de cuartetas para el lenguaje Y.
@@ -96,6 +98,7 @@ public class GeneradorCuartetasY implements YAstVisitor<String> {
         this.etiquetaBreakActual = null;
         this.etiquetaContinueActual = null;
         this.tiposConocidos = new HashMap<>();
+        this.tiposDeVariables = new HashMap<>();
     }
 
     /**
@@ -103,6 +106,16 @@ public class GeneradorCuartetasY implements YAstVisitor<String> {
      */
     public List<Cuarteta> getCuartetas() {
         return cuartetas;
+    }
+
+    // registrar el tipo de una variable declarada
+    public void registrarTipoVariable(String nombre, String tipo) {
+        // omitir nombres o tipos nulos
+        if (nombre == null || tipo == null) {
+            return;
+        }
+        // guardar el tipo para usos posteriores
+        this.tiposDeVariables.put(nombre, tipo);
     }
 
     // inferir el tipo de un literal por su forma
@@ -146,8 +159,22 @@ public class GeneradorCuartetasY implements YAstVisitor<String> {
         if (tipo != null) {
             return tipo;
         }
+        // buscar en los tipos de variables declaradas
+        String tipoVariable = tiposDeVariables.get(nombre);
+        if (tipoVariable != null) {
+            return tipoVariable;
+        }
         // inferir por la forma del literal
         return inferirTipoLiteral(nombre);
+    }
+
+    // verificar si un tipo corresponde a cadena de texto
+    private boolean esTipoCadena(String tipo) {
+        // comparar contra los nombres de cadena de los tres lenguajes
+        if ("cadena".equals(tipo) || "textum".equals(tipo) || "String".equals(tipo)) {
+            return true;
+        }
+        return false;
     }
 
     // inferir el tipo de un operando aritmetico con entero por defecto
@@ -1241,7 +1268,8 @@ public class GeneradorCuartetasY implements YAstVisitor<String> {
         String tipoNeg = inferirTipoDe(valor, tiposConocidos);
         // registrar el temporal con el tipo inferido
         tiposConocidos.put(temp, tipoNeg);
-        cuartetas.add(new Cuarteta("-", valor, "_", temp, tipoNeg, "_", tipoNeg));
+        // emitir menos unario con opcode propio
+        cuartetas.add(new Cuarteta("uminus", valor, "_", temp, tipoNeg, "_", tipoNeg));
         return temp;
     }
 
@@ -1316,8 +1344,19 @@ public class GeneradorCuartetasY implements YAstVisitor<String> {
         }
         // emitir la operacion con temporal
         String temp = temporales.nuevoTemporal();
+        // inferir los tipos de los operandos
+        String tipoIzqSuma = inferirTipoDe(izquierdo, tiposConocidos);
+        String tipoDerSuma = inferirTipoDe(derecho, tiposConocidos);
         // inferir el tipo resultado de la operacion
         String tipoResSuma = tipoResultadoAritmetico(izquierdo, derecho);
+        // usar cadena cuando se concatena texto con mas
+        if ("+".equals(nodo.getOperador())) {
+            boolean izqEsCadenaSuma = esTipoCadena(tipoIzqSuma);
+            boolean derEsCadenaSuma = esTipoCadena(tipoDerSuma);
+            if (izqEsCadenaSuma || derEsCadenaSuma) {
+                tipoResSuma = "cadena";
+            }
+        }
         // registrar el temporal con el tipo inferido
         tiposConocidos.put(temp, tipoResSuma);
         cuartetas.add(new Cuarteta(nodo.getOperador(), izquierdo, derecho, temp, tipoAritmetico(izquierdo), tipoAritmetico(derecho), tipoResSuma));

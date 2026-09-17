@@ -106,6 +106,19 @@ public class CompiladorYLenguajeService {
 
                 // generar cuartetas a partir del ast
                 GeneradorCuartetasY generadorCuartetas = new GeneradorCuartetasY();
+
+                // registrar los tipos de variables en el generador
+                List<Simbolo> simbolosDelAnalisis = analizador.obtenerSimbolos();
+                for (int i = 0; i < simbolosDelAnalisis.size(); i++) {
+                    Simbolo simboloActual = simbolosDelAnalisis.get(i);
+                    // omitir simbolos sin tipo
+                    if (simboloActual == null || simboloActual.getTipo() == null) {
+                        continue;
+                    }
+                    // registrar el nombre con su tipo
+                    generadorCuartetas.registrarTipoVariable(simboloActual.getNombre(), simboloActual.getTipo().getNombre());
+                }
+
                 ast.accept(generadorCuartetas);
                 List<Cuarteta> cuartetasCrudas = generadorCuartetas.getCuartetas();
                 for (int i = 0; i < cuartetasCrudas.size(); i++) {
@@ -119,6 +132,11 @@ public class CompiladorYLenguajeService {
         // generar codigo C a partir de las cuartetas
         TraductorC traductorC = new TraductorC();
         String codigoC = traductorC.traducir(cuartetas);
+
+        // avisar que el C puede ser invalido si hubo errores semanticos
+        if (recolector.tieneErrores() && cuartetas.isEmpty() == false) {
+            recolector.agregar(TipoError.SEMANTICO, 0, 0, "El codigo C generado puede ser invalido porque hay errores semanticos previos");
+        }
 
         // return construirResultado(recolector, arbolTextual, "", "", simbolos, tipos, new ArrayList<>());
         // return construirResultado(recolector, arbolTextual, "", "", simbolos, tipos, new ArrayList<>(), cuartetas);
