@@ -97,7 +97,25 @@ public class CompiladorController {
     // ejecutar la compilacion delegando al servicio correspondiente
     private ResultadoAnalisis ejecutarCompilacion(String lenguaje, String codigo, String ruta) {
         if ("zetariano".equalsIgnoreCase(lenguaje) || "zet".equalsIgnoreCase(lenguaje)) {
-            return this.compiladorZetariano.analizar(codigo);
+            // extraer el nombre base del archivo sin ruta ni extension
+            String nombreArchivo = "";
+            if (ruta != null && ruta.isEmpty() == false) {
+                String nombreConExtension = ruta;
+                // cortar la ruta hasta la ultima diagonal
+                int ultimoSlash = ruta.lastIndexOf('/');
+                if (ultimoSlash >= 0) {
+                    nombreConExtension = ruta.substring(ultimoSlash + 1);
+                }
+                // cortar la extension desde el ultimo punto
+                int ultimoPunto = nombreConExtension.lastIndexOf('.');
+                if (ultimoPunto > 0) {
+                    nombreArchivo = nombreConExtension.substring(0, ultimoPunto);
+                } else {
+                    nombreArchivo = nombreConExtension;
+                }
+            }
+            // pasar el nombre del archivo para validar la clase
+            return this.compiladorZetariano.analizar(codigo, nombreArchivo);
         }
 
         if ("y".equalsIgnoreCase(lenguaje) || "ylenguaje".equalsIgnoreCase(lenguaje)) {

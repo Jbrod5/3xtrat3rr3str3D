@@ -23,6 +23,7 @@ import org.jrg.model.semantico.Tipo;
 import org.jrg.model.semantico.TipoResultado;
 import org.jrg.model.ast.zetariano.Programa;
 import org.jrg.model.ast.zetariano.base.NodoASTZetariano;
+import org.jrg.model.ast.zetariano.definicion_clase.DefClase;
 import org.jrg.service.error.EscuchaErroresAntlr;
 import org.jrg.service.error.RecolectorErrores;
 
@@ -35,6 +36,14 @@ public class CompiladorZetarianoService {
      * Analizar un programa Zetariano y devolver el resultado completo.
      */
     public ResultadoAnalisis analizar(String codigoFuente) {
+        // delegar sin nombre de archivo
+        return analizar(codigoFuente, null);
+    }
+
+    /**
+     * Analizar un programa Zetariano con el nombre del archivo para validar la clase.
+     */
+    public ResultadoAnalisis analizar(String codigoFuente, String nombreArchivo) {
         // crear el recolector de errores del proceso
         RecolectorErrores recolector = new RecolectorErrores();
 
@@ -97,6 +106,19 @@ public class CompiladorZetarianoService {
                 if (analizador.obtenerAmbitoGlobal() != null) {
                     AmbitoSemantico raiz = analizador.obtenerAmbitoGlobal();
                     colectarSimbolos(raiz, simbolos, tipos);
+                }
+
+                // validar que el nombre del archivo coincida con el nombre de la clase
+                if (nombreArchivo != null && nombreArchivo.isEmpty() == false && ast instanceof Programa) {
+                    Programa programa = (Programa) ast;
+                    // extraer la definicion de clase si existe
+                    if (programa.getDefinicionClase() instanceof DefClase) {
+                        String nombreClase = ((DefClase) programa.getDefinicionClase()).getNombre();
+                        // reportar error si los nombres no coinciden
+                        if (nombreClase != null && nombreClase.equals(nombreArchivo) == false) {
+                            recolector.agregar(TipoError.SEMANTICO, 1, 1, "el nombre del archivo '" + nombreArchivo + "' no coincide con el nombre de la clase '" + nombreClase + "'");
+                        }
+                    }
                 }
 
                 // generar cuartetas a partir del ast
