@@ -43,6 +43,8 @@ public class GeneradorCuartetasPigLatin implements LatinusAstVisitor<String> {
     private String etiquetaContinueActual;
     // tipos conocidos de temporales y variables
     private final Map<String, String> tiposConocidos;
+    // nombres de campos por nombre de struct en orden
+    private final Map<String, List<String>> camposDeStructs;
 
     // crear el generador
     public GeneradorCuartetasPigLatin() {
@@ -52,11 +54,22 @@ public class GeneradorCuartetasPigLatin implements LatinusAstVisitor<String> {
         this.etiquetaBreakActual = null;
         this.etiquetaContinueActual = null;
         this.tiposConocidos = new HashMap<>();
+        this.camposDeStructs = new HashMap<>();
     }
 
     // obtener la lista de cuartetas generadas
     public List<Cuarteta> getCuartetas() {
         return cuartetas;
+    }
+
+    // registrar los campos de un struct importado en orden
+    public void registrarCamposDeStruct(String nombreStruct, List<String> campos) {
+        // omitir nombres o listas nulas
+        if (nombreStruct == null || campos == null) {
+            return;
+        }
+        // guardar los campos para resolver escrituras por nombre
+        this.camposDeStructs.put(nombreStruct, campos);
     }
 
     // inferir el tipo de un literal por su forma
@@ -594,7 +607,16 @@ public class GeneradorCuartetasPigLatin implements LatinusAstVisitor<String> {
             List<NodoAST> attrs = ((ListaAtributosInstancia) nodo.getAtributos()).getAtributos();
             for (int i = 0; i < attrs.size(); i++) {
                 String val = attrs.get(i).accept(this);
-                cuartetas.add(new Cuarteta(".,=", temp, String.valueOf(i), val != null ? val : "_", "_", "_", inferirTipoDe(val, tiposConocidos)));
+                // obtener el tipo del struct actual
+                String tipoStruct = nodo.getTipo();
+                // obtener los nombres de campos registrados
+                List<String> nombresCampos = this.camposDeStructs.get(tipoStruct);
+                // resolver el nombre del campo por indice
+                String nombreCampo = String.valueOf(i);
+                if (nombresCampos != null && i < nombresCampos.size()) {
+                    nombreCampo = nombresCampos.get(i);
+                }
+                cuartetas.add(new Cuarteta(".,=", temp, nombreCampo, val != null ? val : "_", "_", "_", inferirTipoDe(val, tiposConocidos)));
             }
         }
         // asignar la estructura a la variable

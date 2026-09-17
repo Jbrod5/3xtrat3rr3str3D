@@ -264,6 +264,10 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
     public String visitarDefClase(DefClase nodo) {
         // guardar el nombre de la clase actual
         this.nombreClaseActual = nodo.getNombre();
+        // construir la lista de campos con sus tipos
+        String campos = construirCamposClase(nodo.getMiembros());
+        // emitir la definicion de la clase como struct
+        cuartetas.add(new Cuarteta("struct_def", nodo.getNombre(), campos, "_", "_", "_", "_"));
         // recorrer cada miembro de la clase
         if (nodo.getMiembros() != null) {
             for (NodoASTZetariano miembro : nodo.getMiembros()) {
@@ -276,6 +280,70 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
         // limpiar el nombre de la clase actual
         this.nombreClaseActual = null;
         return null;
+    }
+
+    // construir el string de campos separados por coma con formato nombre:tipo
+    private String construirCamposClase(List<NodoASTZetariano> miembros) {
+        // devolver guion bajo si no hay miembros
+        if (miembros == null || miembros.isEmpty()) {
+            return "_";
+        }
+        // acumular cada campo con su tipo
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < miembros.size(); i++) {
+            NodoASTZetariano miembro = miembros.get(i);
+            // omitir miembros nulos o que no son atributos
+            if (miembro instanceof MiembroAtributo == false) {
+                continue;
+            }
+            // extraer el atributo interno
+            NodoASTZetariano atributo = ((MiembroAtributo) miembro).getAtributo();
+            // omitir atributos nulos
+            if (atributo == null) {
+                continue;
+            }
+            String campo = "";
+            // extraer nombre y tipo segun la clase del atributo
+            if (atributo instanceof AtributoSimple) {
+                AtributoSimple simple = (AtributoSimple) atributo;
+                campo = simple.getIdentificador() + ":" + extraerNombreTipoClase(simple.getTipo());
+            } else if (atributo instanceof AtributoArray) {
+                AtributoArray arreglo = (AtributoArray) atributo;
+                campo = arreglo.getIdentificador() + ":" + extraerNombreTipoClase(arreglo.getTipo()) + "[]";
+            }
+            // omitir atributos de tipo desconocido
+            if (campo.isEmpty()) {
+                continue;
+            }
+            // separar campos con coma
+            if (sb.length() > 0) {
+                sb.append(",");
+            }
+            sb.append(campo);
+        }
+        // devolver guion bajo si no se recolecto ningun campo
+        if (sb.length() == 0) {
+            return "_";
+        }
+        return sb.toString();
+    }
+
+    // extraer el nombre del tipo desde un nodo de tipo
+    private String extraerNombreTipoClase(NodoASTZetariano tipoNodo) {
+        // devolver guion bajo si el nodo es nulo
+        if (tipoNodo == null) {
+            return "_";
+        }
+        // extraer el nombre cuando es TipoDato
+        if (tipoNodo instanceof TipoDato) {
+            String nombre = ((TipoDato) tipoNodo).getTipo();
+            // usar guion bajo si el nombre es nulo
+            if (nombre == null) {
+                return "_";
+            }
+            return nombre;
+        }
+        return "_";
     }
 
     @Override
@@ -397,7 +465,7 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
         return null;
     }
 
-    // construir el string de tipos de parametros separados por coma
+    // construir el string de params con formato nombre tipo separados por coma
     private String extraerTiposParametrosZet(NodoASTZetariano parametrosNodo) {
         // devolver guion bajo si no hay parametros
         if (parametrosNodo == null) {
@@ -413,21 +481,27 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
         if (parametros.getParametros() == null || parametros.getParametros().isEmpty()) {
             return "_";
         }
-        // acumular los tipos separados por coma
+        // acumular los params separados por coma
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < parametros.getParametros().size(); i++) {
             NodoASTZetariano p = parametros.getParametros().get(i);
+            String nombre = "_";
             String tipo = "_";
             if (p instanceof ParamSimple) {
+                nombre = ((ParamSimple) p).getIdentificador();
                 NodoASTZetariano tipoNodo = ((ParamSimple) p).getTipo();
                 if (tipoNodo instanceof TipoDato) {
                     tipo = ((TipoDato) tipoNodo).getTipo();
                 }
             } else if (p instanceof ParamArray) {
+                nombre = ((ParamArray) p).getIdentificador();
                 NodoASTZetariano tipoNodo = ((ParamArray) p).getTipo();
                 if (tipoNodo instanceof TipoDato) {
                     tipo = ((TipoDato) tipoNodo).getTipo() + "[]";
                 }
+            }
+            if (nombre == null) {
+                nombre = "_";
             }
             if (tipo == null) {
                 tipo = "_";
@@ -435,7 +509,7 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
             if (i > 0) {
                 sb.append(",");
             }
-            sb.append(tipo);
+            sb.append(nombre).append(":").append(tipo);
         }
         return sb.toString();
     }

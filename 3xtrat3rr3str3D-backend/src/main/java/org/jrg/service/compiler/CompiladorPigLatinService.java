@@ -106,6 +106,32 @@ public class CompiladorPigLatinService {
                 // luego las cuartetas del archivo principal
                 // generar cuartetas a partir del ast
                 GeneradorCuartetasPigLatin generadorCuartetas = new GeneradorCuartetasPigLatin();
+
+                // registrar los campos de cada tipo importado en el generador
+                List<Tipo> tiposDelAnalisis = analizador.obtenerTipos();
+                for (int i = 0; i < tiposDelAnalisis.size(); i++) {
+                    Tipo tipoActual = tiposDelAnalisis.get(i);
+                    // omitir tipos nulos
+                    if (tipoActual == null) {
+                        continue;
+                    }
+                    List<Simbolo> campos = tipoActual.getCampos();
+                    // omitir tipos sin campos
+                    if (campos == null || campos.isEmpty()) {
+                        continue;
+                    }
+                    // recolectar los nombres de los campos
+                    List<String> nombresCampos = new ArrayList<>();
+                    for (int j = 0; j < campos.size(); j++) {
+                        Simbolo campo = campos.get(j);
+                        if (campo != null) {
+                            nombresCampos.add(campo.getNombre());
+                        }
+                    }
+                    // registrar los campos en el generador
+                    generadorCuartetas.registrarCamposDeStruct(tipoActual.getNombre(), nombresCampos);
+                }
+
                 ast.accept(generadorCuartetas);
                 List<Cuarteta> cuartetasCrudas = generadorCuartetas.getCuartetas();
                 for (int i = 0; i < cuartetasCrudas.size(); i++) {

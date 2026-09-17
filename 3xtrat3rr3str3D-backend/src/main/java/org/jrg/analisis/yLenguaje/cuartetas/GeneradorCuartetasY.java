@@ -329,8 +329,69 @@ public class GeneradorCuartetasY implements YAstVisitor<String> {
 
     @Override
     public String visitarDefEstructura(DefEstructura nodo) {
-        // no emitir cuartetas porque los structs son tipos
+        // construir la lista de campos con sus tipos
+        String campos = construirCamposStruct(nodo.getAtributos());
+        // emitir la definicion del struct al inicio del programa
+        cuartetas.add(new Cuarteta("struct_def", nodo.getNombre(), campos, "_", "_", "_", "_"));
         return null;
+    }
+
+    // construir el string de campos separados por coma con formato nombre:tipo
+    private String construirCamposStruct(List<NodoASTY> atributos) {
+        // devolver guion bajo si no hay atributos
+        if (atributos == null || atributos.isEmpty()) {
+            return "_";
+        }
+        // acumular cada campo con su tipo
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < atributos.size(); i++) {
+            NodoASTY atributo = atributos.get(i);
+            // omitir atributos nulos
+            if (atributo == null) {
+                continue;
+            }
+            String campo = "";
+            // extraer nombre y tipo segun la clase del atributo
+            if (atributo instanceof AtributoSimple) {
+                AtributoSimple simple = (AtributoSimple) atributo;
+                campo = simple.getNombre() + ":" + extraerNombreTipo(simple.getTipo());
+            } else if (atributo instanceof AtributoArray) {
+                AtributoArray arreglo = (AtributoArray) atributo;
+                campo = arreglo.getNombre() + ":" + extraerNombreTipo(arreglo.getTipo()) + "[]";
+            }
+            // omitir atributos de tipo desconocido
+            if (campo.isEmpty()) {
+                continue;
+            }
+            // separar campos con coma
+            if (sb.length() > 0) {
+                sb.append(",");
+            }
+            sb.append(campo);
+        }
+        // devolver guion bajo si no se recolecto ningun campo
+        if (sb.length() == 0) {
+            return "_";
+        }
+        return sb.toString();
+    }
+
+    // extraer el nombre del tipo desde un nodo de tipo
+    private String extraerNombreTipo(NodoASTY tipoNodo) {
+        // devolver guion bajo si el nodo es nulo
+        if (tipoNodo == null) {
+            return "_";
+        }
+        // extraer el nombre cuando es TipoDato
+        if (tipoNodo instanceof TipoDato) {
+            String nombre = ((TipoDato) tipoNodo).getNombre();
+            // usar guion bajo si el nombre es nulo
+            if (nombre == null) {
+                return "_";
+            }
+            return nombre;
+        }
+        return "_";
     }
 
     @Override
@@ -385,7 +446,7 @@ public class GeneradorCuartetasY implements YAstVisitor<String> {
         return null;
     }
 
-    // construir el string de tipos de parametros separados por coma
+    // construir el string de params con formato nombre tipo separados por coma
     private String extraerTiposParametros(NodoASTY parametrosNodo) {
         // devolver guion bajo si no hay parametros
         if (parametrosNodo == null) {
@@ -401,23 +462,30 @@ public class GeneradorCuartetasY implements YAstVisitor<String> {
         if (parametros.getParametros() == null || parametros.getParametros().isEmpty()) {
             return "_";
         }
-        // acumular los tipos separados por coma
+        // acumular los params separados por coma
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < parametros.getParametros().size(); i++) {
             NodoASTY p = parametros.getParametros().get(i);
+            String nombre = "_";
             String tipo = "_";
             if (p instanceof ParamSimple) {
+                nombre = ((ParamSimple) p).getNombre();
                 NodoASTY tipoNodo = ((ParamSimple) p).getTipo();
                 if (tipoNodo instanceof TipoDato) {
                     tipo = ((TipoDato) tipoNodo).getNombre();
                 }
             } else if (p instanceof ParamArray) {
+                nombre = ((ParamArray) p).getNombre();
                 NodoASTY tipoNodo = ((ParamArray) p).getTipo();
                 if (tipoNodo instanceof TipoDato) {
                     tipo = ((TipoDato) tipoNodo).getNombre() + "[]";
                 }
             } else if (p instanceof ParamEstructura) {
+                nombre = ((ParamEstructura) p).getNombre();
                 tipo = ((ParamEstructura) p).getTipoEstructura();
+            }
+            if (nombre == null) {
+                nombre = "_";
             }
             if (tipo == null) {
                 tipo = "_";
@@ -425,7 +493,7 @@ public class GeneradorCuartetasY implements YAstVisitor<String> {
             if (i > 0) {
                 sb.append(",");
             }
-            sb.append(tipo);
+            sb.append(nombre).append(":").append(tipo);
         }
         return sb.toString();
     }
