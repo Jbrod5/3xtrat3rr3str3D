@@ -1463,11 +1463,12 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
                 // verificar si la definicion es nula
                 if (definicion == null) {
 
-
                     // TODO: el esquema del struct no se conoce cuando el tipo viene de un import .y
                     // mientras no se lea el archivo importado, campo() devuelve null sin reportar error :D
+                    // el esquema importado ya se marca como conocido en registrarTipoImportado
+                    // campo() ya reporta miembro no declarado cuando el esquema es conocido
+                    // omitir el valor porque no hay definicion contra que validar
                     continue;
-
 
                 }
 

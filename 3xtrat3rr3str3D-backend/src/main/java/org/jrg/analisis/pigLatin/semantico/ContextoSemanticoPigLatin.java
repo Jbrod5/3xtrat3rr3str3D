@@ -747,6 +747,9 @@ class ContextoSemanticoPigLatin {
         if (this.ambitoGlobal != null) {
             this.ambitoGlobal.agregarTipo(tipo);
         }
+
+        // marcar el esquema como conocido para validar campos al instanciar
+        marcarEsquemaConocido(tipo);
     }
 
 
