@@ -26,6 +26,7 @@ public class ColoresService {
             coloresToken = ColorService.obtenerColoresPigLatin(codigo);
         }
 
+        // convertir tokens a lista de mapas
         List<Object> colores = new ArrayList<>();
         for (TokenColor tc : coloresToken) {
             Map<String, Object> tokenInfo = new java.util.HashMap<>();

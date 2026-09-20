@@ -60,8 +60,10 @@ public class YLenguajeIndentTokenSource implements TokenSource {
             inicioDeLinea = true;
         }
 
+        // encolar token actual
         ultimoTokenReal = token;
         tokensPendientes.add(token);
+
         return tokensPendientes.remove(0);
     }
 

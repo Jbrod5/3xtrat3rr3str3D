@@ -23,6 +23,7 @@ class ResultadoExpresion {
     }
 
     ResultadoExpresion(Tipo tipo, boolean asignable, boolean valido, Simbolo simbolo) {
+        // asignar campos del resultado
         this.tipo = tipo;
         this.asignable = asignable;
         this.valido = valido;

@@ -57,6 +57,8 @@ class TipoSemanticoPigLatin {
         this.constante = null;
         this.asignable = false;
         this.simbolo = null;
+
+        // copiar lista de elementos
         if (tiposElementos == null) {
             this.tiposElementos = new ArrayList<>();
         } else {

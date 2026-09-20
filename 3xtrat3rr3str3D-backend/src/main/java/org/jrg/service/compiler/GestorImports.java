@@ -80,8 +80,7 @@ public class GestorImports {
         try {
             contenido = Files.readString(Paths.get(rutaAbsoluta));
         } catch (IOException e) {
-            this.recolectorErrores.agregar(TipoError.SEMANTICO, linea, columna,
-                    "no se pudo leer el archivo importado: " + rutaRelativa);
+            this.recolectorErrores.agregar(TipoError.SEMANTICO, linea, columna, "no se pudo leer el archivo importado: " + rutaRelativa);
             return null;
         }
 
@@ -96,8 +95,7 @@ public class GestorImports {
             return resultado;
         }
 
-        this.recolectorErrores.agregar(TipoError.SEMANTICO, linea, columna,
-                "extension no soportada en import: " + extension);
+        this.recolectorErrores.agregar(TipoError.SEMANTICO, linea, columna, "extension no soportada en import: " + extension);
         return null;
     }
 

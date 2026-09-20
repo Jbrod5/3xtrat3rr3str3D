@@ -19,6 +19,7 @@ import org.jrg.model.error.ErrorCompilacion;
 import org.jrg.model.error.TipoError;
 import org.jrg.model.resultado.CuartetaResultado;
 import org.jrg.model.resultado.ResultadoAnalisis;
+import org.jrg.model.resultado.ResultadoGcc;
 import org.jrg.model.semantico.Simbolo;
 import org.jrg.model.semantico.SimboloResultado;
 import org.jrg.model.semantico.Tipo;
@@ -52,7 +53,7 @@ public class CompiladorYLenguajeService {
         lexerBase.addErrorListener(escuchaLexica);
 
         // envolver el lexer para insertar tokens INDENT y DEDENT
-        // el TokenSource calcula la indentacion segun la columna del primer token de cada linea
+        // el TokenSource calcula la indentacion segun la columna del primer token de cada linea :D
         TokenSource fuenteConIndentacion = new YLenguajeIndentTokenSource(lexerBase);
 
         // crear el stream de tokens y el parser
@@ -81,8 +82,10 @@ public class CompiladorYLenguajeService {
         // construir el arbol de sintaxis abstracta
         NodoASTY ast = null;
         try {
+
             YLenguajeASTBuilder constructorAst = new YLenguajeASTBuilder();
             ast = arbolCst.accept(constructorAst);
+
         } catch (RuntimeException e) {
             recolector.agregar(TipoError.SEMANTICO, 1, 1, "error al construir el ast: " + e.getMessage());
 
@@ -111,10 +114,12 @@ public class CompiladorYLenguajeService {
                 List<Simbolo> simbolosDelAnalisis = analizador.obtenerSimbolos();
                 for (int i = 0; i < simbolosDelAnalisis.size(); i++) {
                     Simbolo simboloActual = simbolosDelAnalisis.get(i);
+
                     // omitir simbolos sin tipo
                     if (simboloActual == null || simboloActual.getTipo() == null) {
                         continue;
                     }
+
                     // registrar el nombre con su tipo
                     generadorCuartetas.registrarTipoVariable(simboloActual.getNombre(), simboloActual.getTipo().getNombre());
                 }
@@ -124,6 +129,7 @@ public class CompiladorYLenguajeService {
                 for (int i = 0; i < cuartetasCrudas.size(); i++) {
                     cuartetas.add(new CuartetaResultado(cuartetasCrudas.get(i)));
                 }
+
             } catch (RuntimeException e) {
                 recolector.agregar(TipoError.SEMANTICO, 1, 1, "error durante el analisis semantico: " + e.getMessage());
             }
@@ -133,30 +139,33 @@ public class CompiladorYLenguajeService {
         TraductorC traductorC = new TraductorC();
         String codigoC = traductorC.traducir(cuartetas);
 
-        // avisar que el C puede ser invalido si hubo errores semanticos
+        // agregar error que avise que el C puede ser invalido si hubo errores semanticos
         if (recolector.tieneErrores() && cuartetas.isEmpty() == false) {
             recolector.agregar(TipoError.SEMANTICO, 0, 0, "El codigo C generado puede ser invalido porque hay errores semanticos previos");
         }
 
-        // return construirResultado(recolector, arbolTextual, "", "", simbolos, tipos, new ArrayList<>());
-        // return construirResultado(recolector, arbolTextual, "", "", simbolos, tipos, new ArrayList<>(), cuartetas);
-        return construirResultado(recolector, arbolTextual, "", "", simbolos, tipos, new ArrayList<>(), cuartetas, codigoC);
+        // compilar con gcc para verificar aunque haya errores semanticossssss
+        ResultadoGcc resultadoGcc = null;
+        if (codigoC != null && codigoC.isEmpty() == false) {
+            CompiladorC compiladorC = new CompiladorC();
+            resultadoGcc = compiladorC.compilar(codigoC);
+        }
+
+        return construirResultado(recolector, arbolTextual, "", "", simbolos, tipos, new ArrayList<>(), cuartetas, codigoC, resultadoGcc);
     }
 
     // construir el resultado final del analisis sin cuartetas
     private ResultadoAnalisis construirResultado(RecolectorErrores recolector, String arbolTextual, String astMermaid, String codigoPigLatin, List<Simbolo> simbolos, List<Tipo> tipos, List<Object> pasosPila) {
-        // return construirResultado(recolector, arbolTextual, astMermaid, codigoPigLatin, simbolos, tipos, pasosPila, null);
-        return construirResultado(recolector, arbolTextual, astMermaid, codigoPigLatin, simbolos, tipos, pasosPila, null, null);
+        return construirResultado(recolector, arbolTextual, astMermaid, codigoPigLatin, simbolos, tipos, pasosPila, null, null, null);
     }
 
     // construir el resultado final del analisis con cuartetas
     private ResultadoAnalisis construirResultado(RecolectorErrores recolector, String arbolTextual, String astMermaid, String codigoPigLatin, List<Simbolo> simbolos, List<Tipo> tipos, List<Object> pasosPila, List<CuartetaResultado> cuartetas) {
-        // return construirResultado(recolector, arbolTextual, astMermaid, codigoPigLatin, simbolos, tipos, pasosPila, cuartetas, null);
-        return construirResultado(recolector, arbolTextual, astMermaid, codigoPigLatin, simbolos, tipos, pasosPila, cuartetas, null);
+        return construirResultado(recolector, arbolTextual, astMermaid, codigoPigLatin, simbolos, tipos, pasosPila, cuartetas, null, null);
     }
 
-    // construir el resultado final del analisis con cuartetas y codigo C
-    private ResultadoAnalisis construirResultado(RecolectorErrores recolector, String arbolTextual, String astMermaid, String codigoPigLatin, List<Simbolo> simbolos, List<Tipo> tipos, List<Object> pasosPila, List<CuartetaResultado> cuartetas, String codigoC) {
+    // construir el resultado final del analisis con cuartetas codigo C y gcc
+    private ResultadoAnalisis construirResultado(RecolectorErrores recolector, String arbolTextual, String astMermaid, String codigoPigLatin, List<Simbolo> simbolos, List<Tipo> tipos, List<Object> pasosPila, List<CuartetaResultado> cuartetas, String codigoC, ResultadoGcc resultadoGcc) {
 
         List<ErrorCompilacion> errores = recolector.obtenerErrores();
         List<SimboloResultado> simbolosResultado = new ArrayList<>();
@@ -176,8 +185,6 @@ public class CompiladorYLenguajeService {
 
         boolean exito = errores.isEmpty();
 
-        // return new ResultadoAnalisis(exito, errores, arbolTextual, astMermaid, codigoPigLatin, simbolosResultado, tiposResultado, pasosPila, simbolos, tipos);
-        // return new ResultadoAnalisis(exito, errores, arbolTextual, astMermaid, codigoPigLatin, simbolosResultado, tiposResultado, pasosPila, simbolos, tipos, cuartetas);
-        return new ResultadoAnalisis(exito, errores, arbolTextual, astMermaid, codigoPigLatin, simbolosResultado, tiposResultado, pasosPila, simbolos, tipos, cuartetas, codigoC);
+        return new ResultadoAnalisis(exito, errores, arbolTextual, astMermaid, codigoPigLatin, simbolosResultado, tiposResultado, pasosPila, simbolos, tipos, cuartetas, codigoC, resultadoGcc);
     }
 }

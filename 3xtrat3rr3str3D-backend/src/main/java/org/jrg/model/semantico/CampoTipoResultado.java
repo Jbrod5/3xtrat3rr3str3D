@@ -10,17 +10,21 @@ public class CampoTipoResultado {
      * Crear una representacion de campo de tipo para la respuesta HTTP.
      */
     public CampoTipoResultado(Simbolo campo) {
+        // validar campo nulo
         if (campo == null) {
             this.id = "";
             this.nombre = "";
             this.tipo = "";
             return;
         }
+
+        // normalizar identificador nulo
         if (campo.getId() == null) {
             this.id = "";
         } else {
             this.id = campo.getId();
         }
+
         this.nombre = campo.getNombre();
         this.tipo = representarTipo(campo.getTipo());
     }
@@ -42,11 +46,14 @@ public class CampoTipoResultado {
         if (tipo == null) {
             return "";
         }
+
         StringBuilder texto = new StringBuilder();
         texto.append(tipo.getNombre());
+        // recorrer dimensiones del arreglo
         for (int i = 0; i < tipo.getDimension(); i++) {
             texto.append("[]");
         }
+
         return texto.toString();
     }
 }

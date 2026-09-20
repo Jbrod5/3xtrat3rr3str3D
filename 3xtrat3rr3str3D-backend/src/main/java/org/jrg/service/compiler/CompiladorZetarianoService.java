@@ -16,6 +16,7 @@ import org.jrg.model.error.ErrorCompilacion;
 import org.jrg.model.error.TipoError;
 import org.jrg.model.resultado.CuartetaResultado;
 import org.jrg.model.resultado.ResultadoAnalisis;
+import org.jrg.model.resultado.ResultadoGcc;
 import org.jrg.model.semantico.Ambito;
 import org.jrg.model.semantico.Simbolo;
 import org.jrg.model.semantico.SimboloResultado;
@@ -72,6 +73,7 @@ public class CompiladorZetarianoService {
             arbolCst = parser.programa();
         } catch (RuntimeException e) {
             recolector.agregar(TipoError.SINTACTICO, 1, 1, "error inesperado en el parsing: " + e.getMessage());
+
             return construirResultado(recolector, "", "", "", null, null, new ArrayList<>());
         }
 
@@ -83,10 +85,13 @@ public class CompiladorZetarianoService {
         // construir el arbol de sintaxis abstracta
         NodoASTZetariano ast = null;
         try {
+
             ZetarianoASTBuilder constructorAst = new ZetarianoASTBuilder();
             ast = arbolCst.accept(constructorAst);
+
         } catch (RuntimeException e) {
             recolector.agregar(TipoError.SEMANTICO, 1, 1, "error al construir el ast: " + e.getMessage());
+
             return construirResultado(recolector, "", "", "", null, null, new ArrayList<>());
         }
 
@@ -97,6 +102,7 @@ public class CompiladorZetarianoService {
         List<Simbolo> simbolos = new ArrayList<>();
         List<Tipo> tipos = new ArrayList<>();
         List<CuartetaResultado> cuartetas = new ArrayList<>();
+
         if (ast instanceof Programa) {
             try {
                 AnalizadorSemanticoZetariano analizador = new AnalizadorSemanticoZetariano(recolector);
@@ -111,26 +117,31 @@ public class CompiladorZetarianoService {
                 // validar que el nombre del archivo coincida con el nombre de la clase
                 if (nombreArchivo != null && nombreArchivo.isEmpty() == false && ast instanceof Programa) {
                     Programa programa = (Programa) ast;
+
                     // extraer la definicion de clase si existe
                     if (programa.getDefinicionClase() instanceof DefClase) {
                         String nombreClase = ((DefClase) programa.getDefinicionClase()).getNombre();
+
                         // reportar error si los nombres no coinciden
                         if (nombreClase != null && nombreClase.equals(nombreArchivo) == false) {
                             recolector.agregar(TipoError.SEMANTICO, 1, 1, "el nombre del archivo '" + nombreArchivo + "' no coincide con el nombre de la clase '" + nombreClase + "'");
                         }
+
                     }
                 }
 
-                // generar cuartetas a partir del ast
+                // generar cuartetas a partir del ast :D
                 GeneradorCuartetasZetariano generadorCuartetas = new GeneradorCuartetasZetariano();
 
                 // registrar los tipos de variables en el generador
                 for (int i = 0; i < simbolos.size(); i++) {
                     Simbolo simboloActual = simbolos.get(i);
+
                     // omitir simbolos sin tipo
                     if (simboloActual == null || simboloActual.getTipo() == null) {
                         continue;
                     }
+
                     // registrar el nombre con su tipo
                     generadorCuartetas.registrarTipoVariable(simboloActual.getNombre(), simboloActual.getTipo().getNombre());
                 }
@@ -155,9 +166,14 @@ public class CompiladorZetarianoService {
             recolector.agregar(TipoError.SEMANTICO, 0, 0, "El codigo C generado puede ser invalido porque hay errores semanticos previos");
         }
 
-        // return construirResultado(recolector, arbolTextual, "", "", simbolos, tipos, new ArrayList<>());
-        // return construirResultado(recolector, arbolTextual, "", "", simbolos, tipos, new ArrayList<>(), cuartetas);
-        return construirResultado(recolector, arbolTextual, "", "", simbolos, tipos, new ArrayList<>(), cuartetas, codigoC);
+        // compilar con gcc para verificar aunque haya errores semanticos
+        ResultadoGcc resultadoGcc = null;
+        if (codigoC != null && codigoC.isEmpty() == false) {
+            CompiladorC compiladorC = new CompiladorC();
+            resultadoGcc = compiladorC.compilar(codigoC);
+        }
+
+        return construirResultado(recolector, arbolTextual, "", "", simbolos, tipos, new ArrayList<>(), cuartetas, codigoC, resultadoGcc);
     }
 
     // recorrer el arbol de ambitos y recolectar simbolos y tipos
@@ -179,18 +195,16 @@ public class CompiladorZetarianoService {
 
     // construir el resultado final del analisis sin cuartetas
     private ResultadoAnalisis construirResultado(RecolectorErrores recolector, String arbolTextual, String astMermaid, String codigoPigLatin, List<Simbolo> simbolos, List<Tipo> tipos, List<Object> pasosPila) {
-        // return construirResultado(recolector, arbolTextual, astMermaid, codigoPigLatin, simbolos, tipos, pasosPila, null);
-        return construirResultado(recolector, arbolTextual, astMermaid, codigoPigLatin, simbolos, tipos, pasosPila, null, null);
+        return construirResultado(recolector, arbolTextual, astMermaid, codigoPigLatin, simbolos, tipos, pasosPila, null, null, null);
     }
 
     // construir el resultado final del analisis con cuartetas
     private ResultadoAnalisis construirResultado(RecolectorErrores recolector, String arbolTextual, String astMermaid, String codigoPigLatin, List<Simbolo> simbolos, List<Tipo> tipos, List<Object> pasosPila, List<CuartetaResultado> cuartetas) {
-        // return construirResultado(recolector, arbolTextual, astMermaid, codigoPigLatin, simbolos, tipos, pasosPila, cuartetas, null);
-        return construirResultado(recolector, arbolTextual, astMermaid, codigoPigLatin, simbolos, tipos, pasosPila, cuartetas, null);
+        return construirResultado(recolector, arbolTextual, astMermaid, codigoPigLatin, simbolos, tipos, pasosPila, cuartetas, null, null);
     }
 
-    // construir el resultado final del analisis con cuartetas y codigo C
-    private ResultadoAnalisis construirResultado(RecolectorErrores recolector, String arbolTextual, String astMermaid, String codigoPigLatin, List<Simbolo> simbolos, List<Tipo> tipos, List<Object> pasosPila, List<CuartetaResultado> cuartetas, String codigoC) {
+    // construir el resultado final del analisis con cuartetas codigo C y gcc
+    private ResultadoAnalisis construirResultado(RecolectorErrores recolector, String arbolTextual, String astMermaid, String codigoPigLatin, List<Simbolo> simbolos, List<Tipo> tipos, List<Object> pasosPila, List<CuartetaResultado> cuartetas, String codigoC, ResultadoGcc resultadoGcc) {
 
         List<ErrorCompilacion> errores = recolector.obtenerErrores();
         List<SimboloResultado> simbolosResultado = new ArrayList<>();
@@ -210,9 +224,7 @@ public class CompiladorZetarianoService {
 
         boolean exito = errores.isEmpty();
 
-        // return new ResultadoAnalisis(exito, errores, arbolTextual, astMermaid, codigoPigLatin, simbolosResultado, tiposResultado, pasosPila, simbolos, tipos);
-        // return new ResultadoAnalisis(exito, errores, arbolTextual, astMermaid, codigoPigLatin, simbolosResultado, tiposResultado, pasosPila, simbolos, tipos, cuartetas);
-        return new ResultadoAnalisis(exito, errores, arbolTextual, astMermaid, codigoPigLatin, simbolosResultado, tiposResultado, pasosPila, simbolos, tipos, cuartetas, codigoC);
+        return new ResultadoAnalisis(exito, errores, arbolTextual, astMermaid, codigoPigLatin, simbolosResultado, tiposResultado, pasosPila, simbolos, tipos, cuartetas, codigoC, resultadoGcc);
 
     }
 }

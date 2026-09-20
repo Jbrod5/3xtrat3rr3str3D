@@ -31,11 +31,13 @@ public class Ambito {
      */
     public Ambito(String nombre, Ambito padre) {
         this.id = MiniUUID.generate();
+        // normalizar nombre nulo
         if (nombre == null) {
             this.nombre = "";
         } else {
             this.nombre = nombre;
         }
+
         this.padre = padre;
         this.simbolos = new ArrayList<>();
         this.simbolosPorNombre = new HashMap<>();
@@ -78,18 +80,23 @@ public class Ambito {
      * Agregar un simbolo al ambito.
      */
     public boolean agregarSimbolo(Simbolo simbolo) {
+        // validar duplicado
         if (simbolo == null || simbolosPorNombre.containsKey(simbolo.getNombre())) {
             return false;
         }
+
         simbolo.setAmbito(this);
+        // asignar posicion relativa
         if (simbolo.getPosicionRelativa() < 0) {
             simbolo.setPosicionRelativa(siguientePosicion);
             siguientePosicion++;
         } else if (simbolo.getPosicionRelativa() >= siguientePosicion) {
             siguientePosicion = simbolo.getPosicionRelativa() + 1;
         }
+
         simbolos.add(simbolo);
         simbolosPorNombre.put(simbolo.getNombre(), simbolo);
+
         return true;
     }
 
@@ -98,12 +105,15 @@ public class Ambito {
      */
     public Simbolo buscarSimbolo(String nombre) {
         Simbolo simbolo = buscarSimboloLocal(nombre);
+        // retornar coincidencia local
         if (simbolo != null) {
             return simbolo;
         }
+
         if (padre == null) {
             return null;
         }
+
         return padre.buscarSimbolo(nombre);
     }
 
@@ -129,10 +139,13 @@ public class Ambito {
      */
     public boolean eliminarSimbolo(String nombre) {
         Simbolo simbolo = simbolosPorNombre.remove(nombre);
+        // validar existencia
         if (simbolo == null) {
             return false;
         }
+
         simbolos.remove(simbolo);
+
         return true;
     }
 
@@ -223,16 +236,20 @@ public class Ambito {
         if (nombre == null) {
             return null;
         }
+
         Ambito ambito = ambitosPorNombre.get(nombre);
         if (ambito != null) {
             return ambito;
         }
+
+        // recorrer hijos en profundidad
         for (Ambito hijo : ambitos) {
             Ambito resultado = hijo.buscarAmbito(nombre);
             if (resultado != null) {
                 return resultado;
             }
         }
+
         return null;
     }
 
@@ -270,6 +287,7 @@ public class Ambito {
     public int reservarPosicion() {
         int posicion = siguientePosicion;
         siguientePosicion++;
+
         return posicion;
     }
 
@@ -279,10 +297,12 @@ public class Ambito {
     public int getNivel() {
         int nivel = 0;
         Ambito actual = padre;
+        // subir por la cadena de padres
         while (actual != null) {
             nivel++;
             actual = actual.padre;
         }
+
         return nivel;
     }
 
@@ -293,13 +313,17 @@ public class Ambito {
         List<String> ruta = new ArrayList<>();
         List<Ambito> cadena = new ArrayList<>();
         Ambito actual = this;
+        // recolectar cadena hasta la raiz
         while (actual != null) {
             cadena.add(actual);
             actual = actual.padre;
         }
+
+        // recorrer en orden inverso
         for (int i = cadena.size() - 1; i >= 0; i--) {
             ruta.add(cadena.get(i).nombre);
         }
+
         return ruta;
     }
 

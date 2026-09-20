@@ -49,6 +49,7 @@ public class RecolectorErrores {
     public ErrorCompilacion agregar(TipoError tipo, int linea, int columna, String descripcion) {
         ErrorCompilacion error = new ErrorCompilacion(tipo, linea, columna, descripcion);
         agregar(error);
+
         return error;
     }
 

@@ -8,7 +8,7 @@ public final class MiniUUID {
     }
 
     /**
-     * Generar un identificador único de 8 caracteres dividido en dos tramos de 4 separados por "-".
+     * Generar un identificador unico de 8 caracteres dividido en dos tramos de 4 separados por "-".
      */
     public static String generate() {
         // Generamos el UUID y eliminamos los guiones originales

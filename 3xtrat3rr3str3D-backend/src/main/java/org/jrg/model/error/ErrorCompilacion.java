@@ -14,6 +14,8 @@ public class ErrorCompilacion {
         this.tipo = tipo;
         this.linea = linea;
         this.columna = columna;
+
+        // normalizar descripcion nula
         if (descripcion == null) {
             this.descripcion = "";
         } else {

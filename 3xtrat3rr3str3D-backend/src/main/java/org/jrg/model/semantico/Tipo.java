@@ -54,22 +54,28 @@ public class Tipo {
      */
     public Tipo(String nombre, boolean esPrimitivo, int dimension, Tipo tipoBase, List<Simbolo> campos, Ambito ambito) {
         this.id = MiniUUID.generate();
+        // normalizar nombre nulo
         if (nombre == null) {
             this.nombre = "";
         } else {
             this.nombre = nombre;
         }
+
         this.esPrimitivo = esPrimitivo;
+        // validar rango negativo
         if (dimension < 0) {
             this.dimension = 0;
         } else {
             this.dimension = dimension;
         }
+
         this.tipoBase = tipoBase;
         this.campos = new ArrayList<>();
+        // copiar campos si existen
         if (campos != null) {
             this.campos.addAll(campos);
         }
+
         this.ambito = ambito;
     }
 
@@ -91,6 +97,7 @@ public class Tipo {
      * Asignar el nombre del tipo.
      */
     public void setNombre(String nombre) {
+        // normalizar nombre nulo
         if (nombre == null) {
             this.nombre = "";
         } else {
@@ -130,6 +137,7 @@ public class Tipo {
      * Asignar la dimension del arreglo.
      */
     public void setDimension(int dimension) {
+        // validar rango negativo
         if (dimension < 0) {
             this.dimension = 0;
         } else {
@@ -162,6 +170,7 @@ public class Tipo {
      * Agregar un campo al tipo.
      */
     public void agregarCampo(Simbolo campo) {
+        // validar duplicado antes de agregar
         if (campo != null && !campos.contains(campo)) {
             campos.add(campo);
         }
@@ -174,11 +183,14 @@ public class Tipo {
         if (nombre == null) {
             return null;
         }
+
+        // recorrer lista de campos
         for (Simbolo campo : campos) {
             if (nombre.equals(campo.getNombre())) {
                 return campo;
             }
         }
+
         return null;
     }
 
@@ -210,6 +222,7 @@ public class Tipo {
         if (ambito == null) {
             return null;
         }
+
         return ambito.getNombre();
     }
 

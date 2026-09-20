@@ -26,6 +26,7 @@ public class ResultadoAnalisis {
     private final List<Tipo> tiposCrudos;
     private final List<CuartetaResultado> cuartetas;
     private final String codigoC;
+    private final ResultadoGcc resultadoGcc;
 
     /**
      * Crear un resultado de analisis sin simbolos crudos.
@@ -39,10 +40,7 @@ public class ResultadoAnalisis {
             List<SimboloResultado> simbolos,
             List<TipoResultado> tipos,
             List<Object> pasosPila) {
-        // this(exito, errores, arbolSintactico, astMermaid, codigoPigLatin,
-        //         simbolos, tipos, pasosPila, null, null, null);
-        this(exito, errores, arbolSintactico, astMermaid, codigoPigLatin,
-                simbolos, tipos, pasosPila, null, null, null, null);
+        this(exito, errores, arbolSintactico, astMermaid, codigoPigLatin, simbolos, tipos, pasosPila, null, null, null, null, null);
     }
 
     /**
@@ -59,10 +57,7 @@ public class ResultadoAnalisis {
             List<Object> pasosPila,
             List<Simbolo> simbolosCrudos,
             List<Tipo> tiposCrudos) {
-        // this(exito, errores, arbolSintactico, astMermaid, codigoPigLatin,
-        //         simbolos, tipos, pasosPila, simbolosCrudos, tiposCrudos, null);
-        this(exito, errores, arbolSintactico, astMermaid, codigoPigLatin,
-                simbolos, tipos, pasosPila, simbolosCrudos, tiposCrudos, null, null);
+        this(exito, errores, arbolSintactico, astMermaid, codigoPigLatin, simbolos, tipos, pasosPila, simbolosCrudos, tiposCrudos, null, null, null);
     }
 
     /**
@@ -80,10 +75,7 @@ public class ResultadoAnalisis {
             List<Simbolo> simbolosCrudos,
             List<Tipo> tiposCrudos,
             List<CuartetaResultado> cuartetas) {
-        // this(exito, errores, arbolSintactico, astMermaid, codigoPigLatin,
-        //         simbolos, tipos, pasosPila, simbolosCrudos, tiposCrudos, cuartetas, null);
-        this(exito, errores, arbolSintactico, astMermaid, codigoPigLatin,
-                simbolos, tipos, pasosPila, simbolosCrudos, tiposCrudos, cuartetas, null);
+        this(exito, errores, arbolSintactico, astMermaid, codigoPigLatin, simbolos, tipos, pasosPila, simbolosCrudos, tiposCrudos, cuartetas, null, null);
     }
 
     /**
@@ -102,55 +94,94 @@ public class ResultadoAnalisis {
             List<Tipo> tiposCrudos,
             List<CuartetaResultado> cuartetas,
             String codigoC) {
+        this(exito, errores, arbolSintactico, astMermaid, codigoPigLatin, simbolos, tipos, pasosPila, simbolosCrudos, tiposCrudos, cuartetas, codigoC, null);
+    }
+
+    /**
+     * Crear un resultado de analisis con simbolos crudos cuartetas codigo C y resultado de gcc.
+     */
+    public ResultadoAnalisis(
+            boolean exito,
+            List<ErrorCompilacion> errores,
+            String arbolSintactico,
+            String astMermaid,
+            String codigoPigLatin,
+            List<SimboloResultado> simbolos,
+            List<TipoResultado> tipos,
+            List<Object> pasosPila,
+            List<Simbolo> simbolosCrudos,
+            List<Tipo> tiposCrudos,
+            List<CuartetaResultado> cuartetas,
+            String codigoC,
+            ResultadoGcc resultadoGcc) {
         this.exito = exito;
         this.errores = new ArrayList<>();
+        // copiar errores si existen
         if (errores != null) {
             this.errores.addAll(errores);
         }
+
+        // normalizar texto nulo
         if (arbolSintactico == null) {
             this.arbolSintactico = "";
         } else {
             this.arbolSintactico = arbolSintactico;
         }
+
         if (astMermaid == null) {
             this.astMermaid = "";
         } else {
             this.astMermaid = astMermaid;
         }
+
         if (codigoPigLatin == null) {
             this.codigoPigLatin = "";
         } else {
             this.codigoPigLatin = codigoPigLatin;
         }
+
         this.simbolos = new ArrayList<>();
+        // copiar simbolos si existen
         if (simbolos != null) {
             this.simbolos.addAll(simbolos);
         }
+
         this.tipos = new ArrayList<>();
+        // copiar tipos si existen
         if (tipos != null) {
             this.tipos.addAll(tipos);
         }
+
         this.pasosPila = new ArrayList<>();
+        // copiar pasos si existen
         if (pasosPila != null) {
             this.pasosPila.addAll(pasosPila);
         }
+
         this.simbolosCrudos = new ArrayList<>();
+        // copiar crudos si existen
         if (simbolosCrudos != null) {
             this.simbolosCrudos.addAll(simbolosCrudos);
         }
+
         this.tiposCrudos = new ArrayList<>();
         if (tiposCrudos != null) {
             this.tiposCrudos.addAll(tiposCrudos);
         }
+
         this.cuartetas = new ArrayList<>();
+        // copiar cuartetas si existen
         if (cuartetas != null) {
             this.cuartetas.addAll(cuartetas);
         }
+
         if (codigoC == null) {
             this.codigoC = "";
         } else {
             this.codigoC = codigoC;
         }
+
+        this.resultadoGcc = resultadoGcc;
     }
 
     /**
@@ -237,5 +268,12 @@ public class ResultadoAnalisis {
      */
     public String getCodigoC() {
         return this.codigoC;
+    }
+
+    /**
+     * Obtener el resultado de compilar el codigo C con gcc.
+     */
+    public ResultadoGcc getResultadoGcc() {
+        return this.resultadoGcc;
     }
 }

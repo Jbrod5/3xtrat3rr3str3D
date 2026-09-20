@@ -101,7 +101,8 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
      * Crear el analizador semantico para el lenguaje Pig Latin.
      */
     public AnalizadorSemanticoPigLatin(RecolectorErrores recolectorErrores) {
-        // guardar el recolector original o crear uno nuevo si viene nulo
+
+        // guardar el recolector original o crear uno nuevo si viene nulo :D
         if (recolectorErrores == null) {
             this.recolectorErrores = new RecolectorErrores();
         } else {
@@ -124,16 +125,19 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
     public void analizar(Programa programa, String rutaBase) {
         this.rutaBase = rutaBase;
         this.contexto.iniciar();
+
         // crear el gestor de imports solo si hay ruta base
         if (rutaBase != null && !rutaBase.isEmpty()) {
             this.gestorImports = new GestorImports(rutaBase, this.recolectorErrores);
         } else {
             this.gestorImports = null;
         }
+
         if (programa != null) {
             programa.accept(this);
         }
-        // copiar las cuartetas acumuladas por el gestor
+
+        // copiar las cuartetas acumuladas por el gestor :D
         if (this.gestorImports != null) {
             this.cuartetasImportadas.addAll(this.gestorImports.getCuartetasAcumuladas());
         }
@@ -173,6 +177,7 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
 
     // resolver el tipo a partir de un nodo TipoDato
     private Tipo resolverTipoTipoDato(NodoAST tipoNodo) {
+
         // verificar si el nodo es nulo
         if (tipoNodo == null) {
             return null;
@@ -307,7 +312,7 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
 
     // declarar variable buscando en TODOS los ambitos padres :D
     // si existe en cualquier padre se considera error de redeclaracion
-    // así no se permite lo del i declarado multiples veces en for anidados :D
+    // asi no se permite lo del i declarado multiples veces en for anidados :D
     private boolean declararVariableSeguro(NodoAST nodo, String nombre, Tipo tipo, CategoriaSimbolo categoria, Integer tamano) {
 
         // verificar si el nombre es nulo o vacio
@@ -802,6 +807,7 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
             for (int i = 0; i < tiposArgs.size(); i++) {
                 Tipo esperado = funcion.getTiposParametros().get(i);
                 Tipo real = tiposArgs.get(i);
+
                 if (esperado != null && real != null && !this.contexto.esCompatible(esperado, real)) {
                     this.contexto.agregarError(argumentos.get(i), "tipo de argumento incompatible, se esperaba '" + esperado.getNombre() + "' pero se obtuvo '" + real.getNombre() + "'");
                 }
@@ -1300,12 +1306,12 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
         Tipo tipoArray = this.contexto.tipoArray(tipoBase);
         Integer tamano = null;
 
-        // visitar el tamaño si existe
+        // visitar el tamano si existe
         if (decl.getTamano() != null) {
             decl.getTamano().accept(this);
             tamano = extraerEnteroConstante(decl.getTamano());
 
-            // verificar si el tamaño no es constante
+            // verificar si el tamano no es constante
             if (tamano == null) {
 
                 this.contexto.agregarError(decl.getTamano(), "el tamano del arreglo debe ser una constante entera");

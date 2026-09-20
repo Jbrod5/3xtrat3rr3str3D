@@ -26,8 +26,8 @@ public class TraductorC {
     private Set<String> declaradas;
     // nombre de la funcion actual
     private String funcionActual;
-    // indicar si ya se emitio la primera funcion
-    private boolean primeraFuncionEmitida;
+    // indicar si ya se agrego la primera funcion
+    private boolean primeraFuncionAgregada;
     // indicar si ya aparecio el primer func_begin
     private boolean dentroDeFuncion;
     // lineas del cuerpo de la funcion en proceso
@@ -42,7 +42,7 @@ public class TraductorC {
     private String tipoRetornoFuncion;
     // retornos conocidos por nombre de funcion
     private Map<String, String> retornosFuncion;
-    // cuartetas previas a funciones para reemitir en la siguiente
+    // cuartetas previas a funciones para agregar al cuerpo en la siguiente
     private List<CuartetaResultado> preMain;
     // tipos de params de la funcion actual por nombre
     private Map<String, String> tiposParamsActuales;
@@ -79,7 +79,7 @@ public class TraductorC {
         this.globales = new HashMap<>();
         this.declaradas = new HashSet<>();
         this.funcionActual = "";
-        this.primeraFuncionEmitida = false;
+        this.primeraFuncionAgregada = false;
         this.dentroDeFuncion = false;
         this.bufferFuncion = null;
         this.crudasFuncion = new ArrayList<>();
@@ -113,7 +113,7 @@ public class TraductorC {
         this.globales = new HashMap<>();
         this.declaradas = new HashSet<>();
         this.funcionActual = "";
-        this.primeraFuncionEmitida = false;
+        this.primeraFuncionAgregada = false;
         this.dentroDeFuncion = false;
         // reiniciar la deteccion de clases y punteros
         this.clases.clear();
@@ -333,14 +333,14 @@ public class TraductorC {
         for (int i = 0; i < ordenStructs.size(); i++) {
             String nombreStruct = ordenStructs.get(i);
             salida.append("struct ").append(nombreStruct).append(" {\n");
-            // emitir cada campo en su orden
+            // agregar cada campo en su orden a la salida
             List<String> orden = ordenCampos.get(nombreStruct);
             if (orden != null) {
                 Map<String, String> campos = structs.get(nombreStruct);
                 for (int j = 0; j < orden.size(); j++) {
                     String campo = orden.get(j);
                     String tipoC = mapearTipo(campos.get(campo));
-                    // emitir arreglos con corchetes al final
+                    // agregar arreglos con corchetes al final a la salida
                     if (tipoC.endsWith("[]")) {
                         String base = tipoC.substring(0, tipoC.length() - 2);
                         salida.append("    ").append(base).append(" ").append(campo).append("[];\n");
@@ -368,7 +368,7 @@ public class TraductorC {
         return salida.toString();
     }
 
-    // iniciar el buffer de una funcion sin emitir la firma aun
+    // iniciar el buffer de una funcion sin agregar la firma aun
     private void iniciarFuncion(CuartetaResultado c) {
         // marcar que ya se entro a una funcion
         this.dentroDeFuncion = true;
@@ -411,7 +411,7 @@ public class TraductorC {
         this.tiposParamsActuales = new HashMap<>();
     }
 
-    // cerrar la funcion emitiendo la firma con nombres reales
+    // cerrar la funcion agregando la firma con nombres reales
     private void terminarFuncion(StringBuilder cuerpo) {
         // recolectar los nombres llamados en el cuerpo
         for (int i = 0; i < crudasFuncion.size(); i++) {
@@ -477,17 +477,17 @@ public class TraductorC {
         // construir la firma con los nombres reales
         String firma = firmaConListas(funcionActual, tipoRetornoFuncion, nombresParams, tiposParamsC);
         // separar funciones con linea en blanco
-        if (this.primeraFuncionEmitida) {
+        if (this.primeraFuncionAgregada) {
             cuerpo.append("\n");
         }
-        this.primeraFuncionEmitida = true;
+        this.primeraFuncionAgregada = true;
         // agregar el prototipo si no existe
         if (prototipos.contains(firma) == false) {
             prototipos.add(firma);
         }
-        // emitir la firma con llave de apertura
+        // agregar la firma con llave de apertura al cuerpo
         cuerpo.append(firma).append(" {\n");
-        // reemitir las cuartetas previas y traducir el cuerpo
+        // agregar las cuartetas previas traducidas al cuerpo
         traducirRaws(preMain);
         preMain = new ArrayList<>();
         // limpiar params de preMain para no contaminar el cuerpo
@@ -612,7 +612,7 @@ public class TraductorC {
             if (linea == null || linea.isEmpty()) {
                 continue;
             }
-            // emitir labels sin indentacion
+            // agregar labels sin indentacion al buffer
             if (linea.endsWith(":;")) {
                 bufferFuncion.append(linea).append("\n");
             } else {
@@ -1028,7 +1028,7 @@ public class TraductorC {
                     punteros.add(c.getResultado());
                 }
             }
-            // guardar la cuarteta para reemitirla despues
+            // guardar la cuarteta para agregarla al cuerpo despues
             preMain.add(c);
             return;
         }
@@ -1037,7 +1037,7 @@ public class TraductorC {
             if (c.getArg1() != null && structs.containsKey(c.getArg1()) && c.getResultado() != null) {
                 structDeNombre.put(c.getResultado(), c.getArg1());
             }
-            // guardar la cuarteta para reemitirla despues
+            // guardar la cuarteta para agregarla al cuerpo despues
             preMain.add(c);
             return;
         }
@@ -1053,7 +1053,7 @@ public class TraductorC {
             String destino = c.getResultado();
             // ignorar destinos temporales o vacios
             if (destino == null || destino.equals("_") || esTemporal(destino)) {
-                // guardar la cuarteta para reemitirla despues
+                // guardar la cuarteta para agregarla al cuerpo despues
                 preMain.add(c);
                 return;
             }
@@ -1063,9 +1063,9 @@ public class TraductorC {
                 declaradas.add(destino);
             }
         }
-        // guardar la cuarteta para reemitirla en la siguiente funcion
+        // guardar la cuarteta para agregarla al cuerpo en la siguiente funcion
         preMain.add(c);
-        // omitir cualquier emision directa fuera de funciones
+        // omitir cualquier agregado directo fuera de funciones
     }
 
     // traducir una cuarteta individual a una linea de C
@@ -1096,7 +1096,7 @@ public class TraductorC {
             }
             String args = unirParams();
             limpiarParams();
-            // emitir llamada directa para metodos void conocidos
+            // agregar llamada directa para metodos void conocidos al cuerpo
             String retornoConocido = retornosFuncion.get(nombreLlamada);
             if ("void".equals(retornoConocido)) {
                 return nombreLlamada + "(" + args + ");";
@@ -1176,7 +1176,7 @@ public class TraductorC {
             String segundo = prepararOperandoParaConcat(c.getArg2(), c.getTipoArg2(), previasConcat);
             // declarar el temporal solo la primera vez
             String prefijo = prefijoDeclaracion(destinoConcat, "char*");
-            // emitir conversiones previas mas reserva copia y concatenado
+            // agregar conversiones previas mas reserva copia y concatenado al cuerpo
             return previasConcat.toString() + prefijo + " = malloc(strlen(" + primero + ") + strlen(" + segundo + ") + 1);\n    strcpy(" + destinoConcat + ", " + primero + ");\n    strcat(" + destinoConcat + ", " + segundo + ");";
         }
         // traducir operaciones aritmeticas
@@ -1305,9 +1305,6 @@ public class TraductorC {
                 return lineaNew;
             }
             // usar placeholder cuando el tipo es desconocido
-            // limpiarParams();
-            // String tipo = mapearTipo(c.getArg1());
-            // return prefijoDeclaracion(c.getResultado(), tipo) + " = 0;";
             limpiarParams();
             String tipoNew = mapearTipo(c.getArg1());
             return ladoIzquierdo(c.getResultado(), tipoNew) + " = 0;";
@@ -1356,7 +1353,7 @@ public class TraductorC {
                 esVoid = true;
             }
         }
-        // emitir llamada sin retorno para void
+        // agregar llamada sin retorno para void al cuerpo
         if (esVoid) {
             return nombre + "(" + args + ");";
         }
@@ -1518,7 +1515,7 @@ public class TraductorC {
         // generar un nombre unico para el temporal de string
         String tempStr = "__str_" + this.contadorTempsString;
         this.contadorTempsString = this.contadorTempsString + 1;
-        // emitir la reserva y la conversion con indentacion propia
+        // agregar la reserva y la conversion con indentacion propia al cuerpo
         lineas.append("char* ").append(tempStr).append(" = malloc(32);\n    ");
         lineas.append("sprintf(").append(tempStr).append(", \"").append(formato).append("\", ").append(traducirValor(valor)).append(");\n    ");
         // devolver el nombre del temporal de string

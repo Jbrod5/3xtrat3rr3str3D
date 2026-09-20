@@ -1957,7 +1957,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
         Tipo tipoIzq = extraerTipoDeExpresion(tipoIzqObj);
         Tipo tipoDer = extraerTipoDeExpresion(tipoDerObj);
 
-        // devolver el tipo promovido si algun operando es nulo
+        // devolver el tipo de mayor jerarquia si algun operando es nulo
         if (tipoIzq == null || tipoDer == null) {
             return this.contexto.tipoMayorJerarquia(tipoIzq, tipoDer);
         }

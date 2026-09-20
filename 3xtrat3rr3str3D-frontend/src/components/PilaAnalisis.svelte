@@ -302,6 +302,39 @@ function mostrarTamano(simbolo) {
             <i class="bi bi-download"></i> Descargar
           </button>
         </div>
+        {#if archivoActivo?.resultado?.resultadoGcc}
+          <div class="mb-2 p-2 rounded border"
+               class:border-success={archivoActivo.resultado.resultadoGcc.compilo}
+               class:border-danger={!archivoActivo.resultado.resultadoGcc.compilo}
+               style="font-size: 12px;">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span class="fw-bold">
+                {#if archivoActivo.resultado.resultadoGcc.compilo}
+                  <i class="bi bi-check-circle text-success"></i> Compilacion exitosa
+                {:else}
+                  <i class="bi bi-x-circle text-danger"></i> Errores de compilacion
+                {/if}
+              </span>
+            </div>
+            {#if archivoActivo.resultado.resultadoGcc.rutaBinario}
+              <div class="mb-1 text-secondary">
+                Binario generado en:
+                <code>{archivoActivo.resultado.resultadoGcc.rutaBinario}</code>
+                <button
+                  class="btn btn-sm btn-link p-0 ms-1"
+                  on:click={() => navigator.clipboard.writeText(archivoActivo.resultado.resultadoGcc.rutaBinario)}
+                  title="Copiar ruta"
+                >
+                  <i class="bi bi-clipboard"></i>
+                </button>
+              </div>
+            {/if}
+            <div class="mb-1 text-muted small font-monospace" style="font-size: 10px;">
+              {archivoActivo.resultado.resultadoGcc.comando}
+            </div>
+            <pre class="mb-0 text-dark" style="font-size: 11px; white-space: pre-wrap; max-height: 150px; overflow-y: auto;">{archivoActivo.resultado.resultadoGcc.salida}</pre>
+          </div>
+        {/if}
         <pre class="bg-light p-2 rounded border text-dark mb-0" style="border-color: #e9ecef !important; font-size: 12px; white-space: pre-wrap;">{archivoActivo.resultado.codigoC}</pre>
       {:else}
         <div class="text-center text-muted py-5">

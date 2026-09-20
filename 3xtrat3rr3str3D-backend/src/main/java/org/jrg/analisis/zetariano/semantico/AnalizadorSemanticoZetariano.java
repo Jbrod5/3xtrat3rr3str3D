@@ -2283,7 +2283,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
             return a;
         }
 
-        // promover a double si alguno lo es
+        // convertir al tipo de mayor jerarquia si alguno es double
         if ("double".equals(a.getNombre()) || "double".equals(b.getNombre())) {
             return ambitoGlobal.buscarTipo("double");
         }

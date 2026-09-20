@@ -18,6 +18,7 @@ public class SimboloResultado {
      * Crear una representacion de simbolo para la respuesta HTTP.
      */
     public SimboloResultado(Simbolo simbolo) {
+        // validar simbolo nulo
         if (simbolo == null) {
             this.id = "";
             this.nombre = "";
@@ -32,28 +33,36 @@ public class SimboloResultado {
             this.valor = null;
             return;
         }
+
+        // normalizar identificador nulo
         if (simbolo.getId() == null) {
             this.id = "";
         } else {
             this.id = simbolo.getId();
         }
+
         this.nombre = simbolo.getNombre();
         this.tipo = representarTipo(simbolo.getTipo());
+        // normalizar categoria nula
         if (simbolo.getCategoria() == null) {
             this.categoria = "";
         } else {
             this.categoria = simbolo.getCategoria().name();
         }
+
+        // normalizar ambito nulo
         if (simbolo.getNombreAmbito() == null) {
             this.ambito = "";
         } else {
             this.ambito = simbolo.getNombreAmbito();
         }
+
         this.fila = simbolo.getFila();
         this.columna = simbolo.getColumna();
         this.numParametros = simbolo.getNumParametros();
         this.posicionRelativa = simbolo.getPosicionRelativa();
         this.tamano = simbolo.getTamano();
+        // extraer valor si existe
         if (simbolo.getValor() == null) {
             this.valor = null;
         } else {
@@ -110,11 +119,14 @@ public class SimboloResultado {
         if (tipo == null) {
             return "";
         }
+
         StringBuilder texto = new StringBuilder();
         texto.append(tipo.getNombre());
+        // recorrer dimensiones del arreglo
         for (int i = 0; i < tipo.getDimension(); i++) {
             texto.append("[]");
         }
+
         return texto.toString();
     }
 }

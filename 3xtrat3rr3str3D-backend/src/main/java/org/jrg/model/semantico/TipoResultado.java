@@ -16,6 +16,7 @@ public class TipoResultado {
      */
     public TipoResultado(Tipo tipo) {
         this.campos = new ArrayList<>();
+        // validar tipo nulo
         if (tipo == null) {
             this.nombre = "";
             this.esPrimitivo = false;
@@ -23,14 +24,18 @@ public class TipoResultado {
             this.nombreAmbito = "";
             return;
         }
+
         this.nombre = tipo.getNombre();
         this.esPrimitivo = tipo.esPrimitivo();
         this.dimension = tipo.getDimension();
+        // normalizar ambito nulo
         if (tipo.getNombreAmbito() == null) {
             this.nombreAmbito = "";
         } else {
             this.nombreAmbito = tipo.getNombreAmbito();
         }
+
+        // recorrer campos para el DTO
         if (tipo.getCampos() != null) {
             for (int i = 0; i < tipo.getCampos().size(); i++) {
                 this.campos.add(new CampoTipoResultado(tipo.getCampos().get(i)));

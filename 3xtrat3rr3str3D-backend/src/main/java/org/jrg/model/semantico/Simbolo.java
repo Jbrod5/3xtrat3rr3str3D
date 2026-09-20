@@ -59,24 +59,29 @@ public class Simbolo {
      */
     public Simbolo(String nombre, CategoriaSimbolo categoria, Tipo tipo, Constante valor, Integer tamano, List<Tipo> tiposParametros, int numParametros, Ambito ambito, int posicionRelativa, int fila, int columna) {
         this.id = MiniUUID.generate();
+        // normalizar nombre nulo
         if (nombre == null) {
             this.nombre = "";
         } else {
             this.nombre = nombre;
         }
+
         this.categoria = categoria;
         this.tipo = tipo;
         this.valor = valor;
         this.tamano = tamano;
         this.tiposParametros = new ArrayList<>();
+        // copiar parametros si existen
         if (tiposParametros != null) {
             this.tiposParametros.addAll(tiposParametros);
         }
+
         if (numParametros < 0) {
             this.numParametros = this.tiposParametros.size();
         } else {
             this.numParametros = numParametros;
         }
+
         this.ambito = ambito;
         this.posicionRelativa = posicionRelativa;
         this.fila = fila;
@@ -115,6 +120,7 @@ public class Simbolo {
      * Asignar el nombre del simbolo.
      */
     public void setNombre(String nombre) {
+        // normalizar nombre nulo
         if (nombre == null) {
             this.nombre = "";
         } else {
@@ -196,6 +202,7 @@ public class Simbolo {
      * Agregar el tipo de un parametro.
      */
     public void agregarParametro(Tipo tipo) {
+        // validar duplicado antes de agregar
         if (tipo != null && !tiposParametros.contains(tipo)) {
             tiposParametros.add(tipo);
             numParametros = tiposParametros.size();
@@ -207,9 +214,11 @@ public class Simbolo {
      */
     public void setTiposParametros(List<Tipo> tiposParametros) {
         this.tiposParametros.clear();
+        // copiar lista si existe
         if (tiposParametros != null) {
             this.tiposParametros.addAll(tiposParametros);
         }
+
         numParametros = this.tiposParametros.size();
     }
 
@@ -224,6 +233,7 @@ public class Simbolo {
      * Asignar la cantidad de parametros.
      */
     public void setNumParametros(int numParametros) {
+        // validar rango negativo
         if (numParametros < 0) {
             this.numParametros = 0;
         } else {
@@ -252,6 +262,7 @@ public class Simbolo {
         if (ambito == null) {
             return null;
         }
+
         return ambito.getNombre();
     }
 

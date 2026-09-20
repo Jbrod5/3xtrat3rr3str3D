@@ -669,7 +669,7 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
     public NodoAST visitDeclArraySinDatos(PigLatinParser.DeclArraySinDatosContext ctx) {
         // obtener identificador del array
         String identificador = ctx.IDENTIFICADOR().getText();
-        // visitar tamaño del array
+        // visitar tamano del array
         NodoAST tamano = visit(ctx.expresion());
         // visitar tipo de dato
         NodoAST tipo = visit(ctx.tipo_dato());
@@ -684,7 +684,7 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
     public NodoAST visitDeclArrayConDatos(PigLatinParser.DeclArrayConDatosContext ctx) {
         // obtener identificador del array
         String identificador = ctx.IDENTIFICADOR().getText();
-        // visitar tamaño del array
+        // visitar tamano del array
         NodoAST tamano = visit(ctx.expresion());
         // visitar tipo de dato
         NodoAST tipo = visit(ctx.tipo_dato());
@@ -706,7 +706,7 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
     public NodoAST visitDeclArrayEstructura(PigLatinParser.DeclArrayEstructuraContext ctx) {
         // obtener identificador del array
         String identificador = ctx.IDENTIFICADOR(0).getText();
-        // visitar tamaño del array
+        // visitar tamano del array
         NodoAST tamano = visit(ctx.expresion());
         // obtener tipo de la estructura
         String tipo = ctx.IDENTIFICADOR(1).getText();

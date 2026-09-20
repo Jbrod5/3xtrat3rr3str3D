@@ -118,6 +118,7 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
         if (nombre == null || tipo == null) {
             return;
         }
+
         // guardar el tipo para usos posteriores
         this.tiposDeVariables.put(nombre, tipo);
     }
@@ -128,26 +129,32 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
         if (valor == null || valor.equals("_")) {
             return "_";
         }
+
         // detectar cadena por comilla doble inicial
         if (valor.startsWith("\"")) {
             return "cadena";
         }
+
         // detectar caracter por comilla simple inicial
         if (valor.startsWith("'")) {
             return "caracter";
         }
+
         // detectar booleanos de los tres lenguajes
         if (valor.equals("verum") || valor.equals("verdadero") || valor.equals("true") || valor.equals("falsus") || valor.equals("falso") || valor.equals("false")) {
             return "booleano";
         }
+
         // detectar flotante por punto decimal
         if (valor.contains(".")) {
             return "flotante";
         }
+
         // detectar entero si empieza con digito
         if (valor.length() > 0 && Character.isDigit(valor.charAt(0))) {
             return "entero";
         }
+
         // cualquier otra cosa es de tipo desconocido
         return "_";
     }
@@ -158,16 +165,19 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
         if (nombre == null || nombre.equals("_")) {
             return "_";
         }
+
         // buscar en el mapa de tipos conocidos
         String tipo = tipos.get(nombre);
         if (tipo != null) {
             return tipo;
         }
+
         // buscar en los tipos de variables declaradas
         String tipoVariable = tiposDeVariables.get(nombre);
         if (tipoVariable != null) {
             return tipoVariable;
         }
+
         // inferir por la forma del literal
         return inferirTipoLiteral(nombre);
     }
@@ -178,6 +188,7 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
         if ("cadena".equals(tipo) || "textum".equals(tipo) || "String".equals(tipo)) {
             return true;
         }
+
         return false;
     }
 
@@ -185,10 +196,12 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
     private String tipoAritmetico(String nombre) {
         // inferir el tipo conocido del operando
         String tipo = inferirTipoDe(nombre, tiposConocidos);
+
         // usar entero cuando el tipo es desconocido
         if (tipo.equals("_")) {
             return "entero";
         }
+
         return tipo;
     }
 
@@ -197,31 +210,51 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
         // inferir los tipos de ambos operandos
         String tipoA = inferirTipoDe(a, tiposConocidos);
         String tipoB = inferirTipoDe(b, tiposConocidos);
+
         // usar el tipo comun cuando ambos coinciden y es conocido
         if (tipoA.equals(tipoB)) {
             if (tipoA.equals("_")) {
                 return "entero";
             }
+
             return tipoA;
         }
-        // promocionar a flotante cuando se mezcla entero con flotante
-        if (esTipoNumerico(tipoA) && esTipoNumerico(tipoB)) {
+
+        // convertir al tipo de mayor jerarquia cuando algun operando es flotante
+        // if (esTipoNumerico(tipoA) && esTipoNumerico(tipoB)) {
+        //     return "flotante";
+        // }
+
+        if (esTipoFlotante(tipoA) || esTipoFlotante(tipoB)) {
             return "flotante";
         }
+
         // usar entero por defecto en caso mixto
         return "entero";
     }
 
-    // verificar si un tipo es numerico para promocion aritmetica
+    // verificar si un tipo es numerico para convertir al tipo de mayor jerarquia
     private boolean esTipoNumerico(String tipo) {
         // comparar contra enteros de los tres lenguajes
         if ("entero".equals(tipo) || "numerus".equals(tipo) || "int".equals(tipo)) {
             return true;
         }
+
         // comparar contra flotantes de los tres lenguajes
         if ("flotante".equals(tipo) || "decimalis".equals(tipo) || "double".equals(tipo)) {
             return true;
         }
+
+        return false;
+    }
+
+    // verificar si un tipo es flotante en cualquier vocabulario
+    private boolean esTipoFlotante(String tipo) {
+        // comparar contra flotantes de los tres lenguajes
+        if ("flotante".equals(tipo) || "decimalis".equals(tipo) || "double".equals(tipo)) {
+            return true;
+        }
+
         return false;
     }
 
@@ -233,6 +266,7 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
         if (nodo.getDefinicionClase() != null) {
             nodo.getDefinicionClase().accept(this);
         }
+
         return null;
     }
 
@@ -252,13 +286,18 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
     public String visitarBloque(Bloque nodo) {
         // recorrer las instrucciones del bloque
         if (nodo.getInstrucciones() != null) {
+
             for (NodoASTZetariano instruccion : nodo.getInstrucciones()) {
+
                 // visitar la instruccion actual si existe
                 if (instruccion != null) {
                     instruccion.accept(this);
                 }
+
             }
+
         }
+
         return null;
     }
 
@@ -266,13 +305,17 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
     public String visitarCasoSwitch(CasoSwitch nodo) {
         // recorrer las instrucciones del caso
         if (nodo.getInstrucciones() != null) {
+
             for (NodoASTZetariano instruccion : nodo.getInstrucciones()) {
+
                 // visitar la instruccion actual si existe
                 if (instruccion != null) {
                     instruccion.accept(this);
                 }
+
             }
         }
+
         return null;
     }
 
@@ -280,13 +323,18 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
     public String visitarCasoDefault(CasoDefault nodo) {
         // recorrer las instrucciones del caso por defecto
         if (nodo.getInstrucciones() != null) {
+
             for (NodoASTZetariano instruccion : nodo.getInstrucciones()) {
+
                 // visitar la instruccion actual si existe
                 if (instruccion != null) {
                     instruccion.accept(this);
                 }
+
             }
+
         }
+
         return null;
     }
 
@@ -308,21 +356,28 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
     public String visitarDefClase(DefClase nodo) {
         // guardar el nombre de la clase actual
         this.nombreClaseActual = nodo.getNombre();
+
         // construir la lista de campos con sus tipos
         String campos = construirCamposClase(nodo.getMiembros());
-        // emitir la definicion de la clase como struct
+
+        // agregar la definicion de la clase como struct a la lista de cuartetas
         cuartetas.add(new Cuarteta("struct_def", nodo.getNombre(), campos, "_", "_", "_", "_"));
+
         // recorrer cada miembro de la clase
         if (nodo.getMiembros() != null) {
+
             for (NodoASTZetariano miembro : nodo.getMiembros()) {
+
                 // visitar el miembro actual si existe
                 if (miembro != null) {
                     miembro.accept(this);
                 }
             }
+
         }
         // limpiar el nombre de la clase actual
         this.nombreClaseActual = null;
+
         return null;
     }
 
@@ -332,21 +387,27 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
         if (miembros == null || miembros.isEmpty()) {
             return "_";
         }
+
         // acumular cada campo con su tipo
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < miembros.size(); i++) {
             NodoASTZetariano miembro = miembros.get(i);
+
             // omitir miembros nulos o que no son atributos
             if (miembro instanceof MiembroAtributo == false) {
                 continue;
             }
+
             // extraer el atributo interno
             NodoASTZetariano atributo = ((MiembroAtributo) miembro).getAtributo();
+
             // omitir atributos nulos
             if (atributo == null) {
                 continue;
             }
+
             String campo = "";
+
             // extraer nombre y tipo segun la clase del atributo
             if (atributo instanceof AtributoSimple) {
                 AtributoSimple simple = (AtributoSimple) atributo;
@@ -355,44 +416,54 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
                 AtributoArray arreglo = (AtributoArray) atributo;
                 campo = arreglo.getIdentificador() + ":" + extraerNombreTipoClase(arreglo.getTipo()) + "[]";
             }
+
             // omitir atributos de tipo desconocido
             if (campo.isEmpty()) {
                 continue;
             }
+
             // separar campos con coma
             if (sb.length() > 0) {
                 sb.append(",");
             }
+
             sb.append(campo);
         }
+
         // devolver guion bajo si no se recolecto ningun campo
         if (sb.length() == 0) {
             return "_";
         }
+
         return sb.toString();
     }
 
     // extraer el nombre del tipo desde un nodo de tipo
     private String extraerNombreTipoClase(NodoASTZetariano tipoNodo) {
+
         // devolver guion bajo si el nodo es nulo
         if (tipoNodo == null) {
             return "_";
         }
+
         // extraer el nombre cuando es TipoDato
         if (tipoNodo instanceof TipoDato) {
             String nombre = ((TipoDato) tipoNodo).getTipo();
+
             // usar guion bajo si el nombre es nulo
             if (nombre == null) {
                 return "_";
             }
+
             return nombre;
         }
+
         return "_";
     }
 
     @Override
     public String visitarMiembroAtributo(MiembroAtributo nodo) {
-        // no emitir cuartetas porque los atributos solo ocupan memoria
+        // no agregar cuartetas a la lista porque los atributos solo ocupan memoria
         return null;
     }
 
@@ -402,6 +473,7 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
         if (nodo.getConstructor() != null) {
             nodo.getConstructor().accept(this);
         }
+
         return null;
     }
 
@@ -411,6 +483,7 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
         if (nodo.getMetodo() != null) {
             nodo.getMetodo().accept(this);
         }
+
         return null;
     }
 
@@ -432,20 +505,27 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
     public String visitarDefConstructor(DefConstructor nodo) {
         // construir el string de tipos de parametros
         String tiposParams = extraerTiposParametrosZet(nodo.getParametros());
+
         // construir el nombre completo incluyendo el nombre del constructor
         String nombreFuncion = nodo.getNombre() + "_" + nodo.getNombre();
-        // emitir marcador de inicio
+
+        // agregar marcador de inicio a la lista de cuartetas
         cuartetas.add(new Cuarteta("func_begin", nombreFuncion, tiposParams, "void", tiposParams, "_", "void"));
+
         // recorrer las instrucciones del cuerpo
         if (nodo.getInstrucciones() != null) {
+
             for (NodoASTZetariano instruccion : nodo.getInstrucciones()) {
                 if (instruccion != null) {
                     instruccion.accept(this);
                 }
             }
+
         }
-        // emitir marcador de fin
+
+        // agregar marcador de fin a la lista de cuartetas
         cuartetas.add(new Cuarteta("func_end", nombreFuncion, "_", "_", "_", "_", "_"));
+
         return null;
     }
 
@@ -453,25 +533,34 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
     public String visitarMetodoSinRetorno(MetodoSinRetorno nodo) {
         // construir el string de tipos de parametros
         String tiposParams = extraerTiposParametrosZet(nodo.getParametros());
+
         // construir el prefijo con el nombre de la clase actual
         String prefijo = "Clase";
+
         if (this.nombreClaseActual != null) {
             prefijo = this.nombreClaseActual;
         }
+
         // construir el nombre completo
         String nombreFuncion = prefijo + "_" + nodo.getNombre();
-        // emitir marcador de inicio
+
+        // agregar marcador de inicio a la lista de cuartetas
         cuartetas.add(new Cuarteta("func_begin", nombreFuncion, tiposParams, "void", tiposParams, "_", "void"));
+
         // recorrer las instrucciones del cuerpo
         if (nodo.getInstrucciones() != null) {
+
             for (NodoASTZetariano instruccion : nodo.getInstrucciones()) {
                 if (instruccion != null) {
                     instruccion.accept(this);
                 }
             }
+
         }
-        // emitir marcador de fin
+
+        // agregar marcador de fin a la lista de cuartetas
         cuartetas.add(new Cuarteta("func_end", nombreFuncion, "_", "_", "_", "_", "_"));
+
         return null;
     }
 
@@ -479,33 +568,44 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
     public String visitarMetodoConRetorno(MetodoConRetorno nodo) {
         // construir el string de tipos de parametros
         String tiposParams = extraerTiposParametrosZet(nodo.getParametros());
+
         // extraer el tipo de retorno
         String tipoRetorno = "_";
+
         if (nodo.getTipo() instanceof TipoDato) {
             tipoRetorno = ((TipoDato) nodo.getTipo()).getTipo();
         }
+
         if (tipoRetorno == null) {
             tipoRetorno = "_";
         }
+
         // construir el prefijo con el nombre de la clase actual
         String prefijo = "Clase";
         if (this.nombreClaseActual != null) {
             prefijo = this.nombreClaseActual;
         }
+
         // construir el nombre completo
         String nombreFuncion = prefijo + "_" + nodo.getNombre();
-        // emitir marcador de inicio
+
+        // agregar marcador de inicio a la lista de cuartetas
         cuartetas.add(new Cuarteta("func_begin", nombreFuncion, tiposParams, tipoRetorno, tiposParams, "_", tipoRetorno));
+
         // recorrer las instrucciones del cuerpo
         if (nodo.getInstrucciones() != null) {
             for (NodoASTZetariano instruccion : nodo.getInstrucciones()) {
+
                 if (instruccion != null) {
                     instruccion.accept(this);
                 }
+
             }
         }
-        // emitir marcador de fin
+
+        // agregar marcador de fin a la lista de cuartetas
         cuartetas.add(new Cuarteta("func_end", nombreFuncion, "_", "_", "_", "_", "_"));
+
         return null;
     }
 
@@ -515,22 +615,27 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
         if (parametrosNodo == null) {
             return "_";
         }
+
         // verificar que sea Parametros
         if (!(parametrosNodo instanceof Parametros)) {
             return "_";
         }
+
         // convertir al tipo concreto
         Parametros parametros = (Parametros) parametrosNodo;
+
         // verificar que la lista no sea nula
         if (parametros.getParametros() == null || parametros.getParametros().isEmpty()) {
             return "_";
         }
+
         // acumular los params separados por coma
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < parametros.getParametros().size(); i++) {
             NodoASTZetariano p = parametros.getParametros().get(i);
             String nombre = "_";
             String tipo = "_";
+
             if (p instanceof ParamSimple) {
                 nombre = ((ParamSimple) p).getIdentificador();
                 NodoASTZetariano tipoNodo = ((ParamSimple) p).getTipo();
@@ -544,15 +649,19 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
                     tipo = ((TipoDato) tipoNodo).getTipo() + "[]";
                 }
             }
+
             if (nombre == null) {
                 nombre = "_";
             }
+
             if (tipo == null) {
                 tipo = "_";
             }
+
             if (i > 0) {
                 sb.append(",");
             }
+
             sb.append(nombre).append(":").append(tipo);
         }
         return sb.toString();
@@ -578,6 +687,7 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
         if (nodo.getDeclaracion() != null) {
             nodo.getDeclaracion().accept(this);
         }
+
         return null;
     }
 
@@ -587,6 +697,7 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
         if (nodo.getAsignacion() != null) {
             nodo.getAsignacion().accept(this);
         }
+
         return null;
     }
 
@@ -596,6 +707,7 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
         if (nodo.getCondicional() != null) {
             nodo.getCondicional().accept(this);
         }
+
         return null;
     }
 
@@ -614,43 +726,52 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
         if (nodo.getCiclo() != null) {
             nodo.getCiclo().accept(this);
         }
+
         return null;
     }
 
     @Override
     public String visitarStmtReturn(StmtReturn nodo) {
+
         // evaluar la expresion de retorno si existe
         if (nodo.getExpresion() != null) {
+
             // obtener el valor de retorno
             String valor = nodo.getExpresion().accept(this);
+
             // usar valor por defecto si el resultado es nulo
             if (valor == null) {
                 valor = "_";
             }
-            // emitir el retorno con valor
+
+            // agregar el retorno con valor a la lista de cuartetas
             cuartetas.add(new Cuarteta("return", valor, "_", "_", inferirTipoDe(valor, tiposConocidos), "_", "_"));
+
         } else {
-            // emitir el retorno sin valor
+            // agregar el retorno sin valor a la lista de cuartetas
             cuartetas.add(new Cuarteta("return", "_", "_", "_", "_", "_", "_"));
         }
+
         return null;
     }
 
     @Override
     public String visitarStmtBreak(StmtBreak nodo) {
-        // emitir salto a la etiqueta de romper si existe
+        // agregar salto a la etiqueta de romper si existe a la lista de cuartetas
         if (this.etiquetaBreakActual != null) {
             cuartetas.add(new Cuarteta("goto", this.etiquetaBreakActual, "_", "_", "_", "_", "_"));
         }
+
         return null;
     }
 
     @Override
     public String visitarStmtContinue(StmtContinue nodo) {
-        // emitir salto a la etiqueta de continuar si existe
+        // agregar salto a la etiqueta de continuar si existe a la lista de cuartetas
         if (this.etiquetaContinueActual != null) {
             cuartetas.add(new Cuarteta("goto", this.etiquetaContinueActual, "_", "_", "_", "_", "_"));
         }
+
         return null;
     }
 
@@ -660,6 +781,7 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
         if (nodo.getExpresion() != null) {
             nodo.getExpresion().accept(this);
         }
+
         return null;
     }
 
@@ -667,43 +789,57 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
 
     @Override
     public String visitarDeclConTipo(DeclConTipo nodo) {
+
         // verificar si la declaracion es un arreglo
         if (nodo.getDimensiones() > 0) {
+
             // extraer el nombre del tipo base
             String tipoBase = "_";
             if (nodo.getTipo() instanceof TipoDato) {
                 tipoBase = ((TipoDato) nodo.getTipo()).getTipo();
             }
+
             // usar valor por defecto si el nombre es nulo
             if (tipoBase == null) {
                 tipoBase = "_";
             }
-            // emitir la reserva de memoria con la cantidad de dimensiones
+
+            // agregar la reserva de memoria con la cantidad de dimensiones a la lista de cuartetas
             cuartetas.add(new Cuarteta("alloc", tipoBase, String.valueOf(nodo.getDimensiones()), nodo.getIdentificador(), tipoBase, "entero", tipoBase));
-            // emitir la asignacion inicial si hay valor
+
+            // agregar la asignacion inicial si hay valor a la lista de cuartetas
             if (nodo.getValor() != null) {
+
                 // evaluar el valor inicial
                 String valor = nodo.getValor().accept(this);
+
                 // usar valor por defecto si el resultado es nulo
                 if (valor == null) {
                     valor = "_";
                 }
-                // emitir la asignacion a la variable
+
+                // agregar la asignacion a la variable a la lista de cuartetas
                 cuartetas.add(new Cuarteta(":=", valor, "_", nodo.getIdentificador(), inferirTipoDe(valor, tiposConocidos), "_", "_"));
             }
+
             return null;
         }
-        // emitir la asignacion inicial si hay valor
+
+        // agregar la asignacion inicial si hay valor a la lista de cuartetas
         if (nodo.getValor() != null) {
+
             // evaluar el valor inicial
             String valor = nodo.getValor().accept(this);
+
             // usar valor por defecto si el resultado es nulo
             if (valor == null) {
                 valor = "_";
             }
-            // emitir la asignacion a la variable
+
+            // agregar la asignacion a la variable a la lista de cuartetas
             cuartetas.add(new Cuarteta(":=", valor, "_", nodo.getIdentificador(), inferirTipoDe(valor, tiposConocidos), "_", "_"));
         }
+
         return null;
     }
 
@@ -711,36 +847,47 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
     public String visitarDeclConListaLiteral(DeclConListaLiteral nodo) {
         // obtener la lista de valores iniciales
         NodoASTZetariano lista = nodo.getListaExpresiones();
+
         // recorrer los valores si la lista existe
         if (lista instanceof ListaExpresiones) {
+
             // convertir la lista al tipo concreto
             ListaExpresiones listaExpresiones = (ListaExpresiones) lista;
+
             // contar la cantidad de valores
             int cantidad = 0;
             if (listaExpresiones.getExpresiones() != null) {
                 cantidad = listaExpresiones.getExpresiones().size();
             }
-            // emitir la reserva de memoria con la cantidad de valores
+
+            // agregar la reserva de memoria con la cantidad de valores a la lista de cuartetas
             cuartetas.add(new Cuarteta("alloc", String.valueOf(cantidad), "_", nodo.getIdentificador(), "entero", "_", "_"));
+
             // recorrer cada valor de la lista
             if (listaExpresiones.getExpresiones() != null) {
                 for (int i = 0; i < listaExpresiones.getExpresiones().size(); i++) {
+
                     // evaluar el valor actual
                     String valor = listaExpresiones.getExpresiones().get(i).accept(this);
+
                     // usar valor por defecto si el resultado es nulo
                     if (valor == null) {
                         valor = "_";
                     }
-                    // emitir la asignacion a la posicion actual
+
+                    // agregar la asignacion a la posicion actual a la lista de cuartetas
                     cuartetas.add(new Cuarteta("[]=", nodo.getIdentificador(), String.valueOf(i), valor, "_", "entero", "_"));
                 }
             }
         } else {
+
             // visitar la lista si tiene otro formato
             if (lista != null) {
                 lista.accept(this);
             }
+
         }
+
         return null;
     }
 
@@ -753,34 +900,43 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
         if (nodo.getExpresion() != null) {
             derecha = nodo.getExpresion().accept(this);
         }
+
         // usar valor por defecto si el resultado es nulo
         if (derecha == null) {
             derecha = "_";
         }
+
         // manejar la asignacion a posicion de arreglo con []=
         if (nodo.getVariable() instanceof VarArray) {
+
             // convertir la variable al tipo concreto
             VarArray acceso = (VarArray) nodo.getVariable();
+
             // evaluar la base del acceso
             String base = "_";
             if (acceso.getVariable() != null) {
                 base = acceso.getVariable().accept(this);
             }
+
             // usar valor por defecto si el resultado es nulo
             if (base == null) {
                 base = "_";
             }
+
             // evaluar el indice del acceso
             String indice = "_";
             if (acceso.getIndice() != null) {
                 indice = acceso.getIndice().accept(this);
             }
+
             // usar valor por defecto si el resultado es nulo
             if (indice == null) {
                 indice = "_";
             }
-            // emitir la asignacion a la posicion
+
+            // agregar la asignacion a la posicion a la lista de cuartetas
             cuartetas.add(new Cuarteta("[]=", base, indice, derecha, "_", "entero", "_"));
+
             return null;
         }
         // evaluar la variable destino
@@ -788,79 +944,103 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
         if (nodo.getVariable() != null) {
             izquierda = nodo.getVariable().accept(this);
         }
+
         // usar valor por defecto si el resultado es nulo
         if (izquierda == null) {
             izquierda = "_";
         }
-        // emitir la asignacion
+
+        // agregar la asignacion a la lista de cuartetas
         cuartetas.add(new Cuarteta(":=", derecha, "_", izquierda, inferirTipoDe(derecha, tiposConocidos), "_", "_"));
+
         return null;
     }
 
     @Override
     public String visitarAsignacionCompuesta(AsignacionCompuesta nodo) {
+
         // extraer el operador aritmetico quitando el igual final
         String aritmetico = "_";
         if (nodo.getOperador() != null) {
             aritmetico = nodo.getOperador();
+
             // quitar el igual final si existe
             if (aritmetico.endsWith("=")) {
                 aritmetico = aritmetico.substring(0, aritmetico.length() - 1);
             }
+
         }
-        // evaluar la variable destino
+
+        //evaluar la variable destino
         String izquierda = "_";
         if (nodo.getVariable() != null) {
             izquierda = nodo.getVariable().accept(this);
         }
+
         // usar valor por defecto si el resultado es nulo
         if (izquierda == null) {
             izquierda = "_";
         }
+
         // evaluar la expresion derecha
         String derecha = "_";
         if (nodo.getExpresion() != null) {
             derecha = nodo.getExpresion().accept(this);
         }
+
         // usar valor por defecto si el resultado es nulo
         if (derecha == null) {
             derecha = "_";
         }
-        // emitir la operacion con temporal
+
+        // agregar la operacion con temporal a la lista de cuartetas
         String temp = temporales.nuevoTemporal();
+
         // inferir el tipo resultado de la operacion
         String tipoResComp = tipoResultadoAritmetico(izquierda, derecha);
+
         // registrar el temporal con el tipo inferido
         tiposConocidos.put(temp, tipoResComp);
         cuartetas.add(new Cuarteta(aritmetico, izquierda, derecha, temp, tipoAritmetico(izquierda), tipoAritmetico(derecha), tipoResComp));
+
         // manejar la asignacion a posicion de arreglo con []=
         if (nodo.getVariable() instanceof VarArray) {
+
             // convertir la variable al tipo concreto
             VarArray acceso = (VarArray) nodo.getVariable();
+
             // evaluar la base del acceso
             String base = "_";
+
             if (acceso.getVariable() != null) {
                 base = acceso.getVariable().accept(this);
             }
+
             // usar valor por defecto si el resultado es nulo
             if (base == null) {
                 base = "_";
             }
+
             // evaluar el indice del acceso
             String indice = "_";
             if (acceso.getIndice() != null) {
                 indice = acceso.getIndice().accept(this);
             }
+
             // usar valor por defecto si el resultado es nulo
             if (indice == null) {
                 indice = "_";
             }
-            // emitir la asignacion a la posicion
+
+            // agregar la asignacion a la posicion a la lista de cuartetas
             cuartetas.add(new Cuarteta("[]=", base, indice, temp, "_", "entero", "_"));
+
             return null;
         }
-        // emitir la asignacion del temporal a la variable
+
+        // agregar la asignacion del temporal a la variable a la lista de cuartetas
         cuartetas.add(new Cuarteta(":=", temp, "_", izquierda, inferirTipoDe(temp, tiposConocidos), "_", "_"));
+
         return null;
     }
 
@@ -879,20 +1059,24 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
         if (nodo.getVariable() != null) {
             base = nodo.getVariable().accept(this);
         }
+
         // usar valor por defecto si el resultado es nulo
         if (base == null) {
             base = "_";
         }
+
         // evaluar el indice del acceso
         String indice = "_";
         if (nodo.getIndice() != null) {
             indice = nodo.getIndice().accept(this);
         }
+
         // usar valor por defecto si el resultado es nulo
         if (indice == null) {
             indice = "_";
         }
-        // devolver la referencia compuesta sin emitir cuarteta
+
+        // devolver la referencia compuesta sin agregar cuarteta a la lista
         return base + "[" + indice + "]";
     }
 
@@ -903,11 +1087,13 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
         if (nodo.getVariable() != null) {
             base = nodo.getVariable().accept(this);
         }
+
         // usar valor por defecto si el resultado es nulo
         if (base == null) {
             base = "_";
         }
-        // devolver la referencia compuesta sin emitir cuarteta
+
+        // devolver la referencia compuesta sin agregar cuarteta a la lista
         return base + "." + nodo.getMiembro();
     }
 
@@ -920,40 +1106,54 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
         if (nodo.getCondicion() != null) {
             condicion = nodo.getCondicion().accept(this);
         }
+
         // usar valor por defecto si el resultado es nulo
         if (condicion == null) {
             condicion = "_";
         }
+
         // crear la etiqueta final
         String lFin = temporales.nuevaEtiqueta();
+
         // crear la etiqueta de la rama que sigue
         String lSiguiente = temporales.nuevaEtiqueta();
-        // emitir el salto a la rama que sigue si la condicion es falsa
+
+        // agregar el salto a la rama que sigue si la condicion es falsa a la lista de cuartetas
         cuartetas.add(new Cuarteta("if_false", condicion, lSiguiente, "_", "booleano", "_", "_"));
+
         // visitar el bloque principal si existe
         if (nodo.getBloque() != null) {
             nodo.getBloque().accept(this);
         }
-        // emitir el salto al final
+
+        // agregar el salto al final a la lista de cuartetas
         cuartetas.add(new Cuarteta("goto", lFin, "_", "_", "_", "_", "_"));
-        // emitir la etiqueta de la rama que sigue
+
+        // agregar la etiqueta de la rama que sigue a la lista de cuartetas
         cuartetas.add(new Cuarteta("label", lSiguiente, "_", "_", "_", "_", "_"));
+
         // recorrer las ramas sino si si existen
         if (nodo.getCondicionesSinoSi() != null) {
+
             for (int i = 0; i < nodo.getCondicionesSinoSi().size(); i++) {
+
                 // evaluar la condicion de la rama actual
                 String condicionSino = "_";
                 if (nodo.getCondicionesSinoSi().get(i) != null) {
                     condicionSino = nodo.getCondicionesSinoSi().get(i).accept(this);
                 }
+
                 // usar valor por defecto si el resultado es nulo
                 if (condicionSino == null) {
                     condicionSino = "_";
                 }
+
                 // crear la etiqueta de la rama que sigue
                 String lSiguienteSino = temporales.nuevaEtiqueta();
-                // emitir el salto si la condicion es falsa
+
+                // agregar el salto si la condicion es falsa a la lista de cuartetas
                 cuartetas.add(new Cuarteta("if_false", condicionSino, lSiguienteSino, "_", "booleano", "_", "_"));
+
                 // visitar el bloque de la rama actual si existe
                 if (nodo.getBloquesSinoSi() != null) {
                     if (i < nodo.getBloquesSinoSi().size()) {
@@ -962,17 +1162,22 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
                         }
                     }
                 }
-                // emitir el salto al final
+
+                // agregar el salto al final a la lista de cuartetas
                 cuartetas.add(new Cuarteta("goto", lFin, "_", "_", "_", "_", "_"));
-                // emitir la etiqueta de la rama que sigue
+
+                // agregar la etiqueta de la rama que sigue a la lista de cuartetas
                 cuartetas.add(new Cuarteta("label", lSiguienteSino, "_", "_", "_", "_", "_"));
             }
+
         }
+
         // visitar el bloque sino si existe
         if (nodo.getBloqueSino() != null) {
             nodo.getBloqueSino().accept(this);
         }
-        // emitir la etiqueta final
+
+        // agregar la etiqueta final a la lista de cuartetas
         cuartetas.add(new Cuarteta("label", lFin, "_", "_", "_", "_", "_"));
         return null;
     }
@@ -986,75 +1191,101 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
         if (nodo.getExpresion() != null) {
             selector = nodo.getExpresion().accept(this);
         }
+
         // usar valor por defecto si el resultado es nulo
         if (selector == null) {
             selector = "_";
         }
+
         // crear la etiqueta final
         String lFin = temporales.nuevaEtiqueta();
+
         // recorrer cada caso de la seleccion
         if (nodo.getCasos() != null) {
+
             for (int i = 0; i < nodo.getCasos().size(); i++) {
+
                 // obtener el caso actual
                 NodoASTZetariano caso = nodo.getCasos().get(i);
+
                 // omitir el caso si es nulo
                 if (caso == null) {
                     continue;
                 }
+
                 // comparar el selector cuando el caso trae valor
                 if (caso instanceof CasoSwitch) {
+
                     // convertir el caso al tipo concreto
                     CasoSwitch casoSwitch = (CasoSwitch) caso;
+
                     // evaluar el valor del caso
                     String valorCaso = "_";
                     if (casoSwitch.getValor() != null) {
                         valorCaso = casoSwitch.getValor().accept(this);
                     }
+
                     // usar valor por defecto si el resultado es nulo
                     if (valorCaso == null) {
                         valorCaso = "_";
                     }
+
                     // guardar el valor del caso en un temporal
                     String tCaso = temporales.nuevoTemporal();
+
                     // inferir el tipo del valor del caso
                     String tipoCaso = inferirTipoDe(valorCaso, tiposConocidos);
+
                     // registrar el temporal con el tipo inferido
                     tiposConocidos.put(tCaso, tipoCaso);
                     cuartetas.add(new Cuarteta("=", valorCaso, "_", tCaso, tipoCaso, "_", tipoCaso));
+
                     // comparar el selector con el valor del caso
                     String tComparacion = temporales.nuevoTemporal();
+
                     // registrar el temporal como booleano
                     tiposConocidos.put(tComparacion, "booleano");
                     cuartetas.add(new Cuarteta("==", selector, tCaso, tComparacion, inferirTipoDe(selector, tiposConocidos), inferirTipoDe(tCaso, tiposConocidos), "booleano"));
+
                     // crear la etiqueta del caso que sigue
                     String lSiguiente = temporales.nuevaEtiqueta();
-                    // emitir el salto si no hay coincidencia
+
+                    // agregar el salto si no hay coincidencia a la lista de cuartetas
                     cuartetas.add(new Cuarteta("if_false", tComparacion, lSiguiente, "_", "booleano", "_", "_"));
+
                     // visitar las instrucciones del caso
                     if (casoSwitch.getInstrucciones() != null) {
                         for (NodoASTZetariano instruccion : casoSwitch.getInstrucciones()) {
+
                             // visitar la instruccion actual si existe
                             if (instruccion != null) {
                                 instruccion.accept(this);
+
                             }
                         }
                     }
-                    // emitir el salto al final
+
+                    // agregar el salto al final a la lista de cuartetas
                     cuartetas.add(new Cuarteta("goto", lFin, "_", "_", "_", "_", "_"));
-                    // emitir la etiqueta del caso que sigue
+
+                    // agregar la etiqueta del caso que sigue a la lista de cuartetas
                     cuartetas.add(new Cuarteta("label", lSiguiente, "_", "_", "_", "_", "_"));
+
                 } else {
                     // visitar el caso directamente
                     caso.accept(this);
                 }
             }
         }
+
         // visitar el caso por defecto si existe
         if (nodo.getCasoDefecto() != null) {
             nodo.getCasoDefecto().accept(this);
         }
-        // emitir la etiqueta final
+
+        // agregar la etiqueta final a la lista de cuartetas
         cuartetas.add(new Cuarteta("label", lFin, "_", "_", "_", "_", "_"));
+
         return null;
     }
 
@@ -1065,44 +1296,58 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
         // guardar las etiquetas anteriores
         String anteriorBreak = this.etiquetaBreakActual;
         String anteriorContinue = this.etiquetaContinueActual;
+
         // crear las etiquetas del ciclo
         String lInicio = temporales.nuevaEtiqueta();
         String lFin = temporales.nuevaEtiqueta();
+
         // asignar las etiquetas actuales
         this.etiquetaBreakActual = lFin;
         this.etiquetaContinueActual = lInicio;
+
         // visitar la inicializacion si existe
         if (nodo.getInicializacion() != null) {
             nodo.getInicializacion().accept(this);
         }
-        // emitir la etiqueta de inicio
+
+        // agregar la etiqueta de inicio a la lista de cuartetas
         cuartetas.add(new Cuarteta("label", lInicio, "_", "_", "_", "_", "_"));
+
         // evaluar la condicion si existe
         if (nodo.getCondicion() != null) {
+
             // obtener el resultado de la condicion
             String condicion = nodo.getCondicion().accept(this);
+
             // usar valor por defecto si el resultado es nulo
             if (condicion == null) {
                 condicion = "_";
             }
-            // emitir el salto al final si la condicion es falsa
+
+            // agregar el salto al final si la condicion es falsa a la lista de cuartetas
             cuartetas.add(new Cuarteta("if_false", condicion, lFin, "_", "booleano", "_", "_"));
         }
+
         // visitar el bloque si existe
         if (nodo.getBloque() != null) {
             nodo.getBloque().accept(this);
         }
+
         // visitar el paso si existe
         if (nodo.getPaso() != null) {
             nodo.getPaso().accept(this);
         }
-        // emitir el salto al inicio
+
+        // agregar el salto al inicio a la lista de cuartetas
         cuartetas.add(new Cuarteta("goto", lInicio, "_", "_", "_", "_", "_"));
-        // emitir la etiqueta final
+
+        // agregar la etiqueta final a la lista de cuartetas
         cuartetas.add(new Cuarteta("label", lFin, "_", "_", "_", "_", "_"));
+
         // restaurar las etiquetas anteriores
         this.etiquetaBreakActual = anteriorBreak;
         this.etiquetaContinueActual = anteriorContinue;
+
         return null;
     }
 
@@ -1111,36 +1356,47 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
         // guardar las etiquetas anteriores
         String anteriorBreak = this.etiquetaBreakActual;
         String anteriorContinue = this.etiquetaContinueActual;
+
         // crear las etiquetas del ciclo
         String lInicio = temporales.nuevaEtiqueta();
         String lFin = temporales.nuevaEtiqueta();
+
         // asignar las etiquetas actuales
         this.etiquetaBreakActual = lFin;
         this.etiquetaContinueActual = lInicio;
-        // emitir la etiqueta de inicio
+
+        // agregar la etiqueta de inicio a la lista de cuartetas
         cuartetas.add(new Cuarteta("label", lInicio, "_", "_", "_", "_", "_"));
+
         // evaluar la condicion
         String condicion = "_";
         if (nodo.getCondicion() != null) {
             condicion = nodo.getCondicion().accept(this);
         }
+
         // usar valor por defecto si el resultado es nulo
         if (condicion == null) {
             condicion = "_";
         }
-        // emitir el salto al final si la condicion es falsa
+
+        // agregar el salto al final si la condicion es falsa a la lista de cuartetas
         cuartetas.add(new Cuarteta("if_false", condicion, lFin, "_", "booleano", "_", "_"));
+
         // visitar el bloque si existe
         if (nodo.getBloque() != null) {
             nodo.getBloque().accept(this);
         }
-        // emitir el salto al inicio
+
+        // agregar el salto al inicio a la lista de cuartetas
         cuartetas.add(new Cuarteta("goto", lInicio, "_", "_", "_", "_", "_"));
-        // emitir la etiqueta final
+
+        // agregar la etiqueta final a la lista de cuartetas
         cuartetas.add(new Cuarteta("label", lFin, "_", "_", "_", "_", "_"));
+
         // restaurar las etiquetas anteriores
         this.etiquetaBreakActual = anteriorBreak;
         this.etiquetaContinueActual = anteriorContinue;
+
         return null;
     }
 
@@ -1149,39 +1405,51 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
         // guardar las etiquetas anteriores
         String anteriorBreak = this.etiquetaBreakActual;
         String anteriorContinue = this.etiquetaContinueActual;
+
         // crear las etiquetas del ciclo
         String lInicio = temporales.nuevaEtiqueta();
         String lContinuar = temporales.nuevaEtiqueta();
         String lFin = temporales.nuevaEtiqueta();
+
         // asignar las etiquetas actuales
         this.etiquetaBreakActual = lFin;
         this.etiquetaContinueActual = lContinuar;
-        // emitir la etiqueta de inicio
+
+        // agregar la etiqueta de inicio a la lista de cuartetas
         cuartetas.add(new Cuarteta("label", lInicio, "_", "_", "_", "_", "_"));
+
         // visitar el bloque si existe
         if (nodo.getBloque() != null) {
             nodo.getBloque().accept(this);
         }
-        // emitir la etiqueta de continuar
+
+        // agregar la etiqueta de continuar a la lista de cuartetas
         cuartetas.add(new Cuarteta("label", lContinuar, "_", "_", "_", "_", "_"));
+
         // evaluar la condicion
         String condicion = "_";
         if (nodo.getCondicion() != null) {
             condicion = nodo.getCondicion().accept(this);
         }
+
         // usar valor por defecto si el resultado es nulo
         if (condicion == null) {
             condicion = "_";
         }
-        // emitir el salto al final si la condicion es falsa
+
+        // agregar el salto al final si la condicion es falsa a la lista de cuartetas
         cuartetas.add(new Cuarteta("if_false", condicion, lFin, "_", "booleano", "_", "_"));
-        // emitir el salto al inicio
+
+        // agregar el salto al inicio a la lista de cuartetas
         cuartetas.add(new Cuarteta("goto", lInicio, "_", "_", "_", "_", "_"));
-        // emitir la etiqueta final
+
+        // agregar la etiqueta final a la lista de cuartetas
         cuartetas.add(new Cuarteta("label", lFin, "_", "_", "_", "_", "_"));
+
         // restaurar las etiquetas anteriores
         this.etiquetaBreakActual = anteriorBreak;
         this.etiquetaContinueActual = anteriorContinue;
+
         return null;
     }
 
@@ -1189,17 +1457,21 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
 
     @Override
     public String visitarInitForDecl(InitForDecl nodo) {
-        // emitir la asignacion inicial si hay expresion
+        // agregar la asignacion inicial si hay expresion a la lista de cuartetas
         if (nodo.getExpresion() != null) {
+
             // evaluar la expresion inicial
             String valor = nodo.getExpresion().accept(this);
+
             // usar valor por defecto si el resultado es nulo
             if (valor == null) {
                 valor = "_";
             }
-            // emitir la asignacion a la variable
+
+            // agregar la asignacion a la variable a la lista de cuartetas
             cuartetas.add(new Cuarteta(":=", valor, "_", nodo.getIdentificador(), inferirTipoDe(valor, tiposConocidos), "_", "_"));
         }
+
         return null;
     }
 
@@ -1210,21 +1482,26 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
         if (nodo.getVariable() != null) {
             variable = nodo.getVariable().accept(this);
         }
+
         // usar valor por defecto si el resultado es nulo
         if (variable == null) {
             variable = "_";
         }
+
         // evaluar la expresion inicial
         String valor = "_";
         if (nodo.getExpresion() != null) {
             valor = nodo.getExpresion().accept(this);
         }
+
         // usar valor por defecto si el resultado es nulo
         if (valor == null) {
             valor = "_";
         }
-        // emitir la asignacion
+
+        // agregar la asignacion a la lista de cuartetas
         cuartetas.add(new Cuarteta(":=", valor, "_", variable, inferirTipoDe(valor, tiposConocidos), "_", "_"));
+
         return null;
     }
 
@@ -1234,6 +1511,7 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
         if (nodo.getExpresion() != null) {
             nodo.getExpresion().accept(this);
         }
+
         return null;
     }
 
@@ -1244,20 +1522,24 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
         if (nodo.getVariable() != null) {
             variable = nodo.getVariable().accept(this);
         }
+
         // usar valor por defecto si el resultado es nulo
         if (variable == null) {
             variable = "_";
         }
+
         // evaluar la expresion del paso
         String valor = "_";
         if (nodo.getExpresion() != null) {
             valor = nodo.getExpresion().accept(this);
         }
+
         // usar valor por defecto si el resultado es nulo
         if (valor == null) {
             valor = "_";
         }
-        // emitir la asignacion
+
+        // agregar la asignacion a la lista de cuartetas
         cuartetas.add(new Cuarteta(":=", valor, "_", variable, inferirTipoDe(valor, tiposConocidos), "_", "_"));
         return null;
     }
@@ -1266,10 +1548,12 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
 
     @Override
     public String visitarExprParentesis(ExprParentesis nodo) {
+
         // visitar la expresion interna si existe
         if (nodo.getExpresion() != null) {
             return nodo.getExpresion().accept(this);
         }
+
         return null;
     }
 
@@ -1278,31 +1562,40 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
         // evaluar los argumentos del constructor
         List<String> argumentos = new ArrayList<>();
         if (nodo.getArgumentos() instanceof ListaExpresiones) {
+
             // convertir los argumentos al tipo concreto
             ListaExpresiones lista = (ListaExpresiones) nodo.getArgumentos();
+
             // recorrer cada argumento de la lista
             if (lista.getExpresiones() != null) {
+
                 for (int i = 0; i < lista.getExpresiones().size(); i++) {
                     // evaluar el argumento actual
                     String argumento = lista.getExpresiones().get(i).accept(this);
+
                     // usar valor por defecto si el resultado es nulo
                     if (argumento == null) {
                         argumento = "_";
                     }
+
                     // agregar el argumento a la lista
                     argumentos.add(argumento);
                 }
             }
         }
-        // emitir un param por cada argumento
+
+        // agregar un param por cada argumento a la lista de cuartetas
         for (int i = 0; i < argumentos.size(); i++) {
             cuartetas.add(new Cuarteta("param", argumentos.get(i), "_", "_", inferirTipoDe(argumentos.get(i), tiposConocidos), "_", "_"));
         }
-        // emitir la instancia y guardar el resultado en un temporal
+
+        // agregar la instancia y guardar el resultado en un temporal a la lista de cuartetas
         String temp = temporales.nuevoTemporal();
+
         // registrar el temporal con el tipo de la clase
         tiposConocidos.put(temp, nodo.getNombreClase());
         cuartetas.add(new Cuarteta("new", nodo.getNombreClase(), String.valueOf(argumentos.size()), temp, nodo.getNombreClase(), "_", nodo.getNombreClase()));
+
         return temp;
     }
 
@@ -1313,36 +1606,47 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
         if (nodo.getTipo() instanceof TipoDato) {
             tipoBase = ((TipoDato) nodo.getTipo()).getTipo();
         }
+
         // usar valor por defecto si el nombre es nulo
         if (tipoBase == null) {
             tipoBase = "_";
         }
+
         // evaluar cada dimension del arreglo
         String dimension = "_";
         if (nodo.getDimensiones() != null) {
+
             if (nodo.getDimensiones().isEmpty() == false) {
                 // acumular las dimensiones separadas por coma
                 String acumulado = "";
                 String separador = "";
+
                 for (int i = 0; i < nodo.getDimensiones().size(); i++) {
+
                     // evaluar la dimension actual
                     String valorDimension = nodo.getDimensiones().get(i).accept(this);
+
                     // usar valor por defecto si el resultado es nulo
                     if (valorDimension == null) {
                         valorDimension = "_";
                     }
+
                     // agregar la dimension al acumulado
                     acumulado = acumulado + separador + valorDimension;
                     separador = ",";
                 }
+
                 dimension = acumulado;
             }
+
         }
-        // emitir la reserva de memoria con temporal
+        // agregar la reserva de memoria con temporal a la lista de cuartetas
         String temp = temporales.nuevoTemporal();
+
         // registrar el temporal con el tipo base
         tiposConocidos.put(temp, tipoBase);
         cuartetas.add(new Cuarteta("alloc", tipoBase, dimension, temp, tipoBase, inferirTipoDe(dimension, tiposConocidos), tipoBase));
+
         return temp;
     }
 
@@ -1350,30 +1654,39 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
     public String visitarExprLlamadaFuncion(ExprLlamadaFuncion nodo) {
         // evaluar los argumentos de la llamada
         List<String> argumentos = new ArrayList<>();
+
         if (nodo.getArgumentos() instanceof ListaExpresiones) {
+
             // convertir los argumentos al tipo concreto
             ListaExpresiones lista = (ListaExpresiones) nodo.getArgumentos();
+
             // recorrer cada argumento de la lista
             if (lista.getExpresiones() != null) {
+
                 for (int i = 0; i < lista.getExpresiones().size(); i++) {
                     // evaluar el argumento actual
                     String argumento = lista.getExpresiones().get(i).accept(this);
+
                     // usar valor por defecto si el resultado es nulo
                     if (argumento == null) {
                         argumento = "_";
                     }
+
                     // agregar el argumento a la lista
                     argumentos.add(argumento);
                 }
+
             }
         }
-        // emitir un param por cada argumento
+        // agregar un param por cada argumento a la lista de cuartetas
         for (int i = 0; i < argumentos.size(); i++) {
             cuartetas.add(new Cuarteta("param", argumentos.get(i), "_", "_", inferirTipoDe(argumentos.get(i), tiposConocidos), "_", "_"));
         }
-        // emitir la llamada y guardar el resultado en un temporal
+
+        // agregar la llamada y guardar el resultado en un temporal a la lista de cuartetas
         String temp = temporales.nuevoTemporal();
         cuartetas.add(new Cuarteta("call", nodo.getNombre(), String.valueOf(argumentos.size()), temp, "_", "_", "_"));
+
         return temp;
     }
 
@@ -1384,38 +1697,49 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
         if (nodo.getObjeto() != null) {
             objeto = nodo.getObjeto().accept(this);
         }
+
         // usar valor por defecto si el resultado es nulo
         if (objeto == null) {
             objeto = "_";
         }
+
         // evaluar los argumentos de la llamada
         List<String> argumentos = new ArrayList<>();
         if (nodo.getArgumentos() instanceof ListaExpresiones) {
+
             // convertir los argumentos al tipo concreto
             ListaExpresiones lista = (ListaExpresiones) nodo.getArgumentos();
+
             // recorrer cada argumento de la lista
             if (lista.getExpresiones() != null) {
+
                 for (int i = 0; i < lista.getExpresiones().size(); i++) {
                     // evaluar el argumento actual
                     String argumento = lista.getExpresiones().get(i).accept(this);
+
                     // usar valor por defecto si el resultado es nulo
                     if (argumento == null) {
                         argumento = "_";
                     }
+
                     // agregar el argumento a la lista
                     argumentos.add(argumento);
                 }
+
             }
         }
-        // emitir el param del objeto primero
+        // agregar el param del objeto primero a la lista de cuartetas
         cuartetas.add(new Cuarteta("param", objeto, "_", "_", inferirTipoDe(objeto, tiposConocidos), "_", "_"));
-        // emitir un param por cada argumento
+
+        // agregar un param por cada argumento a la lista de cuartetas
         for (int i = 0; i < argumentos.size(); i++) {
             cuartetas.add(new Cuarteta("param", argumentos.get(i), "_", "_", inferirTipoDe(argumentos.get(i), tiposConocidos), "_", "_"));
         }
-        // emitir la llamada al metodo y guardar el resultado en un temporal
+
+        // agregar la llamada al metodo y guardar el resultado en un temporal a la lista de cuartetas
         String temp = temporales.nuevoTemporal();
         cuartetas.add(new Cuarteta("call_method", nodo.getNombre(), String.valueOf(argumentos.size() + 1), temp, "_", "_", "_"));
+
         return temp;
     }
 
@@ -1426,22 +1750,27 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
         if (nodo.getObjeto() != null) {
             objeto = nodo.getObjeto().accept(this);
         }
+
         // usar valor por defecto si el resultado es nulo
         if (objeto == null) {
             objeto = "_";
         }
+
         // evaluar el indice del acceso
         String indice = "_";
         if (nodo.getIndice() != null) {
             indice = nodo.getIndice().accept(this);
         }
+
         // usar valor por defecto si el resultado es nulo
         if (indice == null) {
             indice = "_";
         }
+
         // generar el acceso a arreglo con temporal
         String temp = temporales.nuevoTemporal();
         cuartetas.add(new Cuarteta("=[]", objeto, indice, temp, "_", "entero", "_"));
+
         return temp;
     }
 
@@ -1452,13 +1781,16 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
         if (nodo.getObjeto() != null) {
             objeto = nodo.getObjeto().accept(this);
         }
+
         // usar valor por defecto si el resultado es nulo
         if (objeto == null) {
             objeto = "_";
         }
-        // emitir el acceso a miembro con temporal
+
+        // agregar el acceso a miembro con temporal a la lista de cuartetas
         String temp = temporales.nuevoTemporal();
         cuartetas.add(new Cuarteta(".", objeto, nodo.getMiembro(), temp, "_", "_", "_"));
+
         return temp;
     }
 
@@ -1469,12 +1801,15 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
         if (nodo.getVariable() != null) {
             variable = nodo.getVariable().accept(this);
         }
+
         // usar valor por defecto si el resultado es nulo
         if (variable == null) {
             variable = "_";
         }
-        // emitir el incremento sobre la misma variable
+
+        // agregar el incremento sobre la misma variable a la lista de cuartetas
         cuartetas.add(new Cuarteta("+", variable, "1", variable, inferirTipoDe(variable, tiposConocidos), "entero", inferirTipoDe(variable, tiposConocidos)));
+
         return variable;
     }
 
@@ -1485,12 +1820,15 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
         if (nodo.getVariable() != null) {
             variable = nodo.getVariable().accept(this);
         }
+
         // usar valor por defecto si el resultado es nulo
         if (variable == null) {
             variable = "_";
         }
-        // emitir el decremento sobre la misma variable
+
+        // agregar el decremento sobre la misma variable a la lista de cuartetas
         cuartetas.add(new Cuarteta("-", variable, "1", variable, inferirTipoDe(variable, tiposConocidos), "entero", inferirTipoDe(variable, tiposConocidos)));
+
         return variable;
     }
 
@@ -1501,18 +1839,24 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
         if (nodo.getExpresion() != null) {
             valor = nodo.getExpresion().accept(this);
         }
+
         // usar valor por defecto si el resultado es nulo
         if (valor == null) {
             valor = "_";
         }
-        // emitir la negacion aritmetica con temporal
+
+        // agregar la negacion aritmetica con temporal a la lista de cuartetas
         String temp = temporales.nuevoTemporal();
+
         // inferir el tipo desde el operando
         String tipoNeg = inferirTipoDe(valor, tiposConocidos);
+
         // registrar el temporal con el tipo inferido
         tiposConocidos.put(temp, tipoNeg);
-        // emitir menos unario con opcode propio
+
+        // agregar menos unario con opcode propio a la lista de cuartetas
         cuartetas.add(new Cuarteta("uminus", valor, "_", temp, tipoNeg, "_", tipoNeg));
+
         return temp;
     }
 
@@ -1523,15 +1867,19 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
         if (nodo.getExpresion() != null) {
             valor = nodo.getExpresion().accept(this);
         }
+
         // usar valor por defecto si el resultado es nulo
         if (valor == null) {
             valor = "_";
         }
-        // emitir la negacion logica con temporal
+
+        // agregar la negacion logica con temporal a la lista de cuartetas
         String temp = temporales.nuevoTemporal();
+
         // registrar el temporal como booleano
         tiposConocidos.put(temp, "booleano");
         cuartetas.add(new Cuarteta("!", valor, "_", temp, inferirTipoDe(valor, tiposConocidos), "_", "booleano"));
+
         return temp;
     }
 
@@ -1542,26 +1890,33 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
         if (nodo.getOperandoIzquierdo() != null) {
             izquierdo = nodo.getOperandoIzquierdo().accept(this);
         }
+
         // usar valor por defecto si el resultado es nulo
         if (izquierdo == null) {
             izquierdo = "_";
         }
+
         // evaluar el operando derecho
         String derecho = "_";
         if (nodo.getOperandoDerecho() != null) {
             derecho = nodo.getOperandoDerecho().accept(this);
         }
+
         // usar valor por defecto si el resultado es nulo
         if (derecho == null) {
             derecho = "_";
         }
-        // emitir la operacion con temporal
+
+        // agregar la operacion con temporal a la lista de cuartetas
         String temp = temporales.nuevoTemporal();
+
         // inferir el tipo resultado de la operacion
         String tipoResMult = tipoResultadoAritmetico(izquierdo, derecho);
+
         // registrar el temporal con el tipo inferido
         tiposConocidos.put(temp, tipoResMult);
         cuartetas.add(new Cuarteta(nodo.getOperador(), izquierdo, derecho, temp, tipoAritmetico(izquierdo), tipoAritmetico(derecho), tipoResMult));
+
         return temp;
     }
 
@@ -1572,26 +1927,33 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
         if (nodo.getOperandoIzquierdo() != null) {
             izquierdo = nodo.getOperandoIzquierdo().accept(this);
         }
+
         // usar valor por defecto si el resultado es nulo
         if (izquierdo == null) {
             izquierdo = "_";
         }
+
         // evaluar el operando derecho
         String derecho = "_";
         if (nodo.getOperandoDerecho() != null) {
             derecho = nodo.getOperandoDerecho().accept(this);
         }
+
         // usar valor por defecto si el resultado es nulo
         if (derecho == null) {
             derecho = "_";
         }
-        // emitir la operacion con temporal
+
+        // agregar la operacion con temporal a la lista de cuartetas
         String temp = temporales.nuevoTemporal();
+
         // inferir los tipos de los operandos
         String tipoIzqSuma = inferirTipoDe(izquierdo, tiposConocidos);
         String tipoDerSuma = inferirTipoDe(derecho, tiposConocidos);
+
         // inferir el tipo resultado de la operacion
         String tipoResSuma = tipoResultadoAritmetico(izquierdo, derecho);
+
         // usar cadena cuando se concatena texto con mas
         if ("+".equals(nodo.getOperador())) {
             boolean izqEsCadenaSuma = esTipoCadena(tipoIzqSuma);
@@ -1600,9 +1962,11 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
                 tipoResSuma = "cadena";
             }
         }
+
         // registrar el temporal con el tipo inferido
         tiposConocidos.put(temp, tipoResSuma);
         cuartetas.add(new Cuarteta(nodo.getOperador(), izquierdo, derecho, temp, tipoAritmetico(izquierdo), tipoAritmetico(derecho), tipoResSuma));
+
         return temp;
     }
 
@@ -1613,24 +1977,30 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
         if (nodo.getOperandoIzquierdo() != null) {
             izquierdo = nodo.getOperandoIzquierdo().accept(this);
         }
+
         // usar valor por defecto si el resultado es nulo
         if (izquierdo == null) {
             izquierdo = "_";
         }
+
         // evaluar el operando derecho
         String derecho = "_";
         if (nodo.getOperandoDerecho() != null) {
             derecho = nodo.getOperandoDerecho().accept(this);
         }
+
         // usar valor por defecto si el resultado es nulo
         if (derecho == null) {
             derecho = "_";
         }
-        // emitir la comparacion con temporal
+
+        // agregar la comparacion con temporal a la lista de cuartetas
         String temp = temporales.nuevoTemporal();
+
         // registrar el temporal como booleano
         tiposConocidos.put(temp, "booleano");
         cuartetas.add(new Cuarteta(nodo.getOperador(), izquierdo, derecho, temp, inferirTipoDe(izquierdo, tiposConocidos), inferirTipoDe(derecho, tiposConocidos), "booleano"));
+
         return temp;
     }
 
@@ -1641,24 +2011,30 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
         if (nodo.getOperandoIzquierdo() != null) {
             izquierdo = nodo.getOperandoIzquierdo().accept(this);
         }
+
         // usar valor por defecto si el resultado es nulo
         if (izquierdo == null) {
             izquierdo = "_";
         }
+
         // evaluar el operando derecho
         String derecho = "_";
         if (nodo.getOperandoDerecho() != null) {
             derecho = nodo.getOperandoDerecho().accept(this);
         }
+
         // usar valor por defecto si el resultado es nulo
         if (derecho == null) {
             derecho = "_";
         }
-        // emitir la conjuncion con temporal
+
+        // agregar la conjuncion con temporal a la lista de cuartetas
         String temp = temporales.nuevoTemporal();
+
         // registrar el temporal como booleano
         tiposConocidos.put(temp, "booleano");
         cuartetas.add(new Cuarteta("&&", izquierdo, derecho, temp, inferirTipoDe(izquierdo, tiposConocidos), inferirTipoDe(derecho, tiposConocidos), "booleano"));
+
         return temp;
     }
 
@@ -1669,24 +2045,30 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
         if (nodo.getOperandoIzquierdo() != null) {
             izquierdo = nodo.getOperandoIzquierdo().accept(this);
         }
+
         // usar valor por defecto si el resultado es nulo
         if (izquierdo == null) {
             izquierdo = "_";
         }
+
         // evaluar el operando derecho
         String derecho = "_";
         if (nodo.getOperandoDerecho() != null) {
             derecho = nodo.getOperandoDerecho().accept(this);
         }
+
         // usar valor por defecto si el resultado es nulo
         if (derecho == null) {
             derecho = "_";
         }
-        // emitir la disyuncion con temporal
+
+        // agregar la disyuncion con temporal a la lista de cuartetas
         String temp = temporales.nuevoTemporal();
+
         // registrar el temporal como booleano
         tiposConocidos.put(temp, "booleano");
         cuartetas.add(new Cuarteta("||", izquierdo, derecho, temp, inferirTipoDe(izquierdo, tiposConocidos), inferirTipoDe(derecho, tiposConocidos), "booleano"));
+
         return temp;
     }
 
@@ -1697,54 +2079,72 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
         if (nodo.getCondicion() != null) {
             condicion = nodo.getCondicion().accept(this);
         }
+
         // usar valor por defecto si el resultado es nulo
         if (condicion == null) {
             condicion = "_";
         }
+
         // crear el temporal del resultado
         String temp = temporales.nuevoTemporal();
+
         // crear la etiqueta de la rama falsa
         String lFalso = temporales.nuevaEtiqueta();
+
         // crear la etiqueta final
         String lFin = temporales.nuevaEtiqueta();
-        // emitir el salto a la rama falsa si la condicion es falsa
+
+        // agregar el salto a la rama falsa si la condicion es falsa a la lista de cuartetas
         cuartetas.add(new Cuarteta("if_false", condicion, lFalso, "_", "booleano", "_", "_"));
+
         // evaluar el valor verdadero
         String verdadero = "_";
         if (nodo.getValorVerdadero() != null) {
             verdadero = nodo.getValorVerdadero().accept(this);
         }
+
         // usar valor por defecto si el resultado es nulo
         if (verdadero == null) {
             verdadero = "_";
         }
+
         // inferir los tipos de ambas ramas
         String tipoVerdadero = inferirTipoDe(verdadero, tiposConocidos);
-        // emitir la asignacion del valor verdadero
+
+        // agregar la asignacion del valor verdadero a la lista de cuartetas
         cuartetas.add(new Cuarteta(":=", verdadero, "_", temp, tipoVerdadero, "_", "_"));
-        // emitir el salto al final
+
+        // agregar el salto al final a la lista de cuartetas
         cuartetas.add(new Cuarteta("goto", lFin, "_", "_", "_", "_", "_"));
-        // emitir la etiqueta de la rama falsa
+
+        // agregar la etiqueta de la rama falsa a la lista de cuartetas
         cuartetas.add(new Cuarteta("label", lFalso, "_", "_", "_", "_", "_"));
+
         // evaluar el valor falso
         String falso = "_";
         if (nodo.getValorFalso() != null) {
             falso = nodo.getValorFalso().accept(this);
         }
+
         // usar valor por defecto si el resultado es nulo
         if (falso == null) {
             falso = "_";
         }
+
         // inferir los tipos de ambas ramas
         String tipoFalso = inferirTipoDe(falso, tiposConocidos);
-        // emitir la asignacion del valor falso
+
+        // agregar la asignacion del valor falso a la lista de cuartetas
         cuartetas.add(new Cuarteta(":=", falso, "_", temp, tipoFalso, "_", "_"));
-        // emitir la etiqueta final
+
+        // agregar la etiqueta final a la lista de cuartetas
         cuartetas.add(new Cuarteta("label", lFin, "_", "_", "_", "_", "_"));
+
         // registrar el temporal con el tipo comun de las ramas
         if (tipoVerdadero.equals(tipoFalso)) {
             tiposConocidos.put(temp, tipoVerdadero);
         }
+
         return temp;
     }
 
@@ -1752,27 +2152,37 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
     public String visitarExprPrimitivo(ExprPrimitivo nodo) {
         // verificar si el valor es primitivo
         if (nodo.getValor() instanceof ValorPrimitivo) {
+
             // convertir el valor al tipo concreto
             ValorPrimitivo primitivo = (ValorPrimitivo) nodo.getValor();
+
             // devolver el identificador directo sin crear temporal
             if (primitivo.getTipoDato() == TipoPrimitivo.IDENTIFICADOR) {
                 return primitivo.getValor();
             }
+
             // guardar el nulo como literal especial
             if (primitivo.getTipoDato() == TipoPrimitivo.NULO) {
                 String tempNulo = temporales.nuevoTemporal();
                 cuartetas.add(new Cuarteta("=", "null", "_", tempNulo, "_", "_", "_"));
+
                 return tempNulo;
             }
+
             // guardar el literal en un temporal
             String temp = temporales.nuevoTemporal();
+
             // inferir el tipo del literal
             String tipoLiteral = inferirTipoLiteral(primitivo.getValor());
+
             // registrar el temporal con el tipo inferido
             tiposConocidos.put(temp, tipoLiteral);
             cuartetas.add(new Cuarteta("=", primitivo.getValor(), "_", temp, tipoLiteral, "_", tipoLiteral));
+
             return temp;
         }
+
         return null;
+
     }
 }

@@ -17,6 +17,7 @@ import org.jrg.model.error.ErrorCompilacion;
 import org.jrg.model.error.TipoError;
 import org.jrg.model.resultado.CuartetaResultado;
 import org.jrg.model.resultado.ResultadoAnalisis;
+import org.jrg.model.resultado.ResultadoGcc;
 import org.jrg.model.semantico.Simbolo;
 import org.jrg.model.semantico.SimboloResultado;
 import org.jrg.model.semantico.Tipo;
@@ -50,7 +51,7 @@ public class CompiladorPigLatinService {
             return construirResultado(recolector, "", "", "", null, null, new ArrayList<>());
         }
 
-        // crear el lexer y adjuntar la escucha de errores lexicos
+        // crear el lexer y colocarle la escucha de errores lexicos :D
         PigLatinLexer lexer = new PigLatinLexer(CharStreams.fromString(codigoFuente));
         lexer.removeErrorListeners();
         lexer.addErrorListener(new EscuchaErroresAntlr(recolector, TipoError.LEXICO));
@@ -123,15 +124,19 @@ public class CompiladorPigLatinService {
                 List<Tipo> tiposDelAnalisis = analizador.obtenerTipos();
                 for (int i = 0; i < tiposDelAnalisis.size(); i++) {
                     Tipo tipoActual = tiposDelAnalisis.get(i);
+
                     // omitir tipos nulos
                     if (tipoActual == null) {
                         continue;
                     }
+
                     List<Simbolo> campos = tipoActual.getCampos();
+
                     // omitir tipos sin campos
                     if (campos == null || campos.isEmpty()) {
                         continue;
                     }
+
                     // recolectar los nombres de los campos
                     List<String> nombresCampos = new ArrayList<>();
                     for (int j = 0; j < campos.size(); j++) {
@@ -140,6 +145,7 @@ public class CompiladorPigLatinService {
                             nombresCampos.add(campo.getNombre());
                         }
                     }
+
                     // registrar los campos en el generador
                     generadorCuartetas.registrarCamposDeStruct(tipoActual.getNombre(), nombresCampos);
                 }
@@ -149,6 +155,7 @@ public class CompiladorPigLatinService {
                 for (int i = 0; i < cuartetasCrudas.size(); i++) {
                     cuartetas.add(new CuartetaResultado(cuartetasCrudas.get(i)));
                 }
+
             } catch (RuntimeException e) {
                 recolector.agregar(TipoError.SEMANTICO, 1, 1, "error durante el analisis semantico: " + e.getMessage());
             }
@@ -163,24 +170,28 @@ public class CompiladorPigLatinService {
             recolector.agregar(TipoError.SEMANTICO, 0, 0, "El codigo C generado puede ser invalido porque hay errores semanticos previos");
         }
 
-        // return construirResultado(recolector, arbolTextual, "", "", simbolos, tipos, new ArrayList<>(), cuartetas);
-        return construirResultado(recolector, arbolTextual, "", "", simbolos, tipos, new ArrayList<>(), cuartetas, codigoC);
+        // compilar con gcc para verificar aunque haya errores semanticos
+        ResultadoGcc resultadoGcc = null;
+        if (codigoC != null && codigoC.isEmpty() == false) {
+            CompiladorC compiladorC = new CompiladorC();
+            resultadoGcc = compiladorC.compilar(codigoC);
+        }
+
+        return construirResultado(recolector, arbolTextual, "", "", simbolos, tipos, new ArrayList<>(), cuartetas, codigoC, resultadoGcc);
     }
 
     // construir el resultado final del analisis sin cuartetas
     private ResultadoAnalisis construirResultado(RecolectorErrores recolector, String arbolTextual, String astMermaid, String codigoPigLatin, List<Simbolo> simbolos, List<Tipo> tipos, List<Object> pasosPila) {
-        // return construirResultado(recolector, arbolTextual, astMermaid, codigoPigLatin, simbolos, tipos, pasosPila, null);
-        return construirResultado(recolector, arbolTextual, astMermaid, codigoPigLatin, simbolos, tipos, pasosPila, null, null);
+        return construirResultado(recolector, arbolTextual, astMermaid, codigoPigLatin, simbolos, tipos, pasosPila, null, null, null);
     }
 
     // construir el resultado final del analisis con cuartetas
     private ResultadoAnalisis construirResultado(RecolectorErrores recolector, String arbolTextual, String astMermaid, String codigoPigLatin, List<Simbolo> simbolos, List<Tipo> tipos, List<Object> pasosPila, List<CuartetaResultado> cuartetas) {
-        // return construirResultado(recolector, arbolTextual, astMermaid, codigoPigLatin, simbolos, tipos, pasosPila, cuartetas, null);
-        return construirResultado(recolector, arbolTextual, astMermaid, codigoPigLatin, simbolos, tipos, pasosPila, cuartetas, null);
+        return construirResultado(recolector, arbolTextual, astMermaid, codigoPigLatin, simbolos, tipos, pasosPila, cuartetas, null, null);
     }
 
-    // construir el resultado final del analisis con cuartetas y codigo C
-    private ResultadoAnalisis construirResultado(RecolectorErrores recolector, String arbolTextual, String astMermaid, String codigoPigLatin, List<Simbolo> simbolos, List<Tipo> tipos, List<Object> pasosPila, List<CuartetaResultado> cuartetas, String codigoC) {
+    // construir el resultado final del analisis con cuartetas codigo C y gcc
+    private ResultadoAnalisis construirResultado(RecolectorErrores recolector, String arbolTextual, String astMermaid, String codigoPigLatin, List<Simbolo> simbolos, List<Tipo> tipos, List<Object> pasosPila, List<CuartetaResultado> cuartetas, String codigoC, ResultadoGcc resultadoGcc) {
 
         List<ErrorCompilacion> errores = recolector.obtenerErrores();
         List<SimboloResultado> simbolosResultado = new ArrayList<>();
@@ -199,7 +210,7 @@ public class CompiladorPigLatinService {
         }
 
         boolean exito = errores.isEmpty();
-        // return new ResultadoAnalisis(exito, errores, arbolTextual, astMermaid, codigoPigLatin, simbolosResultado, tiposResultado, pasosPila, simbolos, tipos, cuartetas);
-        return new ResultadoAnalisis(exito, errores, arbolTextual, astMermaid, codigoPigLatin, simbolosResultado, tiposResultado, pasosPila, simbolos, tipos, cuartetas, codigoC);
+
+        return new ResultadoAnalisis(exito, errores, arbolTextual, astMermaid, codigoPigLatin, simbolosResultado, tiposResultado, pasosPila, simbolos, tipos, cuartetas, codigoC, resultadoGcc);
     }
 }

@@ -42,12 +42,15 @@ public class FuncionPendiente {
      */
     public FuncionPendiente(String nombre, List<Tipo> tiposParametros, Tipo tipoRetorno, Ambito ambito, int linea, int columna) {
         this.id = MiniUUID.generate();
+        // normalizar nombre nulo
         if (nombre == null) {
             this.nombre = "";
         } else {
             this.nombre = nombre;
         }
+
         this.tiposParametros = new ArrayList<>();
+        // copiar parametros si existen
         if (tiposParametros != null) {
             this.tiposParametros.addAll(tiposParametros);
         }
@@ -90,6 +93,7 @@ public class FuncionPendiente {
      * Agregar el tipo de un parametro.
      */
     public void agregarParametro(Tipo tipo) {
+        // validar duplicado antes de agregar
         if (tipo != null && !tiposParametros.contains(tipo)) {
             tiposParametros.add(tipo);
         }
@@ -174,18 +178,23 @@ public class FuncionPendiente {
         StringBuilder firma = new StringBuilder();
         firma.append(nombre);
         firma.append("(");
+        // recorrer parametros para la firma
         for (int i = 0; i < tiposParametros.size(); i++) {
             if (i > 0) {
                 firma.append(",");
             }
+
             Tipo tipo = tiposParametros.get(i);
+            // normalizar tipo desconocido
             if (tipo == null) {
                 firma.append("desconocido");
             } else {
                 firma.append(tipo.getNombre());
             }
         }
+
         firma.append(")");
+
         return firma.toString();
     }
 }

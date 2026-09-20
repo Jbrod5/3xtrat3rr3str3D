@@ -84,7 +84,6 @@ public class AmbitoSemantico {
             metodosPorNombre.put(nombre, existentes);
         }
         existentes.add(metodo);
-        //simbolos.add(metodo);
     }
 
     /**
@@ -101,7 +100,6 @@ public class AmbitoSemantico {
             constructoresPorNombre.put(nombre, existentes);
         }
         existentes.add(constructor);
-        //simbolos.add(constructor);
     }
 
     /**
@@ -120,13 +118,17 @@ public class AmbitoSemantico {
      * Buscar un simbolo variable en este ambito y sus padres.
      */
     public Simbolo buscarSimbolo(String nombre) {
+        // buscar simbolo en ambito local
         Simbolo local = buscarSimboloLocal(nombre);
         if (local != null) {
             return local;
         }
+
         if (padre == null) {
             return null;
         }
+
+        // delegar busqueda al ambito padre
         return padre.buscarSimbolo(nombre);
     }
 
@@ -137,10 +139,13 @@ public class AmbitoSemantico {
         if (nombre == null) {
             return null;
         }
+
+        // obtener lista de candidatos por nombre
         List<Simbolo> candidatos = simbolosPorNombre.get(nombre);
         if (candidatos == null || candidatos.isEmpty()) {
             return null;
         }
+
         return candidatos.get(candidatos.size() - 1);
     }
 
@@ -187,6 +192,7 @@ public class AmbitoSemantico {
      * Buscar metodos en este ambito y sus padres.
      */
     public List<Simbolo> buscarMetodos(String nombre) {
+        // obtener metodos locales como base
         List<Simbolo> resultado = obtenerMetodosLocal(nombre);
         if (padre != null) {
             List<Simbolo> padres = padre.buscarMetodos(nombre);
@@ -194,6 +200,8 @@ public class AmbitoSemantico {
                 resultado.addAll(padres);
             }
         }
+
+        // devolver lista combinada
         return resultado;
     }
 

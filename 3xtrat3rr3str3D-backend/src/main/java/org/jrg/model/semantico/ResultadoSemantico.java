@@ -16,21 +16,27 @@ public class ResultadoSemantico {
      */
     public ResultadoSemantico(List<ErrorCompilacion> errores, List<Simbolo> simbolos, List<Tipo> tipos) {
         this.errores = new ArrayList<>();
+        // copiar errores si existen
         if (errores != null) {
             this.errores.addAll(errores);
         }
+
         this.simbolos = new ArrayList<>();
+        // convertir simbolos a DTO
         if (simbolos != null) {
             for (Simbolo simbolo : simbolos) {
                 this.simbolos.add(new SimboloResultado(simbolo));
             }
         }
+
         this.tipos = new ArrayList<>();
+        // convertir tipos a DTO
         if (tipos != null) {
             for (Tipo tipo : tipos) {
                 this.tipos.add(new TipoResultado(tipo));
             }
         }
+
         this.exito = this.errores.isEmpty();
     }
 
