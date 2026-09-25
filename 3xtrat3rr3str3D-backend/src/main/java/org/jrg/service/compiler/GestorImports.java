@@ -1,10 +1,12 @@
 package org.jrg.service.compiler;
 
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -90,13 +92,97 @@ public class GestorImports {
             return resultado;
         }
         if ("z".equals(extension)) {
-            ResultadoAnalisis resultado = this.compiladorZ.analizar(contenido);
+            ResultadoAnalisis resultado = analizarConjuntoZetariano(rutaAbsoluta, linea, columna);
             acumularCuartetas(resultado);
             return resultado;
         }
 
         this.recolectorErrores.agregar(TipoError.SEMANTICO, linea, columna, "extension no soportada en import: " + extension);
         return null;
+    }
+
+    // compilar el import con sus hermanos compartiendo ambito
+    private ResultadoAnalisis analizarConjuntoZetariano(String rutaAbsoluta, int linea, int columna) {
+        // conservar el error clasico si el archivo no existe
+        if (Files.isRegularFile(Paths.get(rutaAbsoluta)) == false) {
+            this.recolectorErrores.agregar(TipoError.SEMANTICO, linea, columna, "no se pudo leer el archivo importado: " + rutaAbsoluta);
+            return null;
+        }
+        // juntar niveles de carpetas desde el archivo hacia arriba con tope
+        List<List<Path>> niveles = new ArrayList<>();
+        Path actual = Paths.get(rutaAbsoluta).getParent();
+        for (int i = 0; i < 3 && actual != null; i++) {
+            niveles.add(listarZetas(actual));
+            actual = actual.getParent();
+        }
+        // acumular niveles hasta cerrar los tipos desconocidos
+        Set<String> incluidas = new HashSet<>();
+        List<Path> conjunto = new ArrayList<>();
+        ResultadoAnalisis resultado = null;
+        for (int i = 0; i < niveles.size(); i++) {
+            // agregar el nivel sin duplicar rutas
+            for (int j = 0; j < niveles.get(i).size(); j++) {
+                String ruta = niveles.get(i).get(j).toString().replace("\\", "/");
+                if (incluidas.contains(ruta) == false) {
+                    incluidas.add(ruta);
+                    conjunto.add(niveles.get(i).get(j));
+                }
+            }
+            // compilar el conjunto actual
+            resultado = this.compiladorZ.analizarProyecto(conjunto);
+            // detener si ya no quedan tipos desconocidos
+            if (quedanTiposDesconocidos(resultado) == false) {
+                break;
+            }
+        }
+        return resultado;
+    }
+
+    // listar los archivos zetariano de una carpeta en orden
+    private List<Path> listarZetas(Path carpeta) {
+        // devolver vacio si la carpeta es nula
+        List<Path> zetas = new ArrayList<>();
+        if (carpeta == null) {
+            return zetas;
+        }
+        // recorrer la carpeta filtrando por extension
+        try (DirectoryStream<Path> flujo = Files.newDirectoryStream(carpeta)) {
+            flujo.forEach(ruta -> {
+                // aceptar solo archivos regulares con extension zetariana
+                if (Files.isRegularFile(ruta) == false) {
+                    return;
+                }
+                String nombre = ruta.getFileName().toString().toLowerCase();
+                if (nombre.endsWith(".z") == false) {
+                    return;
+                }
+                zetas.add(ruta);
+            });
+        } catch (IOException e) {
+            // omitir carpetas ilegibles
+        }
+        // ordenar para un resultado estable
+        Collections.sort(zetas);
+        return zetas;
+    }
+
+    // verificar si quedan errores de tipos sin resolver
+    private boolean quedanTiposDesconocidos(ResultadoAnalisis resultado) {
+        // asumir cerrado si no hay resultado
+        if (resultado == null || resultado.getErrores() == null) {
+            return false;
+        }
+        // buscar marcas de referencias sin resolver
+        for (int i = 0; i < resultado.getErrores().size(); i++) {
+            String descripcion = resultado.getErrores().get(i).getDescripcion();
+            if (descripcion == null) {
+                continue;
+            }
+            if (descripcion.contains("no definido") || descripcion.contains("no declarada") || descripcion.contains("no accesible") || descripcion.contains("no existe")) {
+                return true;
+            }
+        }
+        return false;
     }
 
     // acumular las cuartetas del resultado importado

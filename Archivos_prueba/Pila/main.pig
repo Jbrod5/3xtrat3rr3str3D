@@ -30,12 +30,13 @@ dum (opcion != 4) {
     } aliter (opcion == 3 ) { 
         >> pila.toString();
     } aliter (opcion == 4 ) { 
-        >> "Fin del programa"
+        >> "Fin del programa";
     } finis; 
 
-    >> "Ingresa cualquier tecla para continuar "
+    >> "Ingresa cualquier tecla para continuar ";
     lectura <<
 
 } finis; 
 
 
+FINIS;

@@ -286,7 +286,9 @@ instruccion_lectura
 instruccion_impresion
     // >> "Hola comandante!" ;
     // >> "Bienvenido" >> comandante ;
-    : IMPRIMIR elemento_imprimir (IMPRIMIR elemento_imprimir)* PUNTO_Y_COMA                 # impresionEncadenada
+    // : IMPRIMIR elemento_imprimir (IMPRIMIR elemento_imprimir)* PUNTO_Y_COMA                 # impresionEncadenada
+    // el punto y coma al final de imprimir es opcional
+    : IMPRIMIR elemento_imprimir (IMPRIMIR elemento_imprimir)* PUNTO_Y_COMA?               # impresionEncadenada
     ;
 
 elemento_imprimir

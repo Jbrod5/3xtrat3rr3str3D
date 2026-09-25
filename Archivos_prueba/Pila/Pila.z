@@ -1,6 +1,6 @@
 public class Pila {
-    private Nodo cima;
-    private int tamanio;
+    Nodo cima;
+    int tamanio;
 
     public Pila() {
         cima = null;

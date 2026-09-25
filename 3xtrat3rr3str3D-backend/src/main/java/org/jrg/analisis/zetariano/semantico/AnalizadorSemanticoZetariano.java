@@ -85,6 +85,8 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
     private AmbitoSemantico ambitoGlobal;
     private AmbitoSemantico ambitoActual;
     private AmbitoSemantico ambitoClase;
+    // ambito global compartido entre archivos o nulo en modo suelto
+    private AmbitoSemantico ambitoCompartido;
 
 
     private Tipo tipoClaseActual; // tipo de clase actual en analisis
@@ -120,6 +122,38 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         this.tipoRetornoActual = null;
         this.enMetodoConstructor = false;
         this.alcanzable = true;
+        // iniciar sin ambito compartido para el modo suelto
+        this.ambitoCompartido = null;
+    }
+
+    /**
+     * Crear el analizador con un ambito global compartido entre archivos.
+     */
+    public AnalizadorSemanticoZetariano(RecolectorErrores recolectorErrores, AmbitoSemantico ambitoCompartido) {
+        // delegar la creacion basica al constructor principal
+        this(recolectorErrores);
+        // guardar el ambito compartido para el modo conjunto
+        this.ambitoCompartido = ambitoCompartido;
+        // apuntar al ambito compartido desde el inicio si existe
+        if (ambitoCompartido != null) {
+            this.ambitoGlobal = ambitoCompartido;
+            this.ambitoActual = ambitoCompartido;
+        }
+    }
+
+    // registrar primitivos y builtins una sola vez en el ambito compartido
+    public void inicializarAmbitoCompartido() {
+        // operar solo en modo conjunto
+        if (ambitoCompartido == null) {
+            return;
+        }
+        // usar el ambito compartido como global
+        this.ambitoGlobal = this.ambitoCompartido;
+        this.ambitoActual = this.ambitoCompartido;
+        // registrar los tipos primitivos del lenguaje
+        registrarTiposPrimitivos();
+        // registrar las funciones especiales del lenguaje
+        registrarFuncionesBuiltIn();
     }
 
     /**
@@ -473,16 +507,22 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
 
     @Override
     public Object visitarPrograma(Programa programa) {
-        // crear el ambito global
-        ambitoGlobal = new AmbitoSemantico("global", null);
-        ambitoActual = ambitoGlobal;
+        // usar el ambito compartido sin recrear nada en modo conjunto
+        if (ambitoCompartido != null) {
+            ambitoGlobal = ambitoCompartido;
+            ambitoActual = ambitoCompartido;
+        } else {
+            // crear el ambito global
+            ambitoGlobal = new AmbitoSemantico("global", null);
+            ambitoActual = ambitoGlobal;
 
-        // registrar los tipos primitivos del lenguaje
-        registrarTiposPrimitivos();
+            // registrar los tipos primitivos del lenguaje
+            registrarTiposPrimitivos();
 
-        // registrar las funciones especiales del lenguaje
-        // println, print y readln son parte del sistema y no requieren declaracion :D
-        registrarFuncionesBuiltIn();
+            // registrar las funciones especiales del lenguaje
+            // println, print y readln son parte del sistema y no requieren declaracion :D
+            registrarFuncionesBuiltIn();
+        }
 
         // analizar la clase
         if (programa.getDefinicionClase() != null) {
@@ -499,6 +539,21 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
     @Override
     public Object visitarDefClase(DefClase clase) {
 
+        // registrar el cascaron en la primera pasada
+        boolean registrado = registrarCascaronClase(clase);
+        // omitir cuerpos si la clase esta duplicada
+        if (registrado == false) {
+            return null;
+        }
+        // analizar los cuerpos en la segunda pasada
+        analizarCuerposClase(clase);
+
+        return null;
+    }
+
+    // registrar el tipo y las firmas de la clase sin validar cuerpos
+    public boolean registrarCascaronClase(DefClase clase) {
+
         // obtener el nombre de la clase
         String nombreClase = clase.getNombre();
 
@@ -506,7 +561,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         if (ambitoGlobal.buscarTipo(nombreClase) != null) {
             agregarError(clase, "el tipo '" + nombreClase + "' ya esta definido");
 
-            return null;
+            return false;
         }
 
         // crear el tipo de la clase y registrarlo
@@ -553,6 +608,45 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
 
             ambitoClase.declararConstructor(constructorPorDefecto);
         }
+
+        // informar que el cascaron quedo registrado
+        return true;
+    }
+
+    /**
+     * Buscar el ambito de una clase entre los hijos del global.
+     */
+    public AmbitoSemantico buscarAmbitoClase(String nombreClase) {
+        // omitir nombres nulos o vacios
+        if (nombreClase == null || nombreClase.isEmpty()) {
+            return null;
+        }
+        // omitir globales sin hijos
+        if (ambitoGlobal == null || ambitoGlobal.obtenerHijos() == null) {
+            return null;
+        }
+        // recorrer los hijos buscando el de la clase
+        for (int i = 0; i < ambitoGlobal.obtenerHijos().size(); i++) {
+            AmbitoSemantico hijo = ambitoGlobal.obtenerHijos().get(i);
+            if (hijo != null && ("clase:" + nombreClase).equals(hijo.obtenerNombre())) {
+                return hijo;
+            }
+        }
+        return null;
+    }
+
+    // analizar los cuerpos de constructores y metodos con el ambito ya registrado
+    public Object analizarCuerposClase(DefClase clase) {
+        // ubicar el ambito de la clase registrado en la primera pasada
+        AmbitoSemantico ambito = buscarAmbitoClase(clase.getNombre());
+        // omitir clases sin ambito registrado
+        if (ambito == null) {
+            return null;
+        }
+        // fijar el ambito actual y la clase en analisis
+        this.ambitoActual = ambito;
+        this.ambitoClase = ambito;
+        this.tipoClaseActual = ambitoGlobal.buscarTipo(clase.getNombre());
 
         // segunda pasada: analizar los cuerpos de constructores y metodos
         for (NodoASTZetariano miembro : clase.getMiembros()) {
@@ -1815,10 +1909,18 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
             }
         }
 
-        // buscar un constructor compatible
+        // buscar constructores en la clase del tipo instanciado
+        AmbitoSemantico ambitoDestinoCtor = null;
+        if (tipo != null) {
+            ambitoDestinoCtor = buscarAmbitoClase(tipo.getNombre());
+        }
+        // usar la clase actual cuando el tipo no tiene ambito propio
+        if (ambitoDestinoCtor == null) {
+            ambitoDestinoCtor = ambitoClase;
+        }
         boolean encontrado = false;
-        if (ambitoClase != null) {
-            List<Simbolo> constructores = ambitoClase.buscarConstructores(tipo.getNombre());
+        if (ambitoDestinoCtor != null) {
+            List<Simbolo> constructores = ambitoDestinoCtor.buscarConstructores(tipo.getNombre());
             for (Simbolo c : constructores) {
                 if (firmaCompatible(c.getTiposParametros(), tiposArgs)) {
                     encontrado = true;
@@ -1910,10 +2012,15 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
             return null;
         }
 
-        // buscar metodos del objeto en la clase
+        // buscar metodos en la clase del objeto receptor
+        AmbitoSemantico ambitoDestino = buscarAmbitoClase(tipoObjeto.getNombre());
+        // usar la clase actual cuando el tipo no tiene ambito propio
+        if (ambitoDestino == null) {
+            ambitoDestino = ambitoClase;
+        }
         List<Simbolo> metodos = new ArrayList<>();
-        if (ambitoClase != null) {
-            metodos = ambitoClase.buscarMetodos(expr.getNombre());
+        if (ambitoDestino != null) {
+            metodos = ambitoDestino.buscarMetodos(expr.getNombre());
         }
 
         // reportar error si no hay metodos
@@ -2102,9 +2209,11 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
             boolean numericos = esTipoNumerico(tIzq) && esTipoNumerico(tDer);
             boolean textos = esTipoTexto(tIzq) && esTipoTexto(tDer);
             boolean bools = esTipoBooleano(tIzq) && esTipoBooleano(tDer);
+            // aceptar null en cualquier lado de la comparacion
+            boolean nuloAlguno = "null".equals(tIzq.getNombre()) || "null".equals(tDer.getNombre());
 
             // reportar si los tipos son incompatibles
-            if (!numericos && !textos && !bools) {
+            if (!numericos && !textos && !bools && !nuloAlguno) {
                 agregarError(expr, "tipos incompatibles para comparacion");
             }
         }
@@ -2300,6 +2409,11 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
 
         // aceptar si alguno es nulo
         if (origen == null || destino == null) {
+            return true;
+        }
+
+        // aceptar null como origen hacia cualquier destino
+        if ("null".equals(origen.getNombre())) {
             return true;
         }
 

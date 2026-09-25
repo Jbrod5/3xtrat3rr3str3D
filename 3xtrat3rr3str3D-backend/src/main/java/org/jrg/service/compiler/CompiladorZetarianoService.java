@@ -1,6 +1,11 @@
 package org.jrg.service.compiler;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.antlr.v4.runtime.CharStreams;
@@ -174,6 +179,223 @@ public class CompiladorZetarianoService {
         }
 
         return construirResultado(recolector, arbolTextual, "", "", simbolos, tipos, new ArrayList<>(), cuartetas, codigoC, resultadoGcc);
+    }
+
+    /**
+     * Analizar un proyecto con varios archivos compartiendo un ambito global.
+     */
+    public ResultadoAnalisis analizarProyecto(List<Path> archivos) {
+        // crear el recolector maestro de errores del proyecto
+        RecolectorErrores recolectorMaestro = new RecolectorErrores();
+
+        // validar lista vacia
+        if (archivos == null || archivos.isEmpty()) {
+            recolectorMaestro.agregar(TipoError.SEMANTICO, 1, 1, "no hay archivos en el proyecto");
+            return construirResultado(recolectorMaestro, "", "", "", null, null, new ArrayList<>());
+        }
+
+        // ordenar las rutas para un resultado estable
+        List<Path> ordenados = new ArrayList<>(archivos);
+        Collections.sort(ordenados);
+
+        // crear el ambito global compartido entre archivos
+        AmbitoSemantico ambitoCompartido = new AmbitoSemantico("global", null);
+
+        // preparar los datos por archivo en orden
+        List<String> nombres = new ArrayList<>();
+        List<Programa> programas = new ArrayList<>();
+        List<RecolectorErrores> recolectores = new ArrayList<>();
+        List<AnalizadorSemanticoZetariano> analizadores = new ArrayList<>();
+        StringBuilder arboles = new StringBuilder();
+
+        // parsear cada archivo con su propio recolector
+        for (int i = 0; i < ordenados.size(); i++) {
+            // extraer el nombre base sin extension para validar la clase
+            String nombreArchivo = ordenados.get(i).getFileName().toString();
+            int punto = nombreArchivo.lastIndexOf('.');
+            if (punto > 0) {
+                nombreArchivo = nombreArchivo.substring(0, punto);
+            }
+            nombres.add(nombreArchivo);
+
+            // leer el contenido del archivo
+            String codigoFuente = null;
+            try {
+                codigoFuente = Files.readString(ordenados.get(i), StandardCharsets.UTF_8);
+            } catch (IOException e) {
+                // registrar la falla de lectura en un recolector propio
+                RecolectorErrores recolectorLectura = new RecolectorErrores();
+                recolectorLectura.agregar(TipoError.SEMANTICO, 1, 1, "no se pudo leer el archivo");
+                programas.add(null);
+                recolectores.add(recolectorLectura);
+                analizadores.add(null);
+                continue;
+            }
+
+            // crear el recolector propio del archivo
+            RecolectorErrores recolector = new RecolectorErrores();
+
+            // crear el lexer y adjuntar la escucha de errores lexicos
+            ZetarianoLexer lexer = new ZetarianoLexer(CharStreams.fromString(codigoFuente));
+            lexer.removeErrorListeners();
+            lexer.addErrorListener(new EscuchaErroresAntlr(recolector, TipoError.LEXICO));
+
+            // crear el stream de tokens y el parser
+            CommonTokenStream tokens = new CommonTokenStream(lexer);
+            ZetarianoParser parser = new ZetarianoParser(tokens);
+            parser.removeErrorListeners();
+            parser.addErrorListener(new EscuchaErroresAntlr(recolector, TipoError.SINTACTICO));
+
+            // intentar parsear el programa
+            ZetarianoParser.ProgramaContext arbolCst = null;
+            try {
+                arbolCst = parser.programa();
+            } catch (RuntimeException e) {
+                recolector.agregar(TipoError.SINTACTICO, 1, 1, "error inesperado en el parsing: " + e.getMessage());
+            }
+
+            // construir el ast solo sin errores lexicos o sintacticos
+            Programa programa = null;
+            if (recolector.tieneErrores() == false && arbolCst != null) {
+                try {
+                    NodoASTZetariano ast = arbolCst.accept(new ZetarianoASTBuilder());
+                    if (ast instanceof Programa) {
+                        programa = (Programa) ast;
+                    }
+                    // acumular el arbol textual con separador
+                    if (arboles.length() > 0) {
+                        arboles.append("\n");
+                    }
+                    arboles.append(arbolCst.toStringTree(parser));
+                } catch (RuntimeException e) {
+                    recolector.agregar(TipoError.SEMANTICO, 1, 1, "error al construir el ast: " + e.getMessage());
+                }
+            }
+            programas.add(programa);
+            recolectores.add(recolector);
+
+            // crear el analizador con el ambito compartido
+            if (programa != null) {
+                analizadores.add(new AnalizadorSemanticoZetariano(recolector, ambitoCompartido));
+            } else {
+                analizadores.add(null);
+            }
+        }
+
+        // registrar primitivos y builtins una sola vez con el primer analizador util
+        boolean iniciado = false;
+        for (int i = 0; i < analizadores.size(); i++) {
+            if (analizadores.get(i) != null) {
+                analizadores.get(i).inicializarAmbitoCompartido();
+                iniciado = true;
+                break;
+            }
+        }
+
+        // primera pasada: registrar los cascarones de todas las clases
+        if (iniciado) {
+            for (int i = 0; i < programas.size(); i++) {
+                // omitir archivos sin programa
+                if (programas.get(i) == null || analizadores.get(i) == null) {
+                    continue;
+                }
+                // validar el nombre del archivo contra su clase
+                validarNombreArchivo(programas.get(i), nombres.get(i), recolectores.get(i));
+                // registrar el cascaron si trae definicion de clase
+                if (programas.get(i).getDefinicionClase() instanceof DefClase) {
+                    analizadores.get(i).registrarCascaronClase((DefClase) programas.get(i).getDefinicionClase());
+                }
+            }
+
+            // segunda pasada: analizar los cuerpos con las tablas completas
+            for (int i = 0; i < programas.size(); i++) {
+                // omitir archivos sin programa
+                if (programas.get(i) == null || analizadores.get(i) == null) {
+                    continue;
+                }
+                // analizar los cuerpos si trae definicion de clase
+                if (programas.get(i).getDefinicionClase() instanceof DefClase) {
+                    analizadores.get(i).analizarCuerposClase((DefClase) programas.get(i).getDefinicionClase());
+                }
+            }
+        }
+
+        // recolectar simbolos y tipos desde el ambito compartido
+        List<Simbolo> simbolos = new ArrayList<>();
+        List<Tipo> tipos = new ArrayList<>();
+        colectarSimbolos(ambitoCompartido, simbolos, tipos);
+
+        // generar cuartetas por archivo con sus simbolos
+        List<CuartetaResultado> cuartetas = new ArrayList<>();
+        for (int i = 0; i < programas.size(); i++) {
+            // omitir archivos sin programa
+            if (programas.get(i) == null) {
+                continue;
+            }
+            try {
+                GeneradorCuartetasZetariano generadorCuartetas = new GeneradorCuartetasZetariano();
+                // registrar los tipos de variables en el generador
+                for (int j = 0; j < simbolos.size(); j++) {
+                    Simbolo simboloActual = simbolos.get(j);
+                    // omitir simbolos sin tipo
+                    if (simboloActual == null || simboloActual.getTipo() == null) {
+                        continue;
+                    }
+                    // registrar el nombre con su tipo
+                    generadorCuartetas.registrarTipoVariable(simboloActual.getNombre(), simboloActual.getTipo().getNombre());
+                }
+                programas.get(i).accept(generadorCuartetas);
+                List<Cuarteta> cuartetasCrudas = generadorCuartetas.getCuartetas();
+                for (int j = 0; j < cuartetasCrudas.size(); j++) {
+                    cuartetas.add(new CuartetaResultado(cuartetasCrudas.get(j)));
+                }
+            } catch (RuntimeException e) {
+                recolectores.get(i).agregar(TipoError.SEMANTICO, 1, 1, "error durante el analisis semantico: " + e.getMessage());
+            }
+        }
+
+        // volcar los errores de cada archivo con su nombre prefijado
+        for (int i = 0; i < recolectores.size(); i++) {
+            List<ErrorCompilacion> errores = recolectores.get(i).obtenerErrores();
+            for (int j = 0; j < errores.size(); j++) {
+                ErrorCompilacion error = errores.get(j);
+                recolectorMaestro.agregar(error.getTipo(), error.getLinea(), error.getColumna(), "[" + nombres.get(i) + "] " + error.getDescripcion());
+            }
+        }
+
+        // generar codigo C a partir de las cuartetas
+        TraductorC traductorC = new TraductorC();
+        String codigoC = traductorC.traducir(cuartetas);
+
+        // avisar que el C puede ser invalido si hubo errores semanticos
+        if (recolectorMaestro.tieneErrores() && cuartetas.isEmpty() == false) {
+            recolectorMaestro.agregar(TipoError.SEMANTICO, 0, 0, "El codigo C generado puede ser invalido porque hay errores semanticos previos");
+        }
+
+        // compilar con gcc para verificar aunque haya errores semanticos
+        ResultadoGcc resultadoGcc = null;
+        if (codigoC != null && codigoC.isEmpty() == false) {
+            CompiladorC compiladorC = new CompiladorC();
+            resultadoGcc = compiladorC.compilar(codigoC);
+        }
+
+        return construirResultado(recolectorMaestro, arboles.toString(), "", "", simbolos, tipos, new ArrayList<>(), cuartetas, codigoC, resultadoGcc);
+    }
+
+    // validar que el nombre del archivo coincida con el nombre de la clase
+    private void validarNombreArchivo(Programa programa, String nombreArchivo, RecolectorErrores recolector) {
+        // omitir nombres vacios
+        if (nombreArchivo == null || nombreArchivo.isEmpty()) {
+            return;
+        }
+        // extraer la definicion de clase si existe
+        if (programa.getDefinicionClase() instanceof DefClase) {
+            String nombreClase = ((DefClase) programa.getDefinicionClase()).getNombre();
+            // reportar error si los nombres no coinciden
+            if (nombreClase != null && nombreClase.equals(nombreArchivo) == false) {
+                recolector.agregar(TipoError.SEMANTICO, 1, 1, "el nombre del archivo '" + nombreArchivo + "' no coincide con el nombre de la clase '" + nombreClase + "'");
+            }
+        }
     }
 
     // recorrer el arbol de ambitos y recolectar simbolos y tipos
