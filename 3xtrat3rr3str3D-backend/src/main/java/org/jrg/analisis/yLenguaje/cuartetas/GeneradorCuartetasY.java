@@ -25,6 +25,7 @@ import org.jrg.model.ast.yLenguaje.declaracion_variable.DeclArrayConValores;
 import org.jrg.model.ast.yLenguaje.declaracion_variable.DeclArraySinValores;
 import org.jrg.model.ast.yLenguaje.declaracion_variable.DeclConTipoYValor;
 import org.jrg.model.ast.yLenguaje.declaracion_variable.DeclMatriz;
+import org.jrg.model.ast.yLenguaje.declaracion_variable.DeclMatrizConValores;
 import org.jrg.model.ast.yLenguaje.definicion_funcion.DefFuncionConRetorno;
 import org.jrg.model.ast.yLenguaje.definicion_funcion.DefFuncionSinRetorno;
 import org.jrg.model.ast.yLenguaje.definicion_struct.DefEstructura;
@@ -290,6 +291,11 @@ public class GeneradorCuartetasY implements YAstVisitor<String> {
     @Override
     public String visitarDeclMatriz(DeclMatriz nodo) {
         return manejadorDeclaraciones.visitarDeclMatriz(nodo);
+    }
+
+    @Override
+    public String visitarDeclMatrizConValores(DeclMatrizConValores nodo) {
+        return manejadorDeclaraciones.visitarDeclMatrizConValores(nodo);
     }
 
     // ==================== VARIABLES ASIGNABLES ====================

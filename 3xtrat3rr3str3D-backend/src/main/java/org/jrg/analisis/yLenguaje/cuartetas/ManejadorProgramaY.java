@@ -13,6 +13,7 @@ import org.jrg.model.ast.yLenguaje.SeccionFunciones;
 import org.jrg.model.ast.yLenguaje.TipoDato;
 import org.jrg.model.ast.yLenguaje.ValorPrimitivo;
 import org.jrg.model.ast.yLenguaje.base.NodoASTY;
+import org.jrg.model.ast.yLenguaje.variable_asignable.VarArray;
 import org.jrg.model.cuarteta.Cuarteta;
 
 // generar cuartetas del programa y sus secciones en el lenguaje Y
@@ -133,6 +134,42 @@ public class ManejadorProgramaY {
 
     // generar la asignacion de valor a variable
     public String visitarAsignacion(Asignacion nodo) {
+        // manejar la asignacion a posicion de arreglo con []=
+        if (nodo.getVariable() instanceof VarArray) {
+            // evaluar el valor a asignar
+            String derechaArr = "_";
+            if (nodo.getValor() != null) {
+                derechaArr = nodo.getValor().accept(generador);
+            }
+            // usar valor por defecto si el resultado es nulo
+            if (derechaArr == null) {
+                derechaArr = "_";
+            }
+            // convertir la variable al tipo concreto
+            VarArray acceso = (VarArray) nodo.getVariable();
+            // evaluar la base del acceso
+            String base = "_";
+            if (acceso.getBase() != null) {
+                base = acceso.getBase().accept(generador);
+            }
+            // usar valor por defecto si el resultado es nulo
+            if (base == null) {
+                base = "_";
+            }
+            // evaluar el indice del acceso
+            String indice = "_";
+            if (acceso.getIndice() != null) {
+                indice = acceso.getIndice().accept(generador);
+            }
+            // usar valor por defecto si el resultado es nulo
+            if (indice == null) {
+                indice = "_";
+            }
+            // agregar la asignacion a la posicion a la lista de cuartetas
+            ctx.getCuartetas().add(new Cuarteta("[]=", base, indice, derechaArr, "_", "entero", "_"));
+            return null;
+        }
+
         // evaluar la variable destino
         String izquierda = "_";
         if (nodo.getVariable() != null) {

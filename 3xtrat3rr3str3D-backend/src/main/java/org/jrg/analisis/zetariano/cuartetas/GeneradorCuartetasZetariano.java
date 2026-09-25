@@ -21,6 +21,7 @@ import org.jrg.model.ast.zetariano.ciclo.CicloWhile;
 import org.jrg.model.ast.zetariano.condicional.StatementIf;
 import org.jrg.model.ast.zetariano.constructor.DefConstructor;
 import org.jrg.model.ast.zetariano.declaracion_variable.DeclConListaLiteral;
+import org.jrg.model.ast.zetariano.declaracion_variable.DeclConMatrizLiteral;
 import org.jrg.model.ast.zetariano.declaracion_variable.DeclConTipo;
 import org.jrg.model.ast.zetariano.definicion_clase.DefClase;
 import org.jrg.model.ast.zetariano.expresion.ExprAccesoArray;
@@ -268,6 +269,11 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
     @Override
     public String visitarDeclConListaLiteral(DeclConListaLiteral nodo) {
         return manejadorDeclaraciones.visitarDeclConListaLiteral(nodo);
+    }
+
+    @Override
+    public String visitarDeclConMatrizLiteral(DeclConMatrizLiteral nodo) {
+        return manejadorDeclaraciones.visitarDeclConMatrizLiteral(nodo);
     }
 
     // ==================== ASIGNACIONES ====================

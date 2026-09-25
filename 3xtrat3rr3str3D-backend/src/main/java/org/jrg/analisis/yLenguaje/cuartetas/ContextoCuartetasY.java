@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jrg.model.ast.yLenguaje.TipoDato;
+import org.jrg.model.ast.yLenguaje.base.NodoASTY;
 import org.jrg.model.cuarteta.Cuarteta;
 import org.jrg.model.cuarteta.GeneradorTemporales;
 
@@ -102,6 +104,24 @@ public class ContextoCuartetasY {
 
         // guardar el tipo para usos posteriores
         this.tiposDeVariables.put(nombre, tipo);
+    }
+
+    // extraer el nombre del tipo desde un nodo de tipo
+    public String nombreDeTipo(NodoASTY tipoNodo) {
+        // devolver guion bajo si el nodo es nulo
+        if (tipoNodo == null) {
+            return "_";
+        }
+        // extraer el nombre cuando es TipoDato
+        if (tipoNodo instanceof TipoDato) {
+            String nombre = ((TipoDato) tipoNodo).getNombre();
+            // usar guion bajo si el nombre es nulo
+            if (nombre == null) {
+                return "_";
+            }
+            return nombre;
+        }
+        return "_";
     }
 
     // inferir el tipo de un literal por su forma

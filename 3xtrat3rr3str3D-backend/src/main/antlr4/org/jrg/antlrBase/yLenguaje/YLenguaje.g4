@@ -165,6 +165,14 @@ declaracion_variable
     | tipo_dato IDENTIFICADOR CORCHETE_IZQ expresion CORCHETE_DER ASIGNACION LLAVE_IZQ lista_expresiones LLAVE_DER    # declArrayConValores
     // entero matriz[3][3]
     | tipo_dato IDENTIFICADOR CORCHETE_IZQ expresion CORCHETE_DER CORCHETE_IZQ expresion CORCHETE_DER          # declMatriz
+    // entero matriz[3][2] = {{1, 2}, {3, 4}, {5, 6}}
+    | tipo_dato IDENTIFICADOR CORCHETE_IZQ expresion CORCHETE_DER CORCHETE_IZQ expresion CORCHETE_DER ASIGNACION LLAVE_IZQ fila_matriz (COMA fila_matriz)* LLAVE_DER   # declMatrizConValores
+    ;
+
+// fila de matriz con valores entre llaves
+fila_matriz
+    // {1, 2}
+    : LLAVE_IZQ lista_expresiones LLAVE_DER
     ;
 
 

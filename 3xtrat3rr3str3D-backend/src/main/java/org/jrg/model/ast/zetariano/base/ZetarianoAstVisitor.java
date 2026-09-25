@@ -58,6 +58,7 @@ public interface ZetarianoAstVisitor<T> {
 
     T visitarDeclConTipo(DeclConTipo nodo);
     T visitarDeclConListaLiteral(DeclConListaLiteral nodo);
+    T visitarDeclConMatrizLiteral(DeclConMatrizLiteral nodo);
 
     T visitarAsignacionSimple(AsignacionSimple nodo);
     T visitarAsignacionCompuesta(AsignacionCompuesta nodo);

@@ -11,6 +11,8 @@ import org.jrg.model.ast.pigLatin.condicional.StatementSi;
 import org.jrg.model.ast.pigLatin.declaracion_variable.DeclArrayConDatos;
 import org.jrg.model.ast.pigLatin.declaracion_variable.DeclArrayEstructura;
 import org.jrg.model.ast.pigLatin.declaracion_variable.DeclArraySinDatos;
+import org.jrg.model.ast.pigLatin.declaracion_variable.DeclMatrizConDatos;
+import org.jrg.model.ast.pigLatin.declaracion_variable.DeclMatrizSinDatos;
 import org.jrg.model.ast.pigLatin.declaracion_variable.DeclBooleanaImplicita;
 import org.jrg.model.ast.pigLatin.declaracion_variable.DeclConTipoYValor;
 import org.jrg.model.ast.pigLatin.declaracion_variable.DeclEstructuraConValores;
@@ -100,6 +102,8 @@ public interface LatinusAstVisitor<T> {
     T visitDeclArraySinDatos(DeclArraySinDatos nodo);
     T visitDeclArrayConDatos(DeclArrayConDatos nodo);
     T visitDeclArrayEstructura(DeclArrayEstructura nodo);
+    T visitDeclMatrizSinDatos(DeclMatrizSinDatos nodo);
+    T visitDeclMatrizConDatos(DeclMatrizConDatos nodo);
 
     T visitAsignacionGeneral(AsignacionGeneral nodo);
 

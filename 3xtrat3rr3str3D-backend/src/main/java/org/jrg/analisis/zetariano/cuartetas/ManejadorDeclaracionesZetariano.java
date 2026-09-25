@@ -4,7 +4,10 @@ import org.jrg.model.ast.zetariano.ListaExpresiones;
 import org.jrg.model.ast.zetariano.asignacion.AsignacionCompuesta;
 import org.jrg.model.ast.zetariano.asignacion.AsignacionSimple;
 import org.jrg.model.ast.zetariano.base.NodoASTZetariano;
+import java.util.List;
+
 import org.jrg.model.ast.zetariano.declaracion_variable.DeclConListaLiteral;
+import org.jrg.model.ast.zetariano.declaracion_variable.DeclConMatrizLiteral;
 import org.jrg.model.ast.zetariano.declaracion_variable.DeclConTipo;
 import org.jrg.model.ast.zetariano.TipoDato;
 import org.jrg.model.ast.zetariano.instruccion.StmtAsignacion;
@@ -210,6 +213,75 @@ public class ManejadorDeclaracionesZetariano {
         }
 
         return null;
+    }
+
+    // reservar una matriz y llenarla con sus niveles de valores
+    public String visitarDeclConMatrizLiteral(DeclConMatrizLiteral nodo) {
+        // extraer el tipo base declarado
+        String tipoBase = ctx.nombreDeTipo(nodo.getTipo());
+        // contar las hojas escalares de la estructura
+        int total = contarHojasMatriz(nodo.getValores());
+
+        // agregar la reserva de memoria con el total a la lista de cuartetas
+        ctx.getCuartetas().add(new Cuarteta("alloc", tipoBase, String.valueOf(total), nodo.getIdentificador(), tipoBase, "entero", tipoBase));
+
+        // llenar las posiciones con indice lineal desde cero
+        llenarNivelMatriz(nodo.getIdentificador(), nodo.getValores(), 0);
+
+        return null;
+    }
+
+    // contar las hojas escalares de una estructura anidada
+    private int contarHojasMatriz(List<Object> nivel) {
+        // devolver cero si el nivel es nulo
+        int total = 0;
+        if (nivel == null) {
+            return total;
+        }
+        // recorrer cada elemento del nivel
+        for (int i = 0; i < nivel.size(); i++) {
+            Object elemento = nivel.get(i);
+            // contar recursivo en subniveles anidados
+            if (elemento instanceof List) {
+                total = total + contarHojasMatriz((List<Object>) elemento);
+                continue;
+            }
+            // contar uno por hoja escalar
+            if (elemento instanceof NodoASTZetariano) {
+                total = total + 1;
+            }
+        }
+        return total;
+    }
+
+    // llenar posiciones con indice lineal y devolver el siguiente libre
+    private int llenarNivelMatriz(String destino, List<Object> nivel, int posicion) {
+        // devolver la posicion si el nivel es nulo
+        if (nivel == null) {
+            return posicion;
+        }
+        // recorrer cada elemento del nivel
+        for (int i = 0; i < nivel.size(); i++) {
+            Object elemento = nivel.get(i);
+            // descender en subniveles anidados
+            if (elemento instanceof List) {
+                posicion = llenarNivelMatriz(destino, (List<Object>) elemento, posicion);
+                continue;
+            }
+            // evaluar la hoja escalar actual
+            if (elemento instanceof NodoASTZetariano) {
+                String val = ((NodoASTZetariano) elemento).accept(generador);
+                // usar valor por defecto si el resultado es nulo
+                if (val == null) {
+                    val = "_";
+                }
+                // agregar la asignacion a la posicion actual a la lista de cuartetas
+                ctx.getCuartetas().add(new Cuarteta("[]=", destino, String.valueOf(posicion), val, "_", "entero", "_"));
+                // avanzar el indice lineal
+                posicion = posicion + 1;
+            }
+        }
+        return posicion;
     }
 
     // generar asignacion simple con caso especial a arreglo

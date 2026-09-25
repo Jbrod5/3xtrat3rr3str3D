@@ -13,6 +13,8 @@ import org.jrg.model.ast.pigLatin.condicional.StatementSi;
 import org.jrg.model.ast.pigLatin.declaracion_variable.DeclArrayConDatos;
 import org.jrg.model.ast.pigLatin.declaracion_variable.DeclArrayEstructura;
 import org.jrg.model.ast.pigLatin.declaracion_variable.DeclArraySinDatos;
+import org.jrg.model.ast.pigLatin.declaracion_variable.DeclMatrizConDatos;
+import org.jrg.model.ast.pigLatin.declaracion_variable.DeclMatrizSinDatos;
 import org.jrg.model.ast.pigLatin.declaracion_variable.DeclBooleanaImplicita;
 import org.jrg.model.ast.pigLatin.declaracion_variable.DeclConTipoYValor;
 import org.jrg.model.ast.pigLatin.declaracion_variable.DeclEstructuraConValores;
@@ -700,6 +702,50 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo declaracion array con datos
         return new DeclArrayConDatos(identificador, tamano, tipo, valores, linea, columna);
+    }
+
+    @Override
+    public NodoAST visitDeclMatrizSinDatos(PigLatinParser.DeclMatrizSinDatosContext ctx) {
+        // obtener identificador de la matriz
+        String identificador = ctx.IDENTIFICADOR().getText();
+        // visitar tamanos de filas y columnas
+        NodoAST tamanoFilas = visit(ctx.expresion(0));
+        NodoAST tamanoColumnas = visit(ctx.expresion(1));
+        // visitar tipo de dato
+        NodoAST tipo = visit(ctx.tipo_dato());
+        // obtener ubicacion del nodo
+        int linea = ctx.getStart().getLine();
+        int columna = ctx.getStart().getCharPositionInLine();
+        // crear nodo declaracion matriz sin datos
+        return new DeclMatrizSinDatos(identificador, tamanoFilas, tamanoColumnas, tipo, linea, columna);
+    }
+
+    @Override
+    public NodoAST visitDeclMatrizConDatos(PigLatinParser.DeclMatrizConDatosContext ctx) {
+        // obtener identificador de la matriz
+        String identificador = ctx.IDENTIFICADOR().getText();
+        // visitar tamanos de filas y columnas
+        NodoAST tamanoFilas = visit(ctx.expresion(0));
+        NodoAST tamanoColumnas = visit(ctx.expresion(1));
+        // visitar tipo de dato
+        NodoAST tipo = visit(ctx.tipo_dato());
+        // recolectar las filas con sus valores
+        List<List<NodoAST>> filas = new ArrayList<>();
+        for (int i = 0; i < ctx.fila_matriz_pig().size(); i++) {
+            // visitar la lista de la fila actual
+            NodoAST lista = visit(ctx.fila_matriz_pig(i).lista_expresiones());
+            // guardar los valores si es lista de expresiones
+            List<NodoAST> valores = new ArrayList<>();
+            if (lista instanceof ListaExpresiones) {
+                valores.addAll(((ListaExpresiones) lista).getExpresiones());
+            }
+            filas.add(valores);
+        }
+        // obtener ubicacion del nodo
+        int linea = ctx.getStart().getLine();
+        int columna = ctx.getStart().getCharPositionInLine();
+        // crear nodo declaracion matriz con datos
+        return new DeclMatrizConDatos(identificador, tamanoFilas, tamanoColumnas, tipo, filas, linea, columna);
     }
 
     @Override

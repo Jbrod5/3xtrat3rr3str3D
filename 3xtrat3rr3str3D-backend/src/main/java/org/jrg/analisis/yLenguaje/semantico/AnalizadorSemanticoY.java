@@ -32,6 +32,7 @@ import org.jrg.model.ast.yLenguaje.declaracion_variable.DeclArrayConValores;
 import org.jrg.model.ast.yLenguaje.declaracion_variable.DeclArraySinValores;
 import org.jrg.model.ast.yLenguaje.declaracion_variable.DeclConTipoYValor;
 import org.jrg.model.ast.yLenguaje.declaracion_variable.DeclMatriz;
+import org.jrg.model.ast.yLenguaje.declaracion_variable.DeclMatrizConValores;
 import org.jrg.model.ast.yLenguaje.definicion_funcion.DefFuncionConRetorno;
 import org.jrg.model.ast.yLenguaje.definicion_funcion.DefFuncionSinRetorno;
 import org.jrg.model.ast.yLenguaje.definicion_struct.DefEstructura;
@@ -1307,6 +1308,62 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
 
         // declarar la variable de forma segura
         declararVariableSeguro(nodo, nodo.getNombre(), tipoMatriz, CategoriaSimbolo.ARREGLO, null);
+
+        return null;
+    }
+
+    @Override
+    public Object visitarDeclMatrizConValores(DeclMatrizConValores nodo) {
+        // resolver el tipo base
+        Tipo tipoBase = resolverTipoDato(nodo.getTipo());
+
+        // reportar error si el tipo no existe
+        if (tipoBase == null) {
+            this.contexto.agregarError(nodo, "tipo no definido");
+
+            return null;
+        }
+
+        // construir el tipo matriz de dos dimensiones
+        Tipo tipoMatriz = new Tipo(tipoBase.getNombre(), tipoBase.esPrimitivo(), 2, tipoBase, new ArrayList<>(), null);
+
+        // visitar el tamano de filas si existe
+        if (nodo.getTamanoFilas() != null) {
+            nodo.getTamanoFilas().accept(this);
+        }
+
+        // visitar el tamano de columnas si existe
+        if (nodo.getTamanoColumnas() != null) {
+            nodo.getTamanoColumnas().accept(this);
+        }
+
+        // declarar la variable de forma segura
+        declararVariableSeguro(nodo, nodo.getNombre(), tipoMatriz, CategoriaSimbolo.ARREGLO, null);
+
+        // validar cada fila con sus valores
+        if (nodo.getFilas() != null) {
+            for (int i = 0; i < nodo.getFilas().size(); i++) {
+                List<NodoASTY> fila = nodo.getFilas().get(i);
+                // omitir filas nulas
+                if (fila == null) {
+                    continue;
+                }
+                // validar cada valor de la fila
+                for (int j = 0; j < fila.size(); j++) {
+                    NodoASTY expr = fila.get(j);
+                    // omitir expresiones nulas
+                    if (expr == null) {
+                        continue;
+                    }
+                    Object tipoValorObj = expr.accept(this);
+                    Tipo tipoValor = extraerTipoDeExpresion(tipoValorObj);
+                    // verificar la compatibilidad del tipo
+                    if (tipoValor != null && !this.contexto.esCompatible(tipoBase, tipoValor)) {
+                        this.contexto.agregarError(expr, "valor incompatible con el tipo de la matriz");
+                    }
+                }
+            }
+        }
 
         return null;
     }

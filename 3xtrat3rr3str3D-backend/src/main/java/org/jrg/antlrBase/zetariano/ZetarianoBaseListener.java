@@ -317,6 +317,42 @@ public class ZetarianoBaseListener implements ZetarianoListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterDeclConMatrizLiteral(ZetarianoParser.DeclConMatrizLiteralContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitDeclConMatrizLiteral(ZetarianoParser.DeclConMatrizLiteralContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterInit_matriz(ZetarianoParser.Init_matrizContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitInit_matriz(ZetarianoParser.Init_matrizContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterInit_elemento(ZetarianoParser.Init_elementoContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitInit_elemento(ZetarianoParser.Init_elementoContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterAsignacionSimple(ZetarianoParser.AsignacionSimpleContext ctx) { }
 	/**
 	 * {@inheritDoc}

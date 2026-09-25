@@ -13,6 +13,7 @@ import org.jrg.model.ast.zetariano.ciclo.CicloDoWhile;
 import org.jrg.model.ast.zetariano.ciclo.CicloFor;
 import org.jrg.model.ast.zetariano.ciclo.CicloWhile;
 import org.jrg.model.ast.zetariano.declaracion_variable.DeclConListaLiteral;
+import org.jrg.model.ast.zetariano.declaracion_variable.DeclConMatrizLiteral;
 import org.jrg.model.ast.zetariano.declaracion_variable.DeclConTipo;
 import org.jrg.model.ast.zetariano.expresion.ExprAccesoArray;
 import org.jrg.model.ast.zetariano.expresion.ExprAccesoMiembro;
@@ -436,6 +437,46 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo declaracion con lista literal
         return new DeclConListaLiteral(tipo, identificador, dimensiones, listaExpresiones, linea, columna);
+    }
+
+    @Override
+    public NodoASTZetariano visitDeclConMatrizLiteral(ZetarianoParser.DeclConMatrizLiteralContext ctx) {
+        // visitar tipo de dato
+        NodoASTZetariano tipo = visit(ctx.tipo_dato());
+        // obtener identificador
+        String identificador = ctx.IDENTIFICADOR().getText();
+        // contar dimensiones por corchetes
+        int dimensiones = ctx.CORCHETE_IZQ().size();
+        // construir los valores anidados por niveles
+        List<Object> valores = construirNivelMatriz(ctx.init_matriz());
+        // obtener ubicacion del nodo
+        int linea = ctx.getStart().getLine();
+        int columna = ctx.getStart().getCharPositionInLine();
+        // crear nodo declaracion con matriz literal
+        return new DeclConMatrizLiteral(tipo, identificador, dimensiones, valores, linea, columna);
+    }
+
+    // construir un nivel con expresiones o subniveles anidados
+    private List<Object> construirNivelMatriz(ZetarianoParser.Init_matrizContext nivel) {
+        // devolver lista vacia si el nivel es nulo
+        List<Object> elementos = new ArrayList<>();
+        if (nivel == null) {
+            return elementos;
+        }
+        // recorrer cada elemento del nivel
+        for (int i = 0; i < nivel.init_elemento().size(); i++) {
+            ZetarianoParser.Init_elementoContext elemento = nivel.init_elemento(i);
+            // construir subnivel cuando trae llaves anidadas
+            if (elemento.init_matriz() != null) {
+                elementos.add(construirNivelMatriz(elemento.init_matriz()));
+                continue;
+            }
+            // visitar la expresion escalar
+            if (elemento.expresion() != null) {
+                elementos.add(visit(elemento.expresion()));
+            }
+        }
+        return elementos;
     }
 
     @Override

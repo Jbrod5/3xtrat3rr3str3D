@@ -8,10 +8,14 @@ import org.jrg.model.ast.pigLatin.ListaExpresiones;
 import org.jrg.model.ast.pigLatin.asignacion.AsignacionGeneral;
 import org.jrg.model.ast.pigLatin.atributo_instancia.CampoConNombre;
 import org.jrg.model.ast.pigLatin.atributo_instancia.CampoPosicional;
+import org.jrg.model.ast.pigLatin.variable_asignable.ValorAsignableArray;
 import org.jrg.model.ast.pigLatin.base.NodoAST;
 import org.jrg.model.ast.pigLatin.declaracion_variable.DeclArrayConDatos;
 import org.jrg.model.ast.pigLatin.declaracion_variable.DeclArrayEstructura;
+import org.jrg.model.ast.pigLatin.TipoDato;
 import org.jrg.model.ast.pigLatin.declaracion_variable.DeclArraySinDatos;
+import org.jrg.model.ast.pigLatin.declaracion_variable.DeclMatrizConDatos;
+import org.jrg.model.ast.pigLatin.declaracion_variable.DeclMatrizSinDatos;
 import org.jrg.model.ast.pigLatin.declaracion_variable.DeclBooleanaImplicita;
 import org.jrg.model.ast.pigLatin.declaracion_variable.DeclConTipoYValor;
 import org.jrg.model.ast.pigLatin.declaracion_variable.DeclEstructuraConValores;
@@ -121,6 +125,23 @@ public class ManejadorDeclaracionesPigLatin {
         return null;
     }
 
+    // extraer el nombre del tipo base declarado con respaldo entero
+    private String nombreTipoBase(NodoAST tipo, String respaldo) {
+        // usar el nombre cuando es tipo de dato conocido
+        if (tipo instanceof TipoDato) {
+            String nombre = ((TipoDato) tipo).getTipo();
+            if (nombre != null && nombre.isEmpty() == false) {
+                return nombre;
+            }
+        }
+        // inferir del respaldo cuando no hay nombre
+        String inferido = ctx.inferirTipoDe(respaldo, ctx.getTiposConocidos());
+        if (inferido == null || inferido.isEmpty()) {
+            return "entero";
+        }
+        return inferido;
+    }
+
     // reservar un arreglo solo con tamano
     public String visitDeclArraySinDatos(DeclArraySinDatos nodo) {
         String tamano = null;
@@ -132,7 +153,9 @@ public class ManejadorDeclaracionesPigLatin {
         if (tamano != null) {
             textoTamano = tamano;
         }
-        ctx.getCuartetas().add(new Cuarteta("alloc", textoTamano, "_", nodo.getIdentificador(), ctx.inferirTipoDe(tamano, ctx.getTiposConocidos()), "_", "_"));
+        // usar el tipo base declarado para la reserva
+        String tipoBase = nombreTipoBase(nodo.getTipo(), tamano);
+        ctx.getCuartetas().add(new Cuarteta("alloc", tipoBase, textoTamano, nodo.getIdentificador(), tipoBase, "entero", tipoBase));
         return null;
     }
 
@@ -147,7 +170,9 @@ public class ManejadorDeclaracionesPigLatin {
         if (tamano != null) {
             textoTamano = tamano;
         }
-        ctx.getCuartetas().add(new Cuarteta("alloc", textoTamano, "_", nodo.getIdentificador(), ctx.inferirTipoDe(tamano, ctx.getTiposConocidos()), "_", "_"));
+        // usar el tipo base declarado para la reserva
+        String tipoBaseArr = nombreTipoBase(nodo.getTipo(), tamano);
+        ctx.getCuartetas().add(new Cuarteta("alloc", tipoBaseArr, textoTamano, nodo.getIdentificador(), tipoBaseArr, "entero", tipoBaseArr));
         if (nodo.getValores() != null) {
             for (int i = 0; i < nodo.getValores().size(); i++) {
                 String val = nodo.getValores().get(i).accept(generador);
@@ -173,7 +198,102 @@ public class ManejadorDeclaracionesPigLatin {
         if (tamano != null) {
             textoTamano = tamano;
         }
-        ctx.getCuartetas().add(new Cuarteta("alloc", textoTamano, "_", nodo.getIdentificador(), ctx.inferirTipoDe(tamano, ctx.getTiposConocidos()), "_", "_"));
+        // usar el tipo de estructura declarado para la reserva
+        String tipoEstruct = nodo.getTipo();
+        if (tipoEstruct == null || tipoEstruct.isEmpty()) {
+            tipoEstruct = "entero";
+        }
+        ctx.getCuartetas().add(new Cuarteta("alloc", tipoEstruct, textoTamano, nodo.getIdentificador(), tipoEstruct, "entero", tipoEstruct));
+        return null;
+    }
+
+    // reservar una matriz con filas por columnas del tipo base
+    public String visitDeclMatrizSinDatos(DeclMatrizSinDatos nodo) {
+        // extraer el tipo base declarado
+        String tipoBase = nombreTipoBase(nodo.getTipo(), null);
+        // evaluar el tamano de filas
+        String filas = null;
+        if (nodo.getTamanoFilas() != null) {
+            filas = nodo.getTamanoFilas().accept(generador);
+        }
+        // usar guion bajo si el resultado es nulo
+        String textoFilas = "_";
+        if (filas != null) {
+            textoFilas = filas;
+        }
+        // evaluar el tamano de columnas
+        String columnas = null;
+        if (nodo.getTamanoColumnas() != null) {
+            columnas = nodo.getTamanoColumnas().accept(generador);
+        }
+        // usar guion bajo si el resultado es nulo
+        String textoColumnas = "_";
+        if (columnas != null) {
+            textoColumnas = columnas;
+        }
+        // multiplicar filas por columnas en un temporal
+        String tempTotal = ctx.getTemporales().nuevoTemporal();
+        ctx.getCuartetas().add(new Cuarteta("*", textoFilas, textoColumnas, tempTotal, ctx.tipoAritmetico(textoFilas), ctx.tipoAritmetico(textoColumnas), ctx.tipoResultadoAritmetico(textoFilas, textoColumnas)));
+        // agregar la reserva de memoria con el total a la lista de cuartetas
+        ctx.getCuartetas().add(new Cuarteta("alloc", tipoBase, tempTotal, nodo.getIdentificador(), tipoBase, "entero", tipoBase));
+        return null;
+    }
+
+    // reservar una matriz y llenarla con sus filas de valores
+    public String visitDeclMatrizConDatos(DeclMatrizConDatos nodo) {
+        // extraer el tipo base declarado
+        String tipoBase = nombreTipoBase(nodo.getTipo(), null);
+        // evaluar el tamano de filas
+        String filas = null;
+        if (nodo.getTamanoFilas() != null) {
+            filas = nodo.getTamanoFilas().accept(generador);
+        }
+        // usar guion bajo si el resultado es nulo
+        String textoFilas = "_";
+        if (filas != null) {
+            textoFilas = filas;
+        }
+        // evaluar el tamano de columnas
+        String columnas = null;
+        if (nodo.getTamanoColumnas() != null) {
+            columnas = nodo.getTamanoColumnas().accept(generador);
+        }
+        // usar guion bajo si el resultado es nulo
+        String textoColumnas = "_";
+        if (columnas != null) {
+            textoColumnas = columnas;
+        }
+        // multiplicar filas por columnas en un temporal
+        String tempTotal = ctx.getTemporales().nuevoTemporal();
+        ctx.getCuartetas().add(new Cuarteta("*", textoFilas, textoColumnas, tempTotal, ctx.tipoAritmetico(textoFilas), ctx.tipoAritmetico(textoColumnas), ctx.tipoResultadoAritmetico(textoFilas, textoColumnas)));
+        // agregar la reserva de memoria con el total a la lista de cuartetas
+        ctx.getCuartetas().add(new Cuarteta("alloc", tipoBase, tempTotal, nodo.getIdentificador(), tipoBase, "entero", tipoBase));
+        // recorrer cada fila con sus valores
+        if (nodo.getFilas() != null) {
+            for (int f = 0; f < nodo.getFilas().size(); f++) {
+                List<NodoAST> fila = nodo.getFilas().get(f);
+                // omitir filas nulas
+                if (fila == null) {
+                    continue;
+                }
+                for (int c = 0; c < fila.size(); c++) {
+                    // evaluar el valor actual
+                    String val = fila.get(c).accept(generador);
+                    // usar guion bajo si el resultado es nulo
+                    String textoVal = "_";
+                    if (val != null) {
+                        textoVal = val;
+                    }
+                    // calcular el indice lineal como fila por columnas mas columna
+                    String tempFila = ctx.getTemporales().nuevoTemporal();
+                    ctx.getCuartetas().add(new Cuarteta("*", String.valueOf(f), textoColumnas, tempFila, "entero", ctx.tipoAritmetico(textoColumnas), ctx.tipoResultadoAritmetico(String.valueOf(f), textoColumnas)));
+                    String tempIndice = ctx.getTemporales().nuevoTemporal();
+                    ctx.getCuartetas().add(new Cuarteta("+", tempFila, String.valueOf(c), tempIndice, ctx.tipoAritmetico(tempFila), "entero", ctx.tipoResultadoAritmetico(tempFila, String.valueOf(c))));
+                    // agregar la asignacion a la posicion actual a la lista de cuartetas
+                    ctx.getCuartetas().add(new Cuarteta("[]=", nodo.getIdentificador(), tempIndice, textoVal, "_", "entero", "_"));
+                }
+            }
+        }
         return null;
     }
 
@@ -191,6 +311,41 @@ public class ManejadorDeclaracionesPigLatin {
 
     // generar la asignacion general de valor a variable
     public String visitAsignacionGeneral(AsignacionGeneral a) {
+        // manejar la asignacion a posicion de arreglo con []=
+        if (a.getVariable() instanceof ValorAsignableArray) {
+            // evaluar el valor a asignar
+            String derArr = null;
+            if (a.getValor() != null) {
+                derArr = a.getValor().accept(generador);
+            }
+            // usar valor por defecto si el resultado es nulo
+            if (derArr == null) {
+                derArr = "_";
+            }
+            // convertir la variable al tipo concreto
+            ValorAsignableArray acceso = (ValorAsignableArray) a.getVariable();
+            // evaluar la base del acceso
+            String base = null;
+            if (acceso.getBase() != null) {
+                base = acceso.getBase().accept(generador);
+            }
+            // usar valor por defecto si el resultado es nulo
+            if (base == null) {
+                base = "_";
+            }
+            // evaluar el indice del acceso
+            String indice = null;
+            if (acceso.getIndice() != null) {
+                indice = acceso.getIndice().accept(generador);
+            }
+            // usar valor por defecto si el resultado es nulo
+            if (indice == null) {
+                indice = "_";
+            }
+            // agregar la asignacion a la posicion a la lista de cuartetas
+            ctx.getCuartetas().add(new Cuarteta("[]=", base, indice, derArr, "_", "entero", "_"));
+            return null;
+        }
         String izq = a.getVariable().accept(generador);
         String der = a.getValor().accept(generador);
         ctx.getCuartetas().add(new Cuarteta(":=", der, "_", izq, ctx.inferirTipoDe(der, ctx.getTiposConocidos()), "_", "_"));

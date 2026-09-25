@@ -57,6 +57,7 @@ public interface YAstVisitor<T> {
     T visitarDeclArraySinValores(DeclArraySinValores nodo);
     T visitarDeclArrayConValores(DeclArrayConValores nodo);
     T visitarDeclMatriz(DeclMatriz nodo);
+    T visitarDeclMatrizConValores(DeclMatrizConValores nodo);
 
     T visitarVarSimple(VarSimple nodo);
     T visitarVarArray(VarArray nodo);

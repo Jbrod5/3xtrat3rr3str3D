@@ -497,6 +497,42 @@ public class PigLatinBaseListener implements PigLatinListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterDeclMatrizSinDatos(PigLatinParser.DeclMatrizSinDatosContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitDeclMatrizSinDatos(PigLatinParser.DeclMatrizSinDatosContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterDeclMatrizConDatos(PigLatinParser.DeclMatrizConDatosContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitDeclMatrizConDatos(PigLatinParser.DeclMatrizConDatosContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterFila_matriz_pig(PigLatinParser.Fila_matriz_pigContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitFila_matriz_pig(PigLatinParser.Fila_matriz_pigContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterAsignacionGeneral(PigLatinParser.AsignacionGeneralContext ctx) { }
 	/**
 	 * {@inheritDoc}

@@ -109,13 +109,10 @@ public class ManejadorExpresionesZetariano {
         }
 
         // evaluar cada dimension del arreglo
-        String dimension = "_";
+        String dimension = "1";
         if (nodo.getDimensiones() != null) {
 
             if (nodo.getDimensiones().isEmpty() == false) {
-                // acumular las dimensiones separadas por coma
-                String acumulado = "";
-                String separador = "";
 
                 for (int i = 0; i < nodo.getDimensiones().size(); i++) {
 
@@ -127,12 +124,11 @@ public class ManejadorExpresionesZetariano {
                         valorDimension = "_";
                     }
 
-                    // agregar la dimension al acumulado
-                    acumulado = acumulado + separador + valorDimension;
-                    separador = ",";
+                    // multiplicar el acumulado por la dimension actual
+                    String tempMul = ctx.getTemporales().nuevoTemporal();
+                    ctx.getCuartetas().add(new Cuarteta("*", dimension, valorDimension, tempMul, ctx.tipoAritmetico(dimension), ctx.tipoAritmetico(valorDimension), ctx.tipoResultadoAritmetico(dimension, valorDimension)));
+                    dimension = tempMul;
                 }
-
-                dimension = acumulado;
             }
 
         }
@@ -141,7 +137,7 @@ public class ManejadorExpresionesZetariano {
 
         // registrar el temporal con el tipo base
         ctx.getTiposConocidos().put(temp, tipoBase);
-        ctx.getCuartetas().add(new Cuarteta("alloc", tipoBase, dimension, temp, tipoBase, ctx.inferirTipoDe(dimension, ctx.getTiposConocidos()), tipoBase));
+        ctx.getCuartetas().add(new Cuarteta("alloc", tipoBase, dimension, temp, tipoBase, "entero", tipoBase));
 
         return temp;
     }

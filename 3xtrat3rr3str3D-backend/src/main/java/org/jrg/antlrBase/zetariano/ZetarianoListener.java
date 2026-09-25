@@ -302,6 +302,38 @@ public interface ZetarianoListener extends ParseTreeListener {
 	 */
 	void exitDeclConListaLiteral(ZetarianoParser.DeclConListaLiteralContext ctx);
 	/**
+	 * Enter a parse tree produced by the {@code declConMatrizLiteral}
+	 * labeled alternative in {@link ZetarianoParser#declaracion_variable}.
+	 * @param ctx the parse tree
+	 */
+	void enterDeclConMatrizLiteral(ZetarianoParser.DeclConMatrizLiteralContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code declConMatrizLiteral}
+	 * labeled alternative in {@link ZetarianoParser#declaracion_variable}.
+	 * @param ctx the parse tree
+	 */
+	void exitDeclConMatrizLiteral(ZetarianoParser.DeclConMatrizLiteralContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link ZetarianoParser#init_matriz}.
+	 * @param ctx the parse tree
+	 */
+	void enterInit_matriz(ZetarianoParser.Init_matrizContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link ZetarianoParser#init_matriz}.
+	 * @param ctx the parse tree
+	 */
+	void exitInit_matriz(ZetarianoParser.Init_matrizContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link ZetarianoParser#init_elemento}.
+	 * @param ctx the parse tree
+	 */
+	void enterInit_elemento(ZetarianoParser.Init_elementoContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link ZetarianoParser#init_elemento}.
+	 * @param ctx the parse tree
+	 */
+	void exitInit_elemento(ZetarianoParser.Init_elementoContext ctx);
+	/**
 	 * Enter a parse tree produced by the {@code asignacionSimple}
 	 * labeled alternative in {@link ZetarianoParser#asignacion}.
 	 * @param ctx the parse tree

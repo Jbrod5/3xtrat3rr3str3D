@@ -192,6 +192,17 @@ declaracion_variable
     // series resistencia[3] : Persona;
     // arreglo de estructuras u objetos importados, sin inicializar
     | SERIES IDENTIFICADOR CORCHETE_IZQ expresion CORCHETE_DER DOS_PUNTOS IDENTIFICADOR PUNTO_Y_COMA                                 # declArrayEstructura
+
+    // series matriz[2][3] : numerus;
+    | SERIES IDENTIFICADOR CORCHETE_IZQ expresion CORCHETE_DER CORCHETE_IZQ expresion CORCHETE_DER DOS_PUNTOS tipo_dato PUNTO_Y_COMA   # declMatrizSinDatos
+    // series matriz[2][3] : numerus {{3, 2, 1}, {4, 5, 6}};
+    | SERIES IDENTIFICADOR CORCHETE_IZQ expresion CORCHETE_DER CORCHETE_IZQ expresion CORCHETE_DER DOS_PUNTOS tipo_dato LLAVE_IZQ fila_matriz_pig (COMA fila_matriz_pig)* LLAVE_DER PUNTO_Y_COMA   # declMatrizConDatos
+    ;
+
+// fila de matriz con valores entre llaves
+fila_matriz_pig
+    // {3, 2, 1}
+    : LLAVE_IZQ lista_expresiones LLAVE_DER
     ;
 
 

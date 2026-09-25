@@ -352,6 +352,28 @@ public interface YLenguajeListener extends ParseTreeListener {
 	 */
 	void exitDeclMatriz(YLenguajeParser.DeclMatrizContext ctx);
 	/**
+	 * Enter a parse tree produced by the {@code declMatrizConValores}
+	 * labeled alternative in {@link YLenguajeParser#declaracion_variable}.
+	 * @param ctx the parse tree
+	 */
+	void enterDeclMatrizConValores(YLenguajeParser.DeclMatrizConValoresContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code declMatrizConValores}
+	 * labeled alternative in {@link YLenguajeParser#declaracion_variable}.
+	 * @param ctx the parse tree
+	 */
+	void exitDeclMatrizConValores(YLenguajeParser.DeclMatrizConValoresContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link YLenguajeParser#fila_matriz}.
+	 * @param ctx the parse tree
+	 */
+	void enterFila_matriz(YLenguajeParser.Fila_matrizContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link YLenguajeParser#fila_matriz}.
+	 * @param ctx the parse tree
+	 */
+	void exitFila_matriz(YLenguajeParser.Fila_matrizContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link YLenguajeParser#asignacion}.
 	 * @param ctx the parse tree
 	 */

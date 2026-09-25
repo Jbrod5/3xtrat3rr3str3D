@@ -183,6 +183,25 @@ public interface ZetarianoVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitDeclConListaLiteral(ZetarianoParser.DeclConListaLiteralContext ctx);
 	/**
+	 * Visit a parse tree produced by the {@code declConMatrizLiteral}
+	 * labeled alternative in {@link ZetarianoParser#declaracion_variable}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitDeclConMatrizLiteral(ZetarianoParser.DeclConMatrizLiteralContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link ZetarianoParser#init_matriz}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitInit_matriz(ZetarianoParser.Init_matrizContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link ZetarianoParser#init_elemento}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitInit_elemento(ZetarianoParser.Init_elementoContext ctx);
+	/**
 	 * Visit a parse tree produced by the {@code asignacionSimple}
 	 * labeled alternative in {@link ZetarianoParser#asignacion}.
 	 * @param ctx the parse tree

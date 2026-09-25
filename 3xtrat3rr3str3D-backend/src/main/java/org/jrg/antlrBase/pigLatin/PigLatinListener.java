@@ -470,6 +470,40 @@ public interface PigLatinListener extends ParseTreeListener {
 	 */
 	void exitDeclArrayEstructura(PigLatinParser.DeclArrayEstructuraContext ctx);
 	/**
+	 * Enter a parse tree produced by the {@code declMatrizSinDatos}
+	 * labeled alternative in {@link PigLatinParser#declaracion_variable}.
+	 * @param ctx the parse tree
+	 */
+	void enterDeclMatrizSinDatos(PigLatinParser.DeclMatrizSinDatosContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code declMatrizSinDatos}
+	 * labeled alternative in {@link PigLatinParser#declaracion_variable}.
+	 * @param ctx the parse tree
+	 */
+	void exitDeclMatrizSinDatos(PigLatinParser.DeclMatrizSinDatosContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code declMatrizConDatos}
+	 * labeled alternative in {@link PigLatinParser#declaracion_variable}.
+	 * @param ctx the parse tree
+	 */
+	void enterDeclMatrizConDatos(PigLatinParser.DeclMatrizConDatosContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code declMatrizConDatos}
+	 * labeled alternative in {@link PigLatinParser#declaracion_variable}.
+	 * @param ctx the parse tree
+	 */
+	void exitDeclMatrizConDatos(PigLatinParser.DeclMatrizConDatosContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link PigLatinParser#fila_matriz_pig}.
+	 * @param ctx the parse tree
+	 */
+	void enterFila_matriz_pig(PigLatinParser.Fila_matriz_pigContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link PigLatinParser#fila_matriz_pig}.
+	 * @param ctx the parse tree
+	 */
+	void exitFila_matriz_pig(PigLatinParser.Fila_matriz_pigContext ctx);
+	/**
 	 * Enter a parse tree produced by the {@code asignacionGeneral}
 	 * labeled alternative in {@link PigLatinParser#asignacion}.
 	 * @param ctx the parse tree

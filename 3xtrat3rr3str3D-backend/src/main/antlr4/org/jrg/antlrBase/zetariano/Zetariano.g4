@@ -117,6 +117,19 @@ declaracion_variable
     : tipo_dato (CORCHETE_IZQ CORCHETE_DER)* IDENTIFICADOR (ASIGNACION expresion)? PUNTO_Y_COMA                                 # declConTipo
     // String[] nombres = {"Carlos", "Ana", "Pedro"};
     | tipo_dato (CORCHETE_IZQ CORCHETE_DER)+ IDENTIFICADOR ASIGNACION LLAVE_IZQ lista_expresiones LLAVE_DER PUNTO_Y_COMA        # declConListaLiteral
+    // int[][] matriz = {{1, 2}, {3, 4}};
+    | tipo_dato (CORCHETE_IZQ CORCHETE_DER)+ IDENTIFICADOR ASIGNACION LLAVE_IZQ init_matriz LLAVE_DER PUNTO_Y_COMA              # declConMatrizLiteral
+    ;
+
+// elemento inicial de matriz con expresion o fila anidada
+init_matriz
+    : init_elemento (COMA init_elemento)*
+    ;
+
+// valor escalar o fila anidada entre llaves
+init_elemento
+    : expresion
+    | LLAVE_IZQ init_matriz LLAVE_DER
     ;
 
 

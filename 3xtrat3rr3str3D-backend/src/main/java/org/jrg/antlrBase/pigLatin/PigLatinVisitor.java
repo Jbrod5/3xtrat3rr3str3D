@@ -282,6 +282,26 @@ public interface PigLatinVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitDeclArrayEstructura(PigLatinParser.DeclArrayEstructuraContext ctx);
 	/**
+	 * Visit a parse tree produced by the {@code declMatrizSinDatos}
+	 * labeled alternative in {@link PigLatinParser#declaracion_variable}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitDeclMatrizSinDatos(PigLatinParser.DeclMatrizSinDatosContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code declMatrizConDatos}
+	 * labeled alternative in {@link PigLatinParser#declaracion_variable}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitDeclMatrizConDatos(PigLatinParser.DeclMatrizConDatosContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link PigLatinParser#fila_matriz_pig}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitFila_matriz_pig(PigLatinParser.Fila_matriz_pigContext ctx);
+	/**
 	 * Visit a parse tree produced by the {@code asignacionGeneral}
 	 * labeled alternative in {@link PigLatinParser#asignacion}.
 	 * @param ctx the parse tree

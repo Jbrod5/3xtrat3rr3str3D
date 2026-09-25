@@ -28,6 +28,7 @@ import org.jrg.model.ast.zetariano.ciclo.CicloWhile;
 import org.jrg.model.ast.zetariano.condicional.StatementIf;
 import org.jrg.model.ast.zetariano.constructor.DefConstructor;
 import org.jrg.model.ast.zetariano.declaracion_variable.DeclConListaLiteral;
+import org.jrg.model.ast.zetariano.declaracion_variable.DeclConMatrizLiteral;
 import org.jrg.model.ast.zetariano.declaracion_variable.DeclConTipo;
 import org.jrg.model.ast.zetariano.definicion_clase.DefClase;
 import org.jrg.model.ast.zetariano.expresion.ExprAccesoArray;
@@ -1440,6 +1441,63 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         }
 
         return null;
+    }
+
+    @Override
+    public Object visitarDeclConMatrizLiteral(DeclConMatrizLiteral decl) {
+        // obtener el nodo del tipo
+        NodoASTZetariano tipoNodo = decl.getTipo();
+        Tipo tipoBase = obtenerTipo(tipoNodo);
+
+        // reportar error si el tipo no existe
+        if (tipoBase == null) {
+            agregarError(decl, "tipo '" + extraerNombreTipo(tipoNodo) + "' no definido");
+
+            return null;
+        }
+
+        // construir el tipo array con sus dimensiones
+        Tipo tipoArray = crearTipoArray(tipoBase, decl.getDimensiones());
+
+        // declarar la variable
+        if (!declararVariable(decl.getIdentificador(), tipoArray, decl)) {
+
+            return null;
+        }
+
+        // validar los valores anidados por niveles
+        validarNivelMatriz(decl.getValores(), tipoBase, decl.getDimensiones(), 1);
+
+        return null;
+    }
+
+    // validar un nivel con hojas escalares o subniveles anidados
+    private void validarNivelMatriz(List<Object> nivel, Tipo tipoBase, int dimensiones, int nivelActual) {
+        // omitir niveles nulos
+        if (nivel == null) {
+            return;
+        }
+        // recorrer cada elemento del nivel
+        for (int i = 0; i < nivel.size(); i++) {
+            Object elemento = nivel.get(i);
+            // validar el subnivel cuando trae llaves anidadas
+            if (elemento instanceof List) {
+                // reportar si el nivel trae mas profundidad de la declarada
+                if (nivelActual >= dimensiones) {
+                    continue;
+                }
+                validarNivelMatriz((List<Object>) elemento, tipoBase, dimensiones, nivelActual + 1);
+                continue;
+            }
+            // validar la hoja escalar contra el tipo base
+            if (elemento instanceof NodoASTZetariano) {
+                Tipo tipoValor = (Tipo) ((NodoASTZetariano) elemento).accept(this);
+                // verificar la compatibilidad del tipo
+                if (tipoValor != null && !esTipoCompatible(tipoValor, tipoBase)) {
+                    agregarError((NodoASTZetariano) elemento, "valor incompatible con el tipo de la matriz, se esperaba '" + tipoBase.getNombre() + "' pero se obtuvo '" + tipoValor.getNombre() + "'");
+                }
+            }
+        }
     }
 
     // ==================== ASIGNACIONES ====================

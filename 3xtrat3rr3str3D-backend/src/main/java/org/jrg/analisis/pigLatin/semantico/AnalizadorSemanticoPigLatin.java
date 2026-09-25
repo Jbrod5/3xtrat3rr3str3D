@@ -27,6 +27,8 @@ import org.jrg.model.ast.pigLatin.condicional.StatementSi;
 import org.jrg.model.ast.pigLatin.declaracion_variable.DeclArrayConDatos;
 import org.jrg.model.ast.pigLatin.declaracion_variable.DeclArrayEstructura;
 import org.jrg.model.ast.pigLatin.declaracion_variable.DeclArraySinDatos;
+import org.jrg.model.ast.pigLatin.declaracion_variable.DeclMatrizConDatos;
+import org.jrg.model.ast.pigLatin.declaracion_variable.DeclMatrizSinDatos;
 import org.jrg.model.ast.pigLatin.declaracion_variable.DeclBooleanaImplicita;
 import org.jrg.model.ast.pigLatin.declaracion_variable.DeclConTipoYValor;
 import org.jrg.model.ast.pigLatin.declaracion_variable.DeclEstructuraConValores;
@@ -1352,6 +1354,107 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
                     this.contexto.agregarError(expr, "valor incompatible con el tipo del arreglo, se esperaba '" + tipoBase.getNombre() + "' pero se obtuvo '" + tipoValor.getNombre() + "'");
                 }
 
+            }
+        }
+
+        return null;
+    }
+
+    @Override
+    public Object visitDeclMatrizSinDatos(DeclMatrizSinDatos decl) {
+
+        // resolver el tipo base
+        Tipo tipoBase = resolverTipoTipoDato(decl.getTipo());
+
+        // verificar si el tipo base es nulo
+        if (tipoBase == null) {
+            this.contexto.agregarError(decl, "tipo no definido");
+            return null;
+        }
+
+        // crear el tipo arreglo
+        Tipo tipoArray = this.contexto.tipoArray(tipoBase);
+
+        // validar los dos tamanos como constantes positivas
+        Integer filas = extraerTamanoMatriz(decl.getTamanoFilas());
+        Integer columnas = extraerTamanoMatriz(decl.getTamanoColumnas());
+
+        // declarar la variable de forma segura
+        declararVariableSeguro(decl, decl.getIdentificador(), tipoArray, CategoriaSimbolo.ARREGLO, null);
+
+        return null;
+    }
+
+    // extraer un tamano de matriz validando constante positiva
+    private Integer extraerTamanoMatriz(NodoAST tamano) {
+        // visitar el tamano si existe
+        Integer valor = null;
+        if (tamano != null) {
+            tamano.accept(this);
+            valor = extraerEnteroConstante(tamano);
+
+            // verificar si el tamano no es constante
+            if (valor == null) {
+                this.contexto.agregarError(tamano, "el tamano de la matriz debe ser una constante entera");
+            } else if (valor <= 0) {
+                this.contexto.agregarError(tamano, "el tamano de la matriz debe ser positivo");
+            }
+        }
+        return valor;
+    }
+
+    @Override
+    public Object visitDeclMatrizConDatos(DeclMatrizConDatos decl) {
+
+        // resolver el tipo base
+        Tipo tipoBase = resolverTipoTipoDato(decl.getTipo());
+
+        // verificar si el tipo base es nulo
+        if (tipoBase == null) {
+            this.contexto.agregarError(decl, "tipo no definido");
+            return null;
+        }
+
+        // crear el tipo arreglo
+        Tipo tipoArray = this.contexto.tipoArray(tipoBase);
+
+        // validar los dos tamanos como constantes positivas
+        Integer filas = extraerTamanoMatriz(decl.getTamanoFilas());
+        Integer columnas = extraerTamanoMatriz(decl.getTamanoColumnas());
+
+        // declarar la variable de forma segura
+        declararVariableSeguro(decl, decl.getIdentificador(), tipoArray, CategoriaSimbolo.ARREGLO, null);
+
+        // validar cada fila con sus valores
+        if (decl.getFilas() != null) {
+            // verificar la cantidad de filas
+            if (filas != null && decl.getFilas().size() != filas) {
+                this.contexto.agregarError(decl, "la cantidad de filas (" + decl.getFilas().size() + ") no coincide con el tamano declarado (" + filas + ")");
+            }
+            // recorrer cada fila
+            for (List<NodoAST> fila : decl.getFilas()) {
+                // omitir filas nulas
+                if (fila == null) {
+                    continue;
+                }
+                // verificar la cantidad de columnas
+                if (columnas != null && fila.size() != columnas) {
+                    this.contexto.agregarError(decl, "la cantidad de columnas (" + fila.size() + ") no coincide con el tamano declarado (" + columnas + ")");
+                }
+                // recorrer cada valor
+                for (NodoAST expr : fila) {
+                    // verificar si el valor es nulo
+                    if (expr == null) {
+                        continue;
+                    }
+                    // entrar en el valor
+                    Object resultado = expr.accept(this);
+                    Tipo tipoValor = extraerTipoDeExpresion(resultado);
+                    // verificar si el tipo es compatible
+                    if (tipoValor != null && !this.contexto.esCompatible(tipoBase, tipoValor)) {
+                        this.contexto.agregarError(expr, "valor incompatible con el tipo de la matriz, se esperaba '" + tipoBase.getNombre() + "' pero se obtuvo '" + tipoValor.getNombre() + "'");
+                    }
+                }
             }
         }
 

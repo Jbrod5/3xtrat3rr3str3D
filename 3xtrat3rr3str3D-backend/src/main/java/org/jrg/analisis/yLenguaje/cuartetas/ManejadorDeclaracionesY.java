@@ -1,8 +1,11 @@
 package org.jrg.analisis.yLenguaje.cuartetas;
 
+import java.util.List;
+
 import org.jrg.model.ast.yLenguaje.declaracion_variable.DeclArrayConValores;
 import org.jrg.model.ast.yLenguaje.declaracion_variable.DeclArraySinValores;
 import org.jrg.model.ast.yLenguaje.declaracion_variable.DeclConTipoYValor;
+import org.jrg.model.ast.yLenguaje.declaracion_variable.DeclMatrizConValores;
 import org.jrg.model.ast.yLenguaje.ListaExpresiones;
 import org.jrg.model.ast.yLenguaje.base.NodoASTY;
 import org.jrg.model.ast.yLenguaje.declaracion_variable.DeclMatriz;
@@ -205,8 +208,10 @@ public class ManejadorDeclaracionesY {
         return null;
     }
 
-    // reservar una matriz con filas y columnas
+    // reservar una matriz con filas por columnas del tipo base
     public String visitarDeclMatriz(DeclMatriz nodo) {
+        // extraer el tipo base declarado
+        String tipoBase = ctx.nombreDeTipo(nodo.getTipo());
         // evaluar el tamano de filas
         String filas = "_";
         if (nodo.getTamanoFilas() != null) {
@@ -229,8 +234,74 @@ public class ManejadorDeclaracionesY {
             columnas = "_";
         }
 
-        // agregar la reserva de memoria con ambas dimensiones a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta("alloc", filas, columnas, nodo.getNombre(), ctx.inferirTipoDe(filas, ctx.getTiposConocidos()), ctx.inferirTipoDe(columnas, ctx.getTiposConocidos()), "_"));
+        // multiplicar filas por columnas en un temporal
+        String tempTotal = ctx.getTemporales().nuevoTemporal();
+        ctx.getCuartetas().add(new Cuarteta("*", filas, columnas, tempTotal, ctx.tipoAritmetico(filas), ctx.tipoAritmetico(columnas), ctx.tipoResultadoAritmetico(filas, columnas)));
+
+        // agregar la reserva de memoria con el total a la lista de cuartetas
+        ctx.getCuartetas().add(new Cuarteta("alloc", tipoBase, tempTotal, nodo.getNombre(), tipoBase, "entero", tipoBase));
+
+        return null;
+    }
+
+    // reservar una matriz y llenarla con sus filas de valores
+    public String visitarDeclMatrizConValores(DeclMatrizConValores nodo) {
+        // extraer el tipo base declarado
+        String tipoBase = ctx.nombreDeTipo(nodo.getTipo());
+        // evaluar el tamano de filas
+        String filas = "_";
+        if (nodo.getTamanoFilas() != null) {
+            filas = nodo.getTamanoFilas().accept(generador);
+        }
+
+        // usar valor por defecto si el resultado es nulo
+        if (filas == null) {
+            filas = "_";
+        }
+
+        // evaluar el tamano de columnas
+        String columnas = "_";
+        if (nodo.getTamanoColumnas() != null) {
+            columnas = nodo.getTamanoColumnas().accept(generador);
+        }
+
+        // usar valor por defecto si el resultado es nulo
+        if (columnas == null) {
+            columnas = "_";
+        }
+
+        // multiplicar filas por columnas en un temporal
+        String tempTotal = ctx.getTemporales().nuevoTemporal();
+        ctx.getCuartetas().add(new Cuarteta("*", filas, columnas, tempTotal, ctx.tipoAritmetico(filas), ctx.tipoAritmetico(columnas), ctx.tipoResultadoAritmetico(filas, columnas)));
+
+        // agregar la reserva de memoria con el total a la lista de cuartetas
+        ctx.getCuartetas().add(new Cuarteta("alloc", tipoBase, tempTotal, nodo.getNombre(), tipoBase, "entero", tipoBase));
+
+        // recorrer cada fila con sus valores
+        if (nodo.getFilas() != null) {
+            for (int f = 0; f < nodo.getFilas().size(); f++) {
+                List<NodoASTY> fila = nodo.getFilas().get(f);
+                // omitir filas nulas
+                if (fila == null) {
+                    continue;
+                }
+                for (int c = 0; c < fila.size(); c++) {
+                    // evaluar el valor actual
+                    String val = fila.get(c).accept(generador);
+                    // usar valor por defecto si el resultado es nulo
+                    if (val == null) {
+                        val = "_";
+                    }
+                    // calcular el indice lineal como fila por columnas mas columna
+                    String tempFila = ctx.getTemporales().nuevoTemporal();
+                    ctx.getCuartetas().add(new Cuarteta("*", String.valueOf(f), columnas, tempFila, "entero", ctx.tipoAritmetico(columnas), ctx.tipoResultadoAritmetico(String.valueOf(f), columnas)));
+                    String tempIndice = ctx.getTemporales().nuevoTemporal();
+                    ctx.getCuartetas().add(new Cuarteta("+", tempFila, String.valueOf(c), tempIndice, ctx.tipoAritmetico(tempFila), "entero", ctx.tipoResultadoAritmetico(tempFila, String.valueOf(c))));
+                    // agregar la asignacion a la posicion actual a la lista de cuartetas
+                    ctx.getCuartetas().add(new Cuarteta("[]=", nodo.getNombre(), tempIndice, val, "_", "entero", "_"));
+                }
+            }
+        }
 
         return null;
     }

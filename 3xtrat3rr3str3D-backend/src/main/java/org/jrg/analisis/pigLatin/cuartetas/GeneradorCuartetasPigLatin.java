@@ -286,6 +286,16 @@ public class GeneradorCuartetasPigLatin implements LatinusAstVisitor<String> {
         return manejadorDeclaraciones.visitDeclArrayEstructura(nodo);
     }
 
+    @Override
+    public String visitDeclMatrizSinDatos(DeclMatrizSinDatos nodo) {
+        return manejadorDeclaraciones.visitDeclMatrizSinDatos(nodo);
+    }
+
+    @Override
+    public String visitDeclMatrizConDatos(DeclMatrizConDatos nodo) {
+        return manejadorDeclaraciones.visitDeclMatrizConDatos(nodo);
+    }
+
     // ==================== ASIGNACIONES ====================
 
     @Override

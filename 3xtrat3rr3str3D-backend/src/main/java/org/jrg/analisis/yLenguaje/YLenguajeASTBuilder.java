@@ -16,6 +16,7 @@ import org.jrg.model.ast.yLenguaje.declaracion_variable.DeclArrayConValores;
 import org.jrg.model.ast.yLenguaje.declaracion_variable.DeclArraySinValores;
 import org.jrg.model.ast.yLenguaje.declaracion_variable.DeclConTipoYValor;
 import org.jrg.model.ast.yLenguaje.declaracion_variable.DeclMatriz;
+import org.jrg.model.ast.yLenguaje.declaracion_variable.DeclMatrizConValores;
 import org.jrg.model.ast.yLenguaje.expresion.ExprAccesoArray;
 import org.jrg.model.ast.yLenguaje.expresion.ExprAccesoMiembro;
 import org.jrg.model.ast.yLenguaje.expresion.ExprAnd;
@@ -482,6 +483,34 @@ public class YLenguajeASTBuilder extends YLenguajeBaseVisitor<NodoASTY> {
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo declaracion matriz
         return new DeclMatriz(tipo, nombre, tamanoFilas, tamanoColumnas, linea, columna);
+    }
+
+    @Override
+    public NodoASTY visitDeclMatrizConValores(YLenguajeParser.DeclMatrizConValoresContext ctx) {
+        // visitar tipo de dato
+        NodoASTY tipo = visit(ctx.tipo_dato());
+        // obtener identificador
+        String nombre = ctx.IDENTIFICADOR().getText();
+        // visitar expresiones de tamano
+        NodoASTY tamanoFilas = visit(ctx.expresion(0));
+        NodoASTY tamanoColumnas = visit(ctx.expresion(1));
+        // recolectar las filas con sus valores
+        List<List<NodoASTY>> filas = new ArrayList<>();
+        for (int i = 0; i < ctx.fila_matriz().size(); i++) {
+            // visitar la lista de la fila actual
+            NodoASTY lista = visit(ctx.fila_matriz(i).lista_expresiones());
+            // guardar los valores si es lista de expresiones
+            List<NodoASTY> valores = new ArrayList<>();
+            if (lista instanceof ListaExpresiones) {
+                valores.addAll(((ListaExpresiones) lista).getExpresiones());
+            }
+            filas.add(valores);
+        }
+        // obtener ubicacion del nodo
+        int linea = ctx.getStart().getLine();
+        int columna = ctx.getStart().getCharPositionInLine();
+        // crear nodo declaracion matriz con valores
+        return new DeclMatrizConValores(tipo, nombre, tamanoFilas, tamanoColumnas, filas, linea, columna);
     }
 
     @Override

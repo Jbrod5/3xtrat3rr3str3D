@@ -377,6 +377,30 @@ public class YLenguajeBaseListener implements YLenguajeListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterDeclMatrizConValores(YLenguajeParser.DeclMatrizConValoresContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitDeclMatrizConValores(YLenguajeParser.DeclMatrizConValoresContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterFila_matriz(YLenguajeParser.Fila_matrizContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitFila_matriz(YLenguajeParser.Fila_matrizContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterAsignacion(YLenguajeParser.AsignacionContext ctx) { }
 	/**
 	 * {@inheritDoc}
