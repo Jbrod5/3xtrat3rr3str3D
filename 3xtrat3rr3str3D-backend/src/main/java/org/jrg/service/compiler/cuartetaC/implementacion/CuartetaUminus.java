@@ -1,4 +1,4 @@
-package org.jrg.service.compiler.cuartetaC.impl;
+package org.jrg.service.compiler.cuartetaC.implementacion;
 
 import org.jrg.service.compiler.cuartetaC.ContextoTraduccion;
 import org.jrg.service.compiler.cuartetaC.CuartetaC;
@@ -32,6 +32,6 @@ public class CuartetaUminus extends CuartetaC {
         // mapear el tipo del resultado a C
         String tipoUni = ctx.mapearTipo(tipoResultado);
         // construir la negacion aritmetica del valor
-        return ctx.ladoIzquierdo(resultado, tipoUni) + " = -" + ctx.traducirValor(arg1) + ";";
+        return ctx.ladoIzquierdo(resultado, tipoUni) + " = -" + ctx.crearValor(arg1).obtenerCodigoC(ctx) + ";";
     }
 }

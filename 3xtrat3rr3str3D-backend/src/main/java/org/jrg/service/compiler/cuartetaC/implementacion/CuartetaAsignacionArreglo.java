@@ -1,4 +1,4 @@
-package org.jrg.service.compiler.cuartetaC.impl;
+package org.jrg.service.compiler.cuartetaC.implementacion;
 
 import org.jrg.service.compiler.cuartetaC.ContextoTraduccion;
 import org.jrg.service.compiler.cuartetaC.CuartetaC;
@@ -30,6 +30,6 @@ public class CuartetaAsignacionArreglo extends CuartetaC {
     @Override
     public String obtenerCodigoC(ContextoTraduccion ctx) {
         // construir la escritura del arreglo con indice y valor traducidos
-        return ctx.accesoCampo(arg1) + "[" + ctx.traducirValor(arg2) + "] = " + ctx.traducirValor(resultado) + ";";
+        return ctx.accesoCampo(arg1) + "[" + ctx.crearValor(arg2).obtenerCodigoC(ctx) + "] = " + ctx.crearValor(resultado).obtenerCodigoC(ctx) + ";";
     }
 }

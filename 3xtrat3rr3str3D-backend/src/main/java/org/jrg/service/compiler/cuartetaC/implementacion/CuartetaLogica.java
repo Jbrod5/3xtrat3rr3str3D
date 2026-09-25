@@ -1,4 +1,4 @@
-package org.jrg.service.compiler.cuartetaC.impl;
+package org.jrg.service.compiler.cuartetaC.implementacion;
 
 import org.jrg.service.compiler.cuartetaC.ContextoTraduccion;
 import org.jrg.service.compiler.cuartetaC.CuartetaC;
@@ -30,6 +30,6 @@ public class CuartetaLogica extends CuartetaC {
     @Override
     public String obtenerCodigoC(ContextoTraduccion ctx) {
         // construir la operacion logica binaria con resultado booleano
-        return ctx.ladoIzquierdo(resultado, "bool") + " = (" + ctx.traducirValor(arg1) + " " + operador + " " + ctx.traducirValor(arg2) + ");";
+        return ctx.ladoIzquierdo(resultado, "bool") + " = (" + ctx.crearValor(arg1).obtenerCodigoC(ctx) + " " + operador + " " + ctx.crearValor(arg2).obtenerCodigoC(ctx) + ");";
     }
 }

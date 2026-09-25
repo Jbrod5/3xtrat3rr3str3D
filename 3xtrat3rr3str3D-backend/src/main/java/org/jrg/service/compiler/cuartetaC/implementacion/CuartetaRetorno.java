@@ -1,4 +1,4 @@
-package org.jrg.service.compiler.cuartetaC.impl;
+package org.jrg.service.compiler.cuartetaC.implementacion;
 
 import org.jrg.service.compiler.cuartetaC.ContextoTraduccion;
 import org.jrg.service.compiler.cuartetaC.CuartetaC;
@@ -37,6 +37,6 @@ public class CuartetaRetorno extends CuartetaC {
             return "return;";
         }
         // construir el retorno con el valor traducido
-        return "return " + ctx.traducirValor(arg1) + ";";
+        return "return " + ctx.crearValor(arg1).obtenerCodigoC(ctx) + ";";
     }
 }

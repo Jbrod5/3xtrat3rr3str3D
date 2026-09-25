@@ -1,4 +1,4 @@
-package org.jrg.service.compiler.cuartetaC.impl;
+package org.jrg.service.compiler.cuartetaC.implementacion;
 
 import org.jrg.service.compiler.cuartetaC.ContextoTraduccion;
 import org.jrg.service.compiler.cuartetaC.CuartetaC;
@@ -32,6 +32,6 @@ public class CuartetaAccesoArreglo extends CuartetaC {
         // mapear el tipo del resultado a C
         String tipo = ctx.mapearTipo(tipoResultado);
         // construir la lectura del arreglo con indice traducido
-        return ctx.ladoIzquierdo(resultado, tipo) + " = " + ctx.accesoCampo(arg1) + "[" + ctx.traducirValor(arg2) + "];";
+        return ctx.ladoIzquierdo(resultado, tipo) + " = " + ctx.accesoCampo(arg1) + "[" + ctx.crearValor(arg2).obtenerCodigoC(ctx) + "];";
     }
 }

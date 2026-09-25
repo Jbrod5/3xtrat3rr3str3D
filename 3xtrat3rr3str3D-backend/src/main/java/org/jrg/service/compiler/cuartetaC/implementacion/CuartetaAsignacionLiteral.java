@@ -1,4 +1,4 @@
-package org.jrg.service.compiler.cuartetaC.impl;
+package org.jrg.service.compiler.cuartetaC.implementacion;
 
 import org.jrg.service.compiler.cuartetaC.ContextoTraduccion;
 import org.jrg.service.compiler.cuartetaC.CuartetaC;
@@ -32,6 +32,6 @@ public class CuartetaAsignacionLiteral extends CuartetaC {
         // mapear el tipo del resultado a C
         String tipo = ctx.mapearTipo(tipoResultado);
         // construir la asignacion con el valor traducido
-        return ctx.ladoIzquierdo(resultado, tipo) + " = " + ctx.traducirValor(arg1) + ";";
+        return ctx.ladoIzquierdo(resultado, tipo) + " = " + ctx.crearValor(arg1).obtenerCodigoC(ctx) + ";";
     }
 }

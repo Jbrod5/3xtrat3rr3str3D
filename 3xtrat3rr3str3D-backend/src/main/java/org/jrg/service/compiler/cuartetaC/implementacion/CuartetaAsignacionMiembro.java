@@ -1,4 +1,4 @@
-package org.jrg.service.compiler.cuartetaC.impl;
+package org.jrg.service.compiler.cuartetaC.implementacion;
 
 import org.jrg.service.compiler.cuartetaC.ContextoTraduccion;
 import org.jrg.service.compiler.cuartetaC.CuartetaC;
@@ -46,6 +46,6 @@ public class CuartetaAsignacionMiembro extends CuartetaC {
             accesoMiembro = "->";
         }
         // construir la escritura del miembro con el valor traducido
-        return ctx.traducirValor(arg1) + accesoMiembro + campo + " = " + ctx.traducirValor(resultado) + ";";
+        return ctx.crearValor(arg1).obtenerCodigoC(ctx) + accesoMiembro + campo + " = " + ctx.crearValor(resultado).obtenerCodigoC(ctx) + ";";
     }
 }

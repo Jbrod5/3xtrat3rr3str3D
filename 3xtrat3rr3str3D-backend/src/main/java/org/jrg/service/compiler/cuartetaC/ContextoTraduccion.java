@@ -8,6 +8,11 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jrg.model.resultado.CuartetaResultado;
+import org.jrg.service.compiler.cuartetaC.valor.ValorBooleano;
+import org.jrg.service.compiler.cuartetaC.valor.ValorC;
+import org.jrg.service.compiler.cuartetaC.valor.ValorLiteral;
+import org.jrg.service.compiler.cuartetaC.valor.ValorNulo;
+import org.jrg.service.compiler.cuartetaC.valor.ValorVariable;
 
 // estado compartido para la traduccion de cuartetas a codigo C
 public class ContextoTraduccion {
@@ -655,38 +660,34 @@ public class ContextoTraduccion {
     }
 
     /**
-     * Traducir constantes especiales a su forma en C.
+     * Crear el valor concreto segun la forma del texto.
      */
-    public String traducirValor(String valor) {
-        // conservar nulos y vacios sin cambios
-        if (valor == null || valor.isEmpty()) {
-            return valor;
+    public ValorC crearValor(String texto) {
+        // conservar nulos y vacios como literales sin cambios
+        if (texto == null || texto.isEmpty()) {
+            return new ValorLiteral(texto);
         }
-        // traducir el desconocido a cero
-        if (valor.equals("_")) {
-            return "0";
+        // crear nulo para desconocidos y nulos
+        if ("_".equals(texto) || "null".equals(texto) || "NULL".equals(texto)) {
+            return new ValorNulo(texto);
         }
-        // traducir constantes verdaderas
-        if (valor.equals("verum") || valor.equals("verdadero") || valor.equals("true")) {
-            return "true";
+        // crear booleano para constantes de los tres lenguajes
+        if ("verum".equals(texto) || "verdadero".equals(texto) || "true".equals(texto) || "falsus".equals(texto) || "falso".equals(texto) || "false".equals(texto)) {
+            return new ValorBooleano(texto);
         }
-        // traducir constantes falsas
-        if (valor.equals("falsus") || valor.equals("falso") || valor.equals("false")) {
-            return "false";
+        // crear literal para cadenas y caracteres entre comillas
+        if (texto.startsWith("\"") || texto.startsWith("'")) {
+            return new ValorLiteral(texto);
         }
-        // traducir nulo a NULL
-        if (valor.equals("null") || valor.equals("NULL")) {
-            return "NULL";
-        }
-        // leer campos de la clase actual con this
-        return accesoCampo(valor);
+        // crear variable para nombres temporales y numeros
+        return new ValorVariable(texto);
     }
 
     /**
      * Traducir un print segun el tipo del argumento.
      */
     public String traducirPrint(String valor, String tipoArg) {
-        String texto = traducirValor(valor);
+        String texto = crearValor(valor).obtenerCodigoC(this);
         // elegir el formato segun el tipo
         if ("cadena".equals(tipoArg) || "textum".equals(tipoArg) || "String".equals(tipoArg) || "char*".equals(tipoArg)) {
             return "printf(\"%s\\n\", " + texto + ");";
@@ -721,14 +722,14 @@ public class ContextoTraduccion {
         }
         // devolver el valor original si no necesita conversion
         if (formato.isEmpty()) {
-            return traducirValor(valor);
+            return crearValor(valor).obtenerCodigoC(this);
         }
         // generar un nombre unico para el temporal de string
         String tempStr = "__str_" + this.contadorTempsString;
         this.contadorTempsString = this.contadorTempsString + 1;
         // agregar la reserva y la conversion con indentacion propia al cuerpo
         lineas.append("char* ").append(tempStr).append(" = malloc(32);\n    ");
-        lineas.append("sprintf(").append(tempStr).append(", \"").append(formato).append("\", ").append(traducirValor(valor)).append(");\n    ");
+        lineas.append("sprintf(").append(tempStr).append(", \"").append(formato).append("\", ").append(crearValor(valor).obtenerCodigoC(this)).append(");\n    ");
         // devolver el nombre del temporal de string
         return tempStr;
     }
@@ -743,7 +744,7 @@ public class ContextoTraduccion {
             if (i > 0) {
                 sb.append(", ");
             }
-            sb.append(traducirValor(paramsPendientes.get(i)));
+            sb.append(crearValor(paramsPendientes.get(i)).obtenerCodigoC(this));
         }
         return sb.toString();
     }

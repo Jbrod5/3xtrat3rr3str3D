@@ -1,4 +1,4 @@
-package org.jrg.service.compiler.cuartetaC.impl;
+package org.jrg.service.compiler.cuartetaC.implementacion;
 
 import org.jrg.service.compiler.cuartetaC.ContextoTraduccion;
 import org.jrg.service.compiler.cuartetaC.CuartetaC;
@@ -30,6 +30,6 @@ public class CuartetaNegacion extends CuartetaC {
     @Override
     public String obtenerCodigoC(ContextoTraduccion ctx) {
         // construir la negacion con resultado booleano
-        return ctx.ladoIzquierdo(resultado, "bool") + " = !" + ctx.traducirValor(arg1) + ";";
+        return ctx.ladoIzquierdo(resultado, "bool") + " = !" + ctx.crearValor(arg1).obtenerCodigoC(ctx) + ";";
     }
 }

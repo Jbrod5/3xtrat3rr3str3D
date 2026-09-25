@@ -1,4 +1,4 @@
-package org.jrg.service.compiler.cuartetaC.impl;
+package org.jrg.service.compiler.cuartetaC.implementacion;
 
 import org.jrg.service.compiler.cuartetaC.ContextoTraduccion;
 import org.jrg.service.compiler.cuartetaC.CuartetaC;
@@ -38,6 +38,6 @@ public class CuartetaAccesoMiembro extends CuartetaC {
         // resolver el tipo del miembro desde la clase del objeto
         String tipo = ctx.tipoMiembro(arg1, arg2, tipoResultado);
         // construir la lectura del miembro con su acceso
-        return ctx.ladoIzquierdo(resultado, tipo) + " = " + ctx.traducirValor(arg1) + acceso + arg2 + ";";
+        return ctx.ladoIzquierdo(resultado, tipo) + " = " + ctx.crearValor(arg1).obtenerCodigoC(ctx) + acceso + arg2 + ";";
     }
 }

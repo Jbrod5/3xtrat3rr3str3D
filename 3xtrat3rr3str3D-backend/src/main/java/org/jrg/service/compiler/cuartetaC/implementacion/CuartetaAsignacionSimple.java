@@ -1,4 +1,4 @@
-package org.jrg.service.compiler.cuartetaC.impl;
+package org.jrg.service.compiler.cuartetaC.implementacion;
 
 import org.jrg.service.compiler.cuartetaC.ContextoTraduccion;
 import org.jrg.service.compiler.cuartetaC.CuartetaC;
@@ -53,7 +53,7 @@ public class CuartetaAsignacionSimple extends CuartetaC {
                     ctx.structDeNombre.put(objetoDest, structAdivinado);
                 }
             }
-            return declObj + ctx.traducirValor(objetoDest) + accesoDest + campoDest + " = " + ctx.traducirValor(arg1) + ";";
+            return declObj + ctx.crearValor(objetoDest).obtenerCodigoC(ctx) + accesoDest + campoDest + " = " + ctx.crearValor(arg1).obtenerCodigoC(ctx) + ";";
         }
         // propagar el struct del valor al destino
         if (arg1 != null && destino != null) {
@@ -68,7 +68,7 @@ public class CuartetaAsignacionSimple extends CuartetaC {
         }
         // escribir en el campo con this sin declarar nada
         if (ctx.esCampoActual(destino)) {
-            return "this->" + destino + " = " + ctx.traducirValor(arg1) + ";";
+            return "this->" + destino + " = " + ctx.crearValor(arg1).obtenerCodigoC(ctx) + ";";
         }
         // declarar la variable si aun no existe
         if (destino != null && ctx.declaradas.contains(destino) == false) {
@@ -81,6 +81,6 @@ public class CuartetaAsignacionSimple extends CuartetaC {
         if (destino == null) {
             return linea;
         }
-        return linea + destino + " = " + ctx.traducirValor(arg1) + ";";
+        return linea + destino + " = " + ctx.crearValor(arg1).obtenerCodigoC(ctx) + ";";
     }
 }

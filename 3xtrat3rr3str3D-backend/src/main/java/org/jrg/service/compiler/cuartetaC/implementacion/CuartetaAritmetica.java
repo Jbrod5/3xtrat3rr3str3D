@@ -1,4 +1,4 @@
-package org.jrg.service.compiler.cuartetaC.impl;
+package org.jrg.service.compiler.cuartetaC.implementacion;
 
 import org.jrg.service.compiler.cuartetaC.ContextoTraduccion;
 import org.jrg.service.compiler.cuartetaC.CuartetaC;
@@ -32,6 +32,6 @@ public class CuartetaAritmetica extends CuartetaC {
         // mapear el tipo del resultado a C
         String tipo = ctx.mapearTipo(tipoResultado);
         // construir la operacion binaria con el operador propio
-        return ctx.ladoIzquierdo(resultado, tipo) + " = " + ctx.traducirValor(arg1) + " " + operador + " " + ctx.traducirValor(arg2) + ";";
+        return ctx.ladoIzquierdo(resultado, tipo) + " = " + ctx.crearValor(arg1).obtenerCodigoC(ctx) + " " + operador + " " + ctx.crearValor(arg2).obtenerCodigoC(ctx) + ";";
     }
 }

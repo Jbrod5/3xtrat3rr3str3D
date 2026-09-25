@@ -1,4 +1,4 @@
-package org.jrg.service.compiler.cuartetaC.impl;
+package org.jrg.service.compiler.cuartetaC.implementacion;
 
 import org.jrg.service.compiler.cuartetaC.ContextoTraduccion;
 import org.jrg.service.compiler.cuartetaC.CuartetaC;
@@ -30,6 +30,6 @@ public class CuartetaIfFalse extends CuartetaC {
     @Override
     public String obtenerCodigoC(ContextoTraduccion ctx) {
         // construir el salto cuando la condicion es falsa
-        return "if (!" + ctx.traducirValor(arg1) + ") goto " + arg2 + ";";
+        return "if (!" + ctx.crearValor(arg1).obtenerCodigoC(ctx) + ") goto " + arg2 + ";";
     }
 }
