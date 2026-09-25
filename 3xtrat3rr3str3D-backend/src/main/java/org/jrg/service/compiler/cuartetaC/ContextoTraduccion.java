@@ -69,6 +69,8 @@ public class ContextoTraduccion {
     public final Set<String> funcionesConocidas;
     // temporales y variables que guardan punteros a heap
     public final Set<String> punteros;
+    // temporales que guardan nulo para retornos enteros
+    public final Set<String> nulosConocidos;
     // clase del metodo en proceso o vacio fuera de metodos
     public String nombreClaseActual;
 
@@ -103,6 +105,7 @@ public class ContextoTraduccion {
         this.clases = new HashSet<>();
         this.funcionesConocidas = new HashSet<>();
         this.punteros = new HashSet<>();
+        this.nulosConocidos = new HashSet<>();
         this.nombreClaseActual = "";
     }
 
@@ -296,6 +299,10 @@ public class ContextoTraduccion {
         if (tipo.equals("void")) {
             return "void";
         }
+        // usar puntero a struct para clases aunque vengan sueltas
+        if (clases.contains(tipo)) {
+            return "struct " + tipo + "*";
+        }
         // usar int como respaldo para tipos desconocidos
         return "int";
     }
@@ -392,6 +399,13 @@ public class ContextoTraduccion {
         String tipoCampo = tipoCampoClase(destino);
         if (tipoCampo != null) {
             return tipoCampo;
+        }
+        // usar el tipo del campo cuando el valor es campo de la clase actual
+        if (esCampoActual(arg1)) {
+            String tipoValorCampo = tipoCampoClase(arg1);
+            if (tipoValorCampo != null) {
+                return tipoValorCampo;
+            }
         }
         // usar el tipo del valor por defecto
         return mapearTipo(tipoArg1);

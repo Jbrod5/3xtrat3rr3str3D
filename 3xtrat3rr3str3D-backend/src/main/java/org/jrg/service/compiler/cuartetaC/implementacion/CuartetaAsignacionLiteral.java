@@ -31,6 +31,14 @@ public class CuartetaAsignacionLiteral extends CuartetaC {
     public String obtenerCodigoC(ContextoTraduccion ctx) {
         // mapear el tipo del resultado a C
         String tipo = ctx.mapearTipo(tipoResultado);
+        // usar puntero generico cuando el literal es nulo
+        if ("null".equals(arg1) || "NULL".equals(arg1)) {
+            tipo = "void*";
+            // marcar el temporal como nulo conocido
+            if (resultado != null && resultado.equals("_") == false) {
+                ctx.nulosConocidos.add(resultado);
+            }
+        }
         // construir la asignacion con el valor traducido
         return ctx.ladoIzquierdo(resultado, tipo) + " = " + ctx.crearValor(arg1).obtenerCodigoC(ctx) + ";";
     }

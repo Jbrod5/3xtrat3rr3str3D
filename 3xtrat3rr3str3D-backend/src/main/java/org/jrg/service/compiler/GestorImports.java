@@ -118,15 +118,21 @@ public class GestorImports {
         // acumular niveles hasta cerrar los tipos desconocidos
         Set<String> incluidas = new HashSet<>();
         List<Path> conjunto = new ArrayList<>();
+        // incluir siempre el archivo importado aunque ya este marcado
+        String propia = Paths.get(rutaAbsoluta).toString().replace("\\", "/");
+        incluidas.add(propia);
+        conjunto.add(Paths.get(rutaAbsoluta));
         ResultadoAnalisis resultado = null;
         for (int i = 0; i < niveles.size(); i++) {
-            // agregar el nivel sin duplicar rutas
+            // agregar el nivel sin duplicar rutas ni reprocesar imports previos
             for (int j = 0; j < niveles.get(i).size(); j++) {
                 String ruta = niveles.get(i).get(j).toString().replace("\\", "/");
-                if (incluidas.contains(ruta) == false) {
-                    incluidas.add(ruta);
-                    conjunto.add(niveles.get(i).get(j));
+                if (incluidas.contains(ruta) || this.archivosYaProcesados.contains(ruta)) {
+                    continue;
                 }
+                incluidas.add(ruta);
+                this.archivosYaProcesados.add(ruta);
+                conjunto.add(niveles.get(i).get(j));
             }
             // compilar el conjunto actual
             resultado = this.compiladorZ.analizarProyecto(conjunto);

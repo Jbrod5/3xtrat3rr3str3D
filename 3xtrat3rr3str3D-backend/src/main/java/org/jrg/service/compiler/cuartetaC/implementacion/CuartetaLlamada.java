@@ -73,11 +73,32 @@ public class CuartetaLlamada extends CuartetaC {
             return variante + "(" + args + ");";
         }
         ctx.limpiarParams();
+        // calificar llamadas a metodos de la clase actual sin receptor
+        String nombreLlamada = nombre;
+        boolean calificado = false;
+        if (nombre != null && nombre.indexOf('_') < 0) {
+            String claseActual = ctx.claseDeFuncion(ctx.funcionActual);
+            if (claseActual != null) {
+                String candidato = claseActual + "_" + nombre;
+                if (ctx.funcionesConocidas.contains(candidato)) {
+                    nombreLlamada = candidato;
+                    calificado = true;
+                }
+            }
+        }
+        // agregar el receptor implicito cuando se califico a metodo
+        if (calificado) {
+            if (args.isEmpty()) {
+                args = "this";
+            } else {
+                args = "this, " + args;
+            }
+        }
         // detectar llamadas sin retorno por el marcador
         boolean esVoid = "void".equals(tipoResultado);
         // detectar llamadas a funciones void ya definidas
         if (esVoid == false) {
-            String retornoConocido = ctx.retornosFuncion.get(nombre);
+            String retornoConocido = ctx.retornosFuncion.get(nombreLlamada);
             boolean tipoDesconocido = tipoResultado == null || tipoResultado.equals("_");
             if ("void".equals(retornoConocido) && tipoDesconocido) {
                 esVoid = true;
@@ -85,10 +106,10 @@ public class CuartetaLlamada extends CuartetaC {
         }
         // agregar llamada sin retorno para void al cuerpo
         if (esVoid) {
-            return nombre + "(" + args + ");";
+            return nombreLlamada + "(" + args + ");";
         }
         // declarar el destino con el tipo del retorno
         String tipo = ctx.mapearTipo(tipoResultado);
-        return ctx.prefijoDeclaracion(resultado, tipo) + " = " + nombre + "(" + args + ");";
+        return ctx.prefijoDeclaracion(resultado, tipo) + " = " + nombreLlamada + "(" + args + ");";
     }
 }

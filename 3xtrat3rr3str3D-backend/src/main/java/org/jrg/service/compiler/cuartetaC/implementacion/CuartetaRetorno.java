@@ -36,6 +36,18 @@ public class CuartetaRetorno extends CuartetaC {
             }
             return "return;";
         }
+        // detectar nulos literales o guardados en temporales
+        boolean esNulo = "null".equals(arg1) || "NULL".equals(arg1) || ctx.nulosConocidos.contains(arg1);
+        if (esNulo) {
+            // retornar cero cuando la funcion devuelve entero
+            if ("int".equals(ctx.mapearTipo(ctx.tipoRetornoFuncion))) {
+                return "return 0;";
+            }
+            // retornar vacio cuando la funcion no devuelve valor
+            if ("void".equals(ctx.mapearTipo(ctx.tipoRetornoFuncion))) {
+                return "return;";
+            }
+        }
         // construir el retorno con el valor traducido
         return "return " + ctx.crearValor(arg1).obtenerCodigoC(ctx) + ";";
     }
