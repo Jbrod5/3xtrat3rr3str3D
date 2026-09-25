@@ -1,0 +1,22 @@
+public class Persona {
+    String nombre;
+    int edad;
+
+    public Persona(String nombreParametro, int edadParametro) {
+        nombre = nombreParametro;
+        edad = edadParametro;
+    }
+
+    public Persona() {
+        nombre = "Sin nombre";
+        edad = 0;
+    }
+
+    public void saludar() {
+        println("Hola");
+    }
+
+    public int calcularAnioNacimiento(int anioActual) {
+        return anioActual - edad;
+    }
+}

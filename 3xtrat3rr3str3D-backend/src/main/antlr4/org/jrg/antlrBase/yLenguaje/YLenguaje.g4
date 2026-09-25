@@ -135,8 +135,12 @@ instruccion
 
 // el punto y coma al final de una instruccion es opcional, la linea nueva
 // es la que realmente separa una instruccion de la siguiente
+// terminador
+//     : PUNTO_Y_COMA? NEWLINE
+//     ;
+// la linea nueva es la unica que separa una instruccion de la siguiente
 terminador
-    : PUNTO_Y_COMA? NEWLINE
+    : NEWLINE
     ;
 
 retorno

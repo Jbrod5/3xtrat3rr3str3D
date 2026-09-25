@@ -1,0 +1,24 @@
+public class Calculadora {
+    int acumulado;
+
+    public Calculadora(int inicial) {
+        acumulado = inicial;
+    }
+
+    public int sumar(int x) {
+        acumulado = acumulado + x;
+        return acumulado;
+    }
+
+    public int duplicar() {
+        acumulado = acumulado * 2;
+        return acumulado;
+    }
+
+    public boolean esPositivo() {
+        if (acumulado > 0)
+            return true;
+        else
+            return false;
+    }
+}
