@@ -1,0 +1,94 @@
+package org.jrg.service.compiler.cuartetaC.impl;
+
+import org.jrg.service.compiler.cuartetaC.ContextoTraduccion;
+import org.jrg.service.compiler.cuartetaC.CuartetaC;
+
+// traducir llamadas a funcion y a metodo a C
+public class CuartetaLlamada extends CuartetaC {
+
+    /**
+     * Crear una cuarteta de llamada con operador explicito.
+     */
+    public CuartetaLlamada(String operador, String arg1, String arg2, String resultado,
+                            String tipoArg1, String tipoArg2, String tipoResultado) {
+        // delegar al constructor de la clase base
+        super(operador, arg1, arg2, resultado, tipoArg1, tipoArg2, tipoResultado);
+    }
+
+    /**
+     * Crear una cuarteta de llamada con operador call por defecto.
+     */
+    public CuartetaLlamada(String arg1, String arg2, String resultado,
+                            String tipoArg1, String tipoArg2, String tipoResultado) {
+        // delegar al constructor de la clase base con operador call
+        super("call", arg1, arg2, resultado, tipoArg1, tipoArg2, tipoResultado);
+    }
+
+    /**
+     * Obtener la linea de codigo C para la cuarteta.
+     */
+    @Override
+    public String obtenerCodigoC(ContextoTraduccion ctx) {
+        // traducir llamadas a metodo con receptor como primer arg
+        if ("call_method".equals(operador)) {
+            String metodo = arg1;
+            // resolver la clase desde el tipo del objeto receptor
+            String receptorTipo = null;
+            if (ctx.paramsPendientes.isEmpty() == false && ctx.tiposParamsPendientes.isEmpty() == false) {
+                receptorTipo = ctx.tiposParamsPendientes.get(0);
+            }
+            // calificar el metodo con la clase del receptor
+            String nombreLlamada = metodo;
+            if (receptorTipo != null && ctx.clases.contains(receptorTipo) && metodo != null && metodo.indexOf('_') < 0) {
+                nombreLlamada = receptorTipo + "_" + metodo;
+            }
+            String argsMetodo = ctx.unirParams();
+            ctx.limpiarParams();
+            // agregar llamada directa para metodos void conocidos al cuerpo
+            String retornoConocido = ctx.retornosFuncion.get(nombreLlamada);
+            if ("void".equals(retornoConocido)) {
+                return nombreLlamada + "(" + argsMetodo + ");";
+            }
+            // usar el retorno conocido cuando trae tipo valido
+            String tipoCall = ctx.mapearTipo(tipoResultado);
+            if (retornoConocido != null && retornoConocido.isEmpty() == false && retornoConocido.equals("_") == false) {
+                tipoCall = ctx.mapearTipoConClases(retornoConocido);
+            }
+            return ctx.ladoIzquierdo(resultado, tipoCall) + " = " + nombreLlamada + "(" + argsMetodo + ");";
+        }
+        // traducir llamadas a funcion o builtin
+        return traducirLlamada(ctx);
+    }
+
+    // traducir una llamada a funcion o builtin
+    private String traducirLlamada(ContextoTraduccion ctx) {
+        // copiar el nombre para operar sin mutar el campo
+        String nombre = arg1;
+        // unir los params pendientes separados por coma
+        String args = ctx.unirParams();
+        // resolver builtins imprimir y println por tipo
+        if ("imprimir".equals(nombre) || "println".equals(nombre)) {
+            String variante = ctx.varianteBuiltin(nombre);
+            ctx.limpiarParams();
+            return variante + "(" + args + ");";
+        }
+        ctx.limpiarParams();
+        // detectar llamadas sin retorno por el marcador
+        boolean esVoid = "void".equals(tipoResultado);
+        // detectar llamadas a funciones void ya definidas
+        if (esVoid == false) {
+            String retornoConocido = ctx.retornosFuncion.get(nombre);
+            boolean tipoDesconocido = tipoResultado == null || tipoResultado.equals("_");
+            if ("void".equals(retornoConocido) && tipoDesconocido) {
+                esVoid = true;
+            }
+        }
+        // agregar llamada sin retorno para void al cuerpo
+        if (esVoid) {
+            return nombre + "(" + args + ");";
+        }
+        // declarar el destino con el tipo del retorno
+        String tipo = ctx.mapearTipo(tipoResultado);
+        return ctx.prefijoDeclaracion(resultado, tipo) + " = " + nombre + "(" + args + ");";
+    }
+}
