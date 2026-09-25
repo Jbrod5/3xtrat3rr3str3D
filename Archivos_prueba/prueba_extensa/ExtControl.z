@@ -1,0 +1,112 @@
+public class ExtControl {
+    int contador;
+    double medida;
+    char letra;
+    boolean activo;
+    String nombre;
+
+    public ExtControl() {
+        contador = 0;
+        medida = 0.5;
+        letra = 'a';
+        activo = true;
+        nombre = "base";
+    }
+
+    public ExtControl(int inicial) {
+        contador = inicial;
+        medida = 1.5;
+        letra = 'b';
+        activo = false;
+        nombre = "otro";
+    }
+
+    public int sumar(int a, int b) {
+        return a + b;
+    }
+
+    public int sumar(int a) {
+        return a + 100;
+    }
+
+    public int factorial(int n) {
+        if (n <= 1) {
+            return 1;
+        }
+        return n * factorial(n - 1);
+    }
+
+    public int clasificar(int opcion) {
+        int r = 0;
+        switch (opcion) {
+            case 1:
+                r = 10;
+                break;
+            case 2:
+                r = 20;
+            default:
+                r = 30;
+                break;
+        }
+        return r;
+    }
+
+    public int recorrer() {
+        int total = 0;
+        int i = 0;
+        while (true) {
+            if (i >= 5) {
+                break;
+            }
+            if (i == 2) {
+                i = i + 1;
+                continue;
+            }
+            total = total + i;
+            i = i + 1;
+        }
+        int j = 0;
+        do {
+            total = total + 1;
+            j = j + 1;
+        } while (j < 3);
+        for (int k = 0; k < 4; k = k + 1) {
+            if (k == 3) {
+                break;
+            }
+            total = total + k;
+        }
+        return total;
+    }
+
+    public int operar() {
+        int x = 5;
+        x += 3;
+        x -= 1;
+        x *= 2;
+        int mayor = (x > 10) ? 10 : x;
+        boolean ok = (x >= 10) && (mayor != 0) || false;
+        if (ok) {
+            x = x % 3;
+        } else {
+            x = 0;
+        }
+        return x + mayor;
+    }
+
+    public int usarArreglo() {
+        int[] nums = new int[5];
+        nums[0] = 7;
+        nums[1] = nums[0] + 1;
+        return nums[1];
+    }
+
+    public void mostrarTodo() {
+        println(contador);
+        println(medida);
+        println(letra);
+        println(activo);
+        println(nombre);
+        print("fin");
+    }
+}

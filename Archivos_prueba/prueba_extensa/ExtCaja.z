@@ -1,0 +1,19 @@
+public class ExtCaja {
+    int guardado;
+
+    public ExtCaja() {
+        guardado = 0;
+    }
+
+    public ExtCaja(int inicial) {
+        guardado = inicial;
+    }
+
+    public int ver() {
+        return guardado;
+    }
+
+    public void poner(int v) {
+        guardado = v;
+    }
+}

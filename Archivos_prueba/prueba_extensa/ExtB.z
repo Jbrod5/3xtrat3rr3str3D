@@ -1,0 +1,21 @@
+public class ExtB {
+    ExtA duenio;
+    int base;
+
+    public ExtB() {
+        base = 10;
+        duenio = null;
+    }
+
+    public void ligar(ExtA otro) {
+        duenio = otro;
+    }
+
+    public int entregar(int x) {
+        return base + x;
+    }
+
+    public int devolver() {
+        return duenio.pedir();
+    }
+}

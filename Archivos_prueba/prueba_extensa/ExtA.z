@@ -1,0 +1,17 @@
+public class ExtA {
+    ExtB socio;
+    int valor;
+
+    public ExtA() {
+        valor = 1;
+        socio = null;
+    }
+
+    public void ligar(ExtB otro) {
+        socio = otro;
+    }
+
+    public int pedir() {
+        return socio.entregar(valor);
+    }
+}

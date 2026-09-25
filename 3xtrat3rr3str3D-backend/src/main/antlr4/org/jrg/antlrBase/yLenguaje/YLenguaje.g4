@@ -322,8 +322,9 @@ expresion
     | expresion (SUMA | RESTA) expresion                                    # exprSumaResta
 
     // edad > 18
-    // solo existen estos cuatro operadores relacionales en este lenguaje
-    | expresion (IGUAL_QUE | DIFERENTE_QUE | MAYOR_QUE | MENOR_QUE) expresion   # exprRelacional
+    // edad <= 18
+    // existen seis operadores relacionales en este lenguaje
+    | expresion (IGUAL_QUE | DIFERENTE_QUE | MAYOR_QUE | MENOR_QUE | MAYOR_IGUAL | MENOR_IGUAL) expresion   # exprRelacional
 
     // a > 5 && b < 10
     | expresion AND expresion                                                # exprAnd
@@ -414,6 +415,8 @@ IGUAL_QUE      : '==' ;
 DIFERENTE_QUE  : '!=' ;
 MAYOR_QUE      : '>' ;
 MENOR_QUE      : '<' ;
+MAYOR_IGUAL    : '>=' ;
+MENOR_IGUAL    : '<=' ;
 
 AND : '&&' ;
 OR  : '||' ;
