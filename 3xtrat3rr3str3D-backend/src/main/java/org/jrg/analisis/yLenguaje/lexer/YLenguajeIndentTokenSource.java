@@ -1,9 +1,8 @@
 package org.jrg.analisis.yLenguaje.lexer;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Deque;
 import java.util.List;
+import java.util.Stack;
 
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CommonToken;
@@ -21,7 +20,7 @@ import org.jrg.antlrBase.yLenguaje.YLenguajeLexer;
 public class YLenguajeIndentTokenSource implements TokenSource {
 
     private final Lexer lexerDelegado;
-    private final Deque<Integer> pilaIndentacion = new ArrayDeque<>();
+    private final Stack<Integer> pilaIndentacion = new Stack<>();
     private final List<Token> tokensPendientes = new ArrayList<>();
 
     private Token ultimoTokenReal = null;

@@ -1,11 +1,10 @@
 package org.jrg.analisis.yLenguaje.semantico;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Stack;
 
 import org.jrg.analisis.comun.AmbitoSemantico;
 import org.jrg.model.ast.yLenguaje.base.NodoASTY;
@@ -24,7 +23,7 @@ public class ContextoSemanticoY {
     // ambito raiz del programa
     private AmbitoSemantico ambitoGlobal;
     // pila de ambitos activos donde el actual es siempre el ultimo que entro
-    private final Deque<AmbitoSemantico> ambitos;
+    private final Stack<AmbitoSemantico> ambitos;
     // tipos primitivos del lenguaje: entero, flotante, cadena, caracter, booleano :D
     private final Map<String, Tipo> tiposPrimitivos;
     // profundidad actual de ciclos anidados
@@ -42,7 +41,7 @@ public class ContextoSemanticoY {
         }
 
         // inicializar las estructuras internas :D
-        this.ambitos = new ArrayDeque<>();
+        this.ambitos = new Stack<>();
         this.tiposPrimitivos = new HashMap<>();
         this.profundidadCiclos = 0;
     }
@@ -63,7 +62,7 @@ public class ContextoSemanticoY {
         registrarTiposPrimitivos();
 
         // apilar el ambito global como ambito actual
-        this.ambitos.addLast(this.ambitoGlobal);
+        this.ambitos.push(this.ambitoGlobal);
     }
 
     // registrar los cinco tipos primitivos del lenguaje
@@ -112,7 +111,7 @@ public class ContextoSemanticoY {
             return this.ambitoGlobal;
         }
 
-        return this.ambitos.peekLast();
+        return this.ambitos.peek();
     }
 
     /**
@@ -132,7 +131,7 @@ public class ContextoSemanticoY {
 
 
         // apilarlo como ambito actual :D
-        this.ambitos.addLast(nuevo);
+        this.ambitos.push(nuevo);
     }
 
     /**
@@ -142,7 +141,7 @@ public class ContextoSemanticoY {
 
         // nunca sacar el ambito global
         if (this.ambitos.size() > 1) {
-            this.ambitos.removeLast();
+            this.ambitos.pop();
         }
 
     }

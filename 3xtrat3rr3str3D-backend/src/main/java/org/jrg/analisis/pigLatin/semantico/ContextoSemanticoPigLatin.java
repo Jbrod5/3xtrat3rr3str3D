@@ -1,13 +1,12 @@
 package org.jrg.analisis.pigLatin.semantico;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 import org.jrg.model.base.TipoPrimitivo;
 import org.jrg.model.error.TipoError;
 import org.jrg.model.ast.pigLatin.base.NodoAST;
@@ -29,7 +28,7 @@ class ContextoSemanticoPigLatin {
     private Ambito ambitoGlobal;
     
     // pila de ambitos activos,  el actual es siempre el ultimo que entro :D
-    private final Deque<Ambito> ambitos;
+    private final Stack<Ambito> ambitos;
     
     // tipos auxiliares que no viven en un ambito (por ejemplo los arreglos)
     private final List<Tipo> tiposExtra;
@@ -65,7 +64,7 @@ class ContextoSemanticoPigLatin {
         }
 
         // inicializar las estructuras internas
-        this.ambitos = new ArrayDeque<>();
+        this.ambitos = new Stack<>();
         this.tiposExtra = new ArrayList<>();
         this.tiposPrimitivos = new HashMap<>();
         this.tiposNoPrimitivos = new HashMap<>();
@@ -93,7 +92,7 @@ class ContextoSemanticoPigLatin {
         registrarTiposPrimitivos();
 
         // apilar el ambito global como ambito actual
-        this.ambitos.addLast(this.ambitoGlobal);
+        this.ambitos.push(this.ambitoGlobal);
     }
 
     // registrar los cinco tipos primitivos del lenguaje :D
@@ -140,7 +139,7 @@ class ContextoSemanticoPigLatin {
             return this.ambitoGlobal;
         }
 
-        return this.ambitos.peekLast();
+        return this.ambitos.peek();
     }
 
     // entrar a un ambito nuevo hijo del actual
@@ -160,7 +159,7 @@ class ContextoSemanticoPigLatin {
         // }
 
         // apilarlo como ambito actual
-        this.ambitos.addLast(nuevoAmbito);
+        this.ambitos.push(nuevoAmbito);
     }
 
     // salir del ambito actual regresando al padre
@@ -168,7 +167,7 @@ class ContextoSemanticoPigLatin {
 
         // nunca sacar el ambito global
         if (this.ambitos.size() > 1) {
-            this.ambitos.removeLast();
+            this.ambitos.pop();
         }
     }
 
