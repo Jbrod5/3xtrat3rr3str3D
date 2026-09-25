@@ -180,13 +180,36 @@ public class ManejadorClasesZetariano {
         return null;
     }
 
+    // contar los parametros para el mangling de sobrecargas
+    private int contarParametros(NodoASTZetariano parametrosNodo) {
+        // devolver cero si no es lista de parametros
+        if (parametrosNodo instanceof Parametros == false) {
+            return 0;
+        }
+        Parametros parametros = (Parametros) parametrosNodo;
+        // devolver cero si la lista es nula
+        if (parametros.getParametros() == null) {
+            return 0;
+        }
+        return parametros.getParametros().size();
+    }
+
+    // componer el nombre con sufijo de conteo cuando hay params
+    private String componerNombre(String base, int cantidad) {
+        // usar la base sin sufijo cuando no hay params
+        if (cantidad <= 0) {
+            return base;
+        }
+        return base + "_" + cantidad;
+    }
+
     // agregar los marcadores de inicio y fin del constructor
     public String visitarDefConstructor(DefConstructor nodo) {
         // construir el string de tipos de parametros
         String tiposParams = extraerTiposParametrosZet(nodo.getParametros());
 
         // construir el nombre completo incluyendo el nombre del constructor
-        String nombreFuncion = nodo.getNombre() + "_" + nodo.getNombre();
+        String nombreFuncion = componerNombre(nodo.getNombre() + "_" + nodo.getNombre(), contarParametros(nodo.getParametros()));
 
         // agregar marcador de inicio a la lista de cuartetas
         ctx.getCuartetas().add(new Cuarteta("func_begin", nombreFuncion, tiposParams, "void", tiposParams, "_", "void"));
@@ -221,7 +244,7 @@ public class ManejadorClasesZetariano {
         }
 
         // construir el nombre completo
-        String nombreFuncion = prefijo + "_" + nodo.getNombre();
+        String nombreFuncion = componerNombre(prefijo + "_" + nodo.getNombre(), contarParametros(nodo.getParametros()));
 
         // agregar marcador de inicio a la lista de cuartetas
         ctx.getCuartetas().add(new Cuarteta("func_begin", nombreFuncion, tiposParams, "void", tiposParams, "_", "void"));
@@ -266,7 +289,7 @@ public class ManejadorClasesZetariano {
         }
 
         // construir el nombre completo
-        String nombreFuncion = prefijo + "_" + nodo.getNombre();
+        String nombreFuncion = componerNombre(prefijo + "_" + nodo.getNombre(), contarParametros(nodo.getParametros()));
 
         // agregar marcador de inicio a la lista de cuartetas
         ctx.getCuartetas().add(new Cuarteta("func_begin", nombreFuncion, tiposParams, tipoRetorno, tiposParams, "_", tipoRetorno));

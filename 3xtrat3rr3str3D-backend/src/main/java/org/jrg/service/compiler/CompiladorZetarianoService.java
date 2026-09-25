@@ -292,25 +292,38 @@ public class CompiladorZetarianoService {
             }
         }
 
-        // primera pasada: registrar los cascarones de todas las clases
+        // primera pasada: declarar los tipos de todas las clases
+        List<Boolean> declaradas = new ArrayList<>();
         if (iniciado) {
             for (int i = 0; i < programas.size(); i++) {
                 // omitir archivos sin programa
                 if (programas.get(i) == null || analizadores.get(i) == null) {
+                    declaradas.add(false);
                     continue;
                 }
                 // validar el nombre del archivo contra su clase
                 validarNombreArchivo(programas.get(i), nombres.get(i), recolectores.get(i));
-                // registrar el cascaron si trae definicion de clase
+                // declarar el tipo si trae definicion de clase
+                boolean declarado = false;
                 if (programas.get(i).getDefinicionClase() instanceof DefClase) {
-                    analizadores.get(i).registrarCascaronClase((DefClase) programas.get(i).getDefinicionClase());
+                    declarado = analizadores.get(i).declararTipoClase((DefClase) programas.get(i).getDefinicionClase());
                 }
+                declaradas.add(declarado);
             }
 
-            // segunda pasada: analizar los cuerpos con las tablas completas
+            // segunda pasada: registrar los miembros con todos los tipos listos
             for (int i = 0; i < programas.size(); i++) {
-                // omitir archivos sin programa
-                if (programas.get(i) == null || analizadores.get(i) == null) {
+                // omitir archivos sin tipo declarado
+                if (declaradas.get(i) == false) {
+                    continue;
+                }
+                analizadores.get(i).registrarMiembrosClase((DefClase) programas.get(i).getDefinicionClase());
+            }
+
+            // tercera pasada: analizar los cuerpos con las tablas completas
+            for (int i = 0; i < programas.size(); i++) {
+                // omitir archivos sin tipo declarado
+                if (declaradas.get(i) == false) {
                     continue;
                 }
                 // analizar los cuerpos si trae definicion de clase

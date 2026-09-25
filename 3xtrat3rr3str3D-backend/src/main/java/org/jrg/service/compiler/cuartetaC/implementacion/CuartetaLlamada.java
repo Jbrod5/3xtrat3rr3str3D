@@ -42,6 +42,14 @@ public class CuartetaLlamada extends CuartetaC {
             if (receptorTipo != null && ctx.clases.contains(receptorTipo) && metodo != null && metodo.indexOf('_') < 0) {
                 nombreLlamada = receptorTipo + "_" + metodo;
             }
+            // agregar sufijo con el conteo sin el receptor para sobrecargas
+            int numeroReales = ctx.paramsPendientes.size() - 1;
+            if (numeroReales < 0) {
+                numeroReales = 0;
+            }
+            if (numeroReales > 0 && nombreLlamada.equals(metodo) == false) {
+                nombreLlamada = nombreLlamada + "_" + numeroReales;
+            }
             String argsMetodo = ctx.unirParams();
             ctx.limpiarParams();
             // agregar llamada directa para metodos void conocidos al cuerpo
@@ -66,12 +74,14 @@ public class CuartetaLlamada extends CuartetaC {
         String nombre = arg1;
         // unir los params pendientes separados por coma
         String args = ctx.unirParams();
-        // resolver builtins imprimir y println por tipo
-        if ("imprimir".equals(nombre) || "println".equals(nombre)) {
+        // resolver builtins imprimir println y print por tipo
+        if ("imprimir".equals(nombre) || "println".equals(nombre) || "print".equals(nombre)) {
             String variante = ctx.varianteBuiltin(nombre);
             ctx.limpiarParams();
             return variante + "(" + args + ");";
         }
+        // contar los argumentos para el mangling antes de limpiar
+        int numeroArgs = ctx.paramsPendientes.size();
         ctx.limpiarParams();
         // calificar llamadas a metodos de la clase actual sin receptor
         String nombreLlamada = nombre;
@@ -80,6 +90,9 @@ public class CuartetaLlamada extends CuartetaC {
             String claseActual = ctx.claseDeFuncion(ctx.funcionActual);
             if (claseActual != null) {
                 String candidato = claseActual + "_" + nombre;
+                if (numeroArgs > 0) {
+                    candidato = candidato + "_" + numeroArgs;
+                }
                 if (ctx.funcionesConocidas.contains(candidato)) {
                     nombreLlamada = candidato;
                     calificado = true;
@@ -108,8 +121,13 @@ public class CuartetaLlamada extends CuartetaC {
         if (esVoid) {
             return nombreLlamada + "(" + args + ");";
         }
-        // declarar el destino con el tipo del retorno
+        // usar el retorno conocido cuando trae tipo valido
         String tipo = ctx.mapearTipo(tipoResultado);
+        String retornoConocido = ctx.retornosFuncion.get(nombreLlamada);
+        if (retornoConocido != null && retornoConocido.isEmpty() == false && retornoConocido.equals("_") == false) {
+            tipo = ctx.mapearTipoConClases(retornoConocido);
+        }
+        // declarar el destino con el tipo del retorno
         return ctx.prefijoDeclaracion(resultado, tipo) + " = " + nombreLlamada + "(" + args + ");";
     }
 }

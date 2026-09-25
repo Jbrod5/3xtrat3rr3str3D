@@ -44,6 +44,7 @@ public class ContextoSemanticoY {
         this.ambitos = new Stack<>();
         this.tiposPrimitivos = new HashMap<>();
         this.profundidadCiclos = 0;
+        this.profundidadSeleccion = 0;
     }
 
     /**
@@ -57,6 +58,7 @@ public class ContextoSemanticoY {
         this.ambitos.clear();
         this.tiposPrimitivos.clear();
         this.profundidadCiclos = 0;
+        this.profundidadSeleccion = 0;
 
         // registrar los tipos primitivos del lenguaje
         registrarTiposPrimitivos();
@@ -167,6 +169,32 @@ public class ContextoSemanticoY {
      */
     public boolean estaDentroDeCiclo() {
         return this.profundidadCiclos > 0;
+    }
+
+    // profundidad actual de selecciones elegir anidadas
+    private int profundidadSeleccion;
+
+    /**
+     * Entrar a una seleccion para aceptar romper en sus casos.
+     */
+    public void entrarSeleccion() {
+        this.profundidadSeleccion++;
+    }
+
+    /**
+     * Salir de la seleccion actual decrementando la profundidad.
+     */
+    public void salirSeleccion() {
+        if (this.profundidadSeleccion > 0) {
+            this.profundidadSeleccion--;
+        }
+    }
+
+    /**
+     * Verificar si el analisis esta dentro de una seleccion elegir.
+     */
+    public boolean estaDentroDeSeleccion() {
+        return this.profundidadSeleccion > 0;
     }
 
     /**

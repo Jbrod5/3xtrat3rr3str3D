@@ -826,6 +826,13 @@ public class ContextoTraduccion {
         if (deParam != null) {
             return deParam;
         }
+        // buscar en los campos de la clase actual
+        if (esCampoActual(nombre)) {
+            String tipoCampo = tipoCampoClase(nombre);
+            if (tipoCampo != null) {
+                return tipoCampo;
+            }
+        }
         // inferir por la forma del literal con entero por defecto
         return mapearTipo(inferirTipoLiteralParametro(nombre));
     }

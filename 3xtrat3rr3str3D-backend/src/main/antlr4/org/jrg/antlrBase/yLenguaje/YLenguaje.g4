@@ -266,7 +266,9 @@ ciclo
     //     si(intentos == 4) entonces
     //         romper
     // mientras(intentos < 10)
-    | HACER DOS_PUNTOS bloque MIENTRAS PAR_IZQ expresion PAR_DER                                         # cicloHacer
+    // | HACER DOS_PUNTOS bloque MIENTRAS PAR_IZQ expresion PAR_DER                                         # cicloHacer
+    // el salto final consume su linea para no dejar un NEWLINE colgado que rompe el bloque que sigue
+    | HACER DOS_PUNTOS bloque MIENTRAS PAR_IZQ expresion PAR_DER NEWLINE                               # cicloHacer
     ;
 
 init_para

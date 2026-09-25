@@ -31,6 +31,10 @@ public class CuartetaRead extends CuartetaC {
     public String obtenerCodigoC(ContextoTraduccion ctx) {
         // copiar el destino para declarar sin mutar el campo
         String destino = resultado;
+        // omitir la lectura sin variable destino
+        if (destino == null || destino.equals("_")) {
+            return "";
+        }
         // iniciar la linea sin declaracion por defecto
         String linea = "";
         // declarar la variable si aun no existe

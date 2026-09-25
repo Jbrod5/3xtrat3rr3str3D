@@ -1115,9 +1115,9 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
     @Override
     public Object visitarStmtRomper(StmtRomper nodo) {
 
-        // verificar si esta dentro de un ciclo
-        if (!this.contexto.estaDentroDeCiclo()) {
-            this.contexto.agregarError(nodo, "'romper' solo puede usarse dentro de un ciclo");
+        // verificar si esta dentro de un ciclo o una seleccion
+        if (!this.contexto.estaDentroDeCiclo() && !this.contexto.estaDentroDeSeleccion()) {
+            this.contexto.agregarError(nodo, "'romper' solo puede usarse dentro de un ciclo o una seleccion");
         }
 
         // marcar el flujo como terminado
@@ -1487,6 +1487,9 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
 
         boolean todosTerminan = true;
 
+        // entrar a la seleccion para aceptar romper en sus casos
+        this.contexto.entrarSeleccion();
+
         // recorrer cada caso de la seleccion
         for (NodoASTY caso : nodo.getCasos()) {
             this.contexto.entrarAmbito("caso-elegir");
@@ -1495,7 +1498,8 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
             this.contexto.salirAmbito();
 
             // verificar si el caso puede continuar
-            if (flujoCaso.puedeContinuar()) {
+            // un romper final sale de la seleccion y el flujo sigue despues
+            if (flujoCaso.puedeContinuar() || terminaEnRomper(caso)) {
                 todosTerminan = false;
             }
         }
@@ -1508,7 +1512,8 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
             this.contexto.salirAmbito();
 
             // verificar si el caso puede continuar
-            if (flujoDefecto.puedeContinuar()) {
+            // un romper final sale de la seleccion y el flujo sigue despues
+            if (flujoDefecto.puedeContinuar() || terminaEnRomper(nodo.getCasoDefecto())) {
                 todosTerminan = false;
             }
 
@@ -1516,6 +1521,9 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
             // sin caso por defecto siempre hay una ruta que no termina
             todosTerminan = false;
         }
+
+        // salir de la seleccion antes de devolver el flujo
+        this.contexto.salirSeleccion();
 
         // devolver el flujo correspondiente
         FlujoControl resultado = new FlujoControl();
@@ -1526,6 +1534,27 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
         }
 
         return resultado;
+    }
+
+    // verificar si un caso termina con romper y el flujo sigue despues
+    private boolean terminaEnRomper(NodoASTY caso) {
+        // omitir casos nulos
+        if (caso == null) {
+            return false;
+        }
+        // extraer instrucciones segun el tipo de caso
+        List<NodoASTY> lista = null;
+        if (caso instanceof CasoSeleccion) {
+            lista = ((CasoSeleccion) caso).getInstrucciones();
+        } else if (caso instanceof CasoDefecto) {
+            lista = ((CasoDefecto) caso).getInstrucciones();
+        }
+        // omitir casos sin instrucciones
+        if (lista == null || lista.isEmpty()) {
+            return false;
+        }
+        // revisar la ultima instruccion del caso
+        return lista.get(lista.size() - 1) instanceof StmtRomper;
     }
 
     @Override

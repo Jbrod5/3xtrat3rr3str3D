@@ -676,6 +676,10 @@ class ContextoSemanticoPigLatin {
     void registrarSimboloImportado(Simbolo simbolo) {
         if (simbolo == null) return;
         if (this.ambitoGlobal == null) return;
+        // omitir variables locales de otros archivos para no contaminar el ambito
+        if (simbolo.getCategoria() == CategoriaSimbolo.VARIABLE || simbolo.getCategoria() == CategoriaSimbolo.PARAMETRO || simbolo.getCategoria() == CategoriaSimbolo.CONSTANTE) {
+            return;
+        }
         if (this.ambitoGlobal.buscarSimboloLocal(simbolo.getNombre()) != null) return;
 
         // mapear el tipo y los tipos de los parametros al vocabulario de Pig Latin

@@ -554,6 +554,22 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
     // registrar el tipo y las firmas de la clase sin validar cuerpos
     public boolean registrarCascaronClase(DefClase clase) {
 
+        // declarar el tipo en la primera pasada
+        boolean declarado = declararTipoClase(clase);
+        // omitir miembros si el tipo esta duplicado
+        if (declarado == false) {
+            return false;
+        }
+        // registrar los miembros en la segunda pasada
+        registrarMiembrosClase(clase);
+
+        // informar que el cascaron quedo registrado
+        return true;
+    }
+
+    // declarar el tipo de la clase sin registrar miembros
+    public boolean declararTipoClase(DefClase clase) {
+
         // obtener el nombre de la clase
         String nombreClase = clase.getNombre();
 
@@ -567,7 +583,19 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         // crear el tipo de la clase y registrarlo
         Tipo tipoClase = new Tipo(nombreClase, false);
         ambitoGlobal.declararTipo(tipoClase);
-        tipoClaseActual = tipoClase;
+
+        // informar que el tipo quedo declarado
+        return true;
+    }
+
+    // registrar atributos, constructores y metodos de la clase
+    public void registrarMiembrosClase(DefClase clase) {
+
+        // obtener el nombre de la clase
+        String nombreClase = clase.getNombre();
+
+        // fijar el tipo actual desde el global
+        tipoClaseActual = ambitoGlobal.buscarTipo(nombreClase);
 
         // crear un ambito para la clase como hijo del global
         entrarAmbito("clase:" + nombreClase);
@@ -609,8 +637,9 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
             ambitoClase.declararConstructor(constructorPorDefecto);
         }
 
-        // informar que el cascaron quedo registrado
-        return true;
+        // salir del ambito de la clase para no anidar la siguiente
+        salirAmbito();
+        ambitoClase = null;
     }
 
     /**

@@ -35,6 +35,8 @@ public class CuartetaNew extends CuartetaC {
             String destinoNew = resultado;
             // reservar heap solo para tipos con struct conocido
             if (nombreClase != null && (ctx.clases.contains(nombreClase) || ctx.structs.containsKey(nombreClase))) {
+                // contar argumentos antes de limpiar para el mangling
+                int numeroArgs = ctx.paramsPendientes.size();
                 String argsNew = ctx.unirParams();
                 ctx.limpiarParams();
                 // marcar el destino como puntero a la clase
@@ -45,6 +47,10 @@ public class CuartetaNew extends CuartetaC {
                 String lineaNew = ctx.ladoIzquierdo(destinoNew, "struct " + nombreClase + "*") + " = malloc(sizeof(struct " + nombreClase + "));";
                 // llamar al constructor cuando existe en las cuartetas
                 String ctor = nombreClase + "_" + nombreClase;
+                // agregar sufijo con el conteo para constructores sobrecargados
+                if (numeroArgs > 0) {
+                    ctor = ctor + "_" + numeroArgs;
+                }
                 if (ctx.funcionesConocidas.contains(ctor)) {
                     lineaNew = lineaNew + "\n    " + ctor + "(" + destinoNew;
                     if (argsNew.isEmpty() == false) {

@@ -93,6 +93,8 @@ public class GestorImports {
         }
         if ("z".equals(extension)) {
             ResultadoAnalisis resultado = analizarConjuntoZetariano(rutaAbsoluta, linea, columna);
+            // conservar solo errores del archivo pedido con su prefijo
+            filtrarErroresPedidos(resultado, rutaAbsoluta);
             acumularCuartetas(resultado);
             return resultado;
         }
@@ -189,6 +191,24 @@ public class GestorImports {
             }
         }
         return false;
+    }
+
+    // conservar solo los errores del archivo pedido con su prefijo
+    private void filtrarErroresPedidos(ResultadoAnalisis resultado, String rutaAbsoluta) {
+        // omitir resultados nulos o sin errores
+        if (resultado == null || resultado.getErrores() == null) {
+            return;
+        }
+        // extraer el nombre base sin extension para armar la marca
+        String base = Paths.get(rutaAbsoluta).getFileName().toString();
+        int punto = base.lastIndexOf('.');
+        String nombre = base;
+        if (punto > 0) {
+            nombre = base.substring(0, punto);
+        }
+        String marca = "[" + nombre + "] ";
+        // conservar solo errores con la marca del archivo pedido
+        resultado.getErrores().removeIf(error -> error == null || error.getDescripcion() == null || error.getDescripcion().startsWith(marca) == false);
     }
 
     // acumular las cuartetas del resultado importado
