@@ -1,9 +1,6 @@
 package org.jrg.analisis.yLenguaje.cuartetas;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.jrg.model.ast.yLenguaje.Asignacion;
 import org.jrg.model.ast.yLenguaje.Bloque;
@@ -19,7 +16,6 @@ import org.jrg.model.ast.yLenguaje.TipoDato;
 import org.jrg.model.ast.yLenguaje.ValorPrimitivo;
 import org.jrg.model.ast.yLenguaje.atributo_struct.AtributoArray;
 import org.jrg.model.ast.yLenguaje.atributo_struct.AtributoSimple;
-import org.jrg.model.ast.yLenguaje.base.NodoASTY;
 import org.jrg.model.ast.yLenguaje.base.YAstVisitor;
 import org.jrg.model.ast.yLenguaje.ciclo.CicloHacer;
 import org.jrg.model.ast.yLenguaje.ciclo.CicloMientras;
@@ -68,1753 +64,378 @@ import org.jrg.model.ast.yLenguaje.seleccion.StatementElegir;
 import org.jrg.model.ast.yLenguaje.variable_asignable.VarArray;
 import org.jrg.model.ast.yLenguaje.variable_asignable.VarMiembro;
 import org.jrg.model.ast.yLenguaje.variable_asignable.VarSimple;
-import org.jrg.model.base.TipoPrimitivo;
 import org.jrg.model.cuarteta.Cuarteta;
-import org.jrg.model.cuarteta.GeneradorTemporales;
 
-// generador de cuartetas para el lenguaje Y
+// generador de cuartetas para el lenguaje Y que delega en manejadoras
 public class GeneradorCuartetasY implements YAstVisitor<String> {
 
-    // lista de cuartetas generadas
-    private final List<Cuarteta> cuartetas;
-    // generador de temporales y etiquetas
-    private final GeneradorTemporales temporales;
-    // etiqueta actual para romper
-    private String etiquetaBreakActual;
-    // etiqueta actual para continuar
-    private String etiquetaContinueActual;
-    // tipos conocidos de temporales y variables
-    private final Map<String, String> tiposConocidos;
-    // tipos de variables declaradas por nombre
-    private final Map<String, String> tiposDeVariables;
+    // estado compartido de la generacion
+    private final ContextoCuartetasY ctx;
+    // manejadora de programa y secciones
+    private final ManejadorProgramaY manejadorPrograma;
+    // manejadora de estructuras
+    private final ManejadorEstructurasY manejadorEstructuras;
+    // manejadora de funciones
+    private final ManejadorFuncionesY manejadorFunciones;
+    // manejadora de declaraciones y asignables
+    private final ManejadorDeclaracionesY manejadorDeclaraciones;
+    // manejadora de flujo y ciclos
+    private final ManejadorFlujoY manejadorFlujo;
+    // manejadora de expresiones
+    private final ManejadorExpresionesY manejadorExpresiones;
 
     /**
      * Crear el generador de cuartetas para el lenguaje Y.
      */
     public GeneradorCuartetasY() {
-        // inicializar la lista y el generador
-        this.cuartetas = new ArrayList<>();
-        this.temporales = new GeneradorTemporales();
-        this.etiquetaBreakActual = null;
-        this.etiquetaContinueActual = null;
-        this.tiposConocidos = new HashMap<>();
-        this.tiposDeVariables = new HashMap<>();
+        // inicializar el contexto compartido
+        this.ctx = new ContextoCuartetasY();
+        // crear las manejadoras con el contexto y este generador
+        this.manejadorPrograma = new ManejadorProgramaY(ctx, this);
+        this.manejadorEstructuras = new ManejadorEstructurasY(ctx, this);
+        this.manejadorFunciones = new ManejadorFuncionesY(ctx, this);
+        this.manejadorDeclaraciones = new ManejadorDeclaracionesY(ctx, this);
+        this.manejadorFlujo = new ManejadorFlujoY(ctx, this);
+        this.manejadorExpresiones = new ManejadorExpresionesY(ctx, this);
     }
 
     /**
      * Obtener la lista de cuartetas generadas.
      */
     public List<Cuarteta> getCuartetas() {
-        return cuartetas;
+        return ctx.getCuartetas();
     }
 
     // registrar el tipo de una variable declarada
     public void registrarTipoVariable(String nombre, String tipo) {
-        // omitir nombres o tipos nulos
-        if (nombre == null || tipo == null) {
-            return;
-        }
-
-        // guardar el tipo para usos posteriores
-        this.tiposDeVariables.put(nombre, tipo);
-    }
-
-    // inferir el tipo de un literal por su forma
-    private String inferirTipoLiteral(String valor) {
-        // devolver guion bajo si el valor es nulo o vacio de tipo
-        if (valor == null || valor.equals("_")) {
-            return "_";
-        }
-        // detectar cadena por comilla doble inicial
-        if (valor.startsWith("\"")) {
-            return "cadena";
-        }
-        // detectar caracter por comilla simple inicial
-        if (valor.startsWith("'")) {
-            return "caracter";
-        }
-        // detectar booleanos de los tres lenguajes
-        if (valor.equals("verum") || valor.equals("verdadero") || valor.equals("true") || valor.equals("falsus") || valor.equals("falso") || valor.equals("false")) {
-            return "booleano";
-        }
-        // detectar flotante por punto decimal
-        if (valor.contains(".")) {
-            return "flotante";
-        }
-        // detectar entero si empieza con digito
-        if (valor.length() > 0 && Character.isDigit(valor.charAt(0))) {
-            return "entero";
-        }
-        // cualquier otra cosa es de tipo desconocido
-        return "_";
-    }
-
-    // inferir el tipo de un nombre usando el mapa o su forma literal
-    private String inferirTipoDe(String nombre, Map<String, String> tipos) {
-
-        // devolver guion bajo si el nombre es nulo o vacio de tipo
-        if (nombre == null || nombre.equals("_")) {
-            return "_";
-        }
-
-        // buscar en el mapa de tipos conocidos
-        String tipo = tipos.get(nombre);
-        if (tipo != null) {
-            return tipo;
-        }
-
-        // buscar en los tipos de variables declaradas
-        String tipoVariable = tiposDeVariables.get(nombre);
-        if (tipoVariable != null) {
-            return tipoVariable;
-        }
-
-        // inferir por la forma del literal
-        return inferirTipoLiteral(nombre);
-    }
-
-    // verificar si un tipo corresponde a cadena de texto
-    private boolean esTipoCadena(String tipo) {
-
-        // comparar contra los nombres de cadena de los tres lenguajes
-        if ("cadena".equals(tipo) || "textum".equals(tipo) || "String".equals(tipo)) {
-            return true;
-        }
-        return false;
-    }
-
-    // inferir el tipo de un operando aritmetico con entero por defecto
-    private String tipoAritmetico(String nombre) {
-
-        // inferir el tipo conocido del operando
-        String tipo = inferirTipoDe(nombre, tiposConocidos);
-
-        // usar entero cuando el tipo es desconocido
-        if (tipo.equals("_")) {
-            return "entero";
-        }
-
-        return tipo;
-    }
-
-    // inferir el tipo resultado de una operacion aritmetica
-    private String tipoResultadoAritmetico(String a, String b) {
-
-        // inferir los tipos de ambos operandos
-        String tipoA = inferirTipoDe(a, tiposConocidos);
-        String tipoB = inferirTipoDe(b, tiposConocidos);
-
-        // usar el tipo comun cuando ambos coinciden y es conocido
-        if (tipoA.equals(tipoB)) {
-            if (tipoA.equals("_")) {
-                return "entero";
-            }
-            return tipoA;
-        }
-
-
-        // convertir al tipo de mayor jerarquia cuando algun operando es flotante
-        // if (esTipoNumerico(tipoA) && esTipoNumerico(tipoB)) {
-        //     return "flotante";
-        // }
-
-        if (esTipoFlotante(tipoA) || esTipoFlotante(tipoB)) {
-            return "flotante";
-        }
-
-
-        // usar entero por defecto en caso mixto :3
-        return "entero";
-    }
-
-    // verificar si un tipo es numerico para convertir al tipo de mayor jerarquia
-    private boolean esTipoNumerico(String tipo) {
-
-        // comparar contra enteros de los tres lenguajes
-        if ("entero".equals(tipo) || "numerus".equals(tipo) || "int".equals(tipo)) {
-            return true;
-        }
-
-        // comparar contra flotantes de los tres lenguajes
-        if ("flotante".equals(tipo) || "decimalis".equals(tipo) || "double".equals(tipo)) {
-            return true;
-        }
-
-        return false;
-    }
-
-    // verificar si un tipo es flotante en cualquier vocabulario
-    private boolean esTipoFlotante(String tipo) {
-
-        // comparar contra flotantes de los tres lenguajes
-        if ("flotante".equals(tipo) || "decimalis".equals(tipo) || "double".equals(tipo)) {
-            return true;
-        }
-
-        return false;
+        // delegar el registro al contexto compartido
+        ctx.registrarTipoVariable(nombre, tipo);
     }
 
     // ==================== PROGRAMA Y SECCIONES ====================
 
     @Override
     public String visitarPrograma(Programa nodo) {
-        // visitar la seccion de estructuras si existe
-        if (nodo.getSeccionEstructuras() != null) {
-            nodo.getSeccionEstructuras().accept(this);
-        }
-
-        // visitar la seccion de funciones si existe
-        if (nodo.getSeccionFunciones() != null) {
-            nodo.getSeccionFunciones().accept(this);
-        }
-
-        return null;
+        return manejadorPrograma.visitarPrograma(nodo);
     }
 
     @Override
     public String visitarSeccionEstructuras(SeccionEstructuras nodo) {
-
-        // recorrer cada estructura de la seccion
-        if (nodo.getEstructuras() != null) {
-            for (NodoASTY estructura : nodo.getEstructuras()) {
-
-                // visitar la estructura actual si existe
-                if (estructura != null) {
-                    estructura.accept(this);
-                }
-            }
-        }
-
-        return null;
+        return manejadorPrograma.visitarSeccionEstructuras(nodo);
     }
 
     @Override
     public String visitarSeccionFunciones(SeccionFunciones nodo) {
-
-        // recorrer cada funcion de la seccion
-        if (nodo.getFunciones() != null) {
-            for (NodoASTY funcion : nodo.getFunciones()) {
-
-                // visitar la funcion actual si existe
-                if (funcion != null) {
-                    funcion.accept(this);
-                }
-
-            }
-        }
-
-        return null;
+        return manejadorPrograma.visitarSeccionFunciones(nodo);
     }
 
     @Override
     public String visitarTipoDato(TipoDato nodo) {
-        // TODO
-        return null;
+        return manejadorPrograma.visitarTipoDato(nodo);
     }
 
     @Override
     public String visitarParametros(Parametros nodo) {
-        // TODO
-        return null;
+        return manejadorPrograma.visitarParametros(nodo);
     }
 
     @Override
     public String visitarCuerpoFuncion(CuerpoFuncion nodo) {
-
-        // recorrer las instrucciones del cuerpo
-        if (nodo.getInstrucciones() != null) {
-
-            for (NodoASTY instruccion : nodo.getInstrucciones()) {
-
-                // visitar la instruccion actual si existe
-                if (instruccion != null) {
-                    instruccion.accept(this);
-                }
-            }
-
-        }
-
-        return null;
+        return manejadorPrograma.visitarCuerpoFuncion(nodo);
     }
 
     @Override
     public String visitarBloque(Bloque nodo) {
-
-        // recorrer las instrucciones del bloque
-        if (nodo.getInstrucciones() != null) {
-
-            for (NodoASTY instruccion : nodo.getInstrucciones()) {
-
-                // visitar la instruccion actual si existe
-                if (instruccion != null) {
-                    instruccion.accept(this);
-                }
-
-            }
-
-        }
-
-        return null;
+        return manejadorPrograma.visitarBloque(nodo);
     }
 
     @Override
     public String visitarAsignacion(Asignacion nodo) {
-        // evaluar la variable destino
-        String izquierda = "_";
-        if (nodo.getVariable() != null) {
-            izquierda = nodo.getVariable().accept(this);
-        }
-
-        // usar valor por defecto si el resultado es nulo
-        if (izquierda == null) {
-            izquierda = "_";
-        }
-
-        // evaluar el valor a asignar
-        String derecha = "_";
-        if (nodo.getValor() != null) {
-            derecha = nodo.getValor().accept(this);
-        }
-
-        // usar valor por defecto si el resultado es nulo
-        if (derecha == null) {
-            derecha = "_";
-        }
-
-        // agregar la asignacion a la lista de cuartetas
-        cuartetas.add(new Cuarteta(":=", derecha, "_", izquierda, inferirTipoDe(derecha, tiposConocidos), "_", "_"));
-
-        return null;
+        return manejadorPrograma.visitarAsignacion(nodo);
     }
 
     @Override
     public String visitarCasoSeleccion(CasoSeleccion nodo) {
-
-        // recorrer las instrucciones del caso
-        if (nodo.getInstrucciones() != null) {
-
-            for (NodoASTY instruccion : nodo.getInstrucciones()) {
-
-                // visitar la instruccion actual si existe
-                if (instruccion != null) {
-                    instruccion.accept(this);
-                }
-            }
-
-        }
-
-        return null;
+        return manejadorPrograma.visitarCasoSeleccion(nodo);
     }
 
     @Override
     public String visitarCasoDefecto(CasoDefecto nodo) {
-
-        // recorrer las instrucciones del caso por defecto
-        if (nodo.getInstrucciones() != null) {
-            for (NodoASTY instruccion : nodo.getInstrucciones()) {
-
-                // visitar la instruccion actual si existe
-                if (instruccion != null) {
-                    instruccion.accept(this);
-                }
-
-            }
-        }
-
-        return null;
+        return manejadorPrograma.visitarCasoDefecto(nodo);
     }
 
     @Override
     public String visitarValorPrimitivo(ValorPrimitivo nodo) {
-        // TODO
-        return null;
+        return manejadorPrograma.visitarValorPrimitivo(nodo);
     }
 
     @Override
     public String visitarListaExpresiones(ListaExpresiones nodo) {
-        // TODO
-        return null;
+        return manejadorPrograma.visitarListaExpresiones(nodo);
     }
 
     // ==================== ESTRUCTURAS ====================
 
     @Override
     public String visitarDefEstructura(DefEstructura nodo) {
-        // construir la lista de campos con sus tipos
-        String campos = construirCamposStruct(nodo.getAtributos());
-
-        // agregar la definicion del struct al inicio del programa a la lista de cuartetas
-        cuartetas.add(new Cuarteta("struct_def", nodo.getNombre(), campos, "_", "_", "_", "_"));
-
-        return null;
-    }
-
-    // construir el string de campos separados por coma con formato nombre:tipo
-    private String construirCamposStruct(List<NodoASTY> atributos) {
-
-        // devolver guion bajo si no hay atributos
-        if (atributos == null || atributos.isEmpty()) {
-            return "_";
-        }
-
-        // acumular cada campo con su tipo
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < atributos.size(); i++) {
-            NodoASTY atributo = atributos.get(i);
-
-            // omitir atributos nulos
-            if (atributo == null) {
-                continue;
-            }
-
-            String campo = "";
-
-            // extraer nombre y tipo segun la clase del atributo
-            if (atributo instanceof AtributoSimple) {
-
-                AtributoSimple simple = (AtributoSimple) atributo;
-                campo = simple.getNombre() + ":" + extraerNombreTipo(simple.getTipo());
-
-            } else if (atributo instanceof AtributoArray) {
-
-                AtributoArray arreglo = (AtributoArray) atributo;
-                campo = arreglo.getNombre() + ":" + extraerNombreTipo(arreglo.getTipo()) + "[]";
-
-            }
-
-            // omitir atributos de tipo desconocido
-            if (campo.isEmpty()) {
-                continue;
-            }
-
-            // separar campos con coma
-            if (sb.length() > 0) {
-                sb.append(",");
-            }
-
-            sb.append(campo);
-        }
-
-        // devolver guion bajo si no se recolecto ningun campo
-        if (sb.length() == 0) {
-            return "_";
-        }
-
-        return sb.toString();
-    }
-
-    // extraer el nombre del tipo desde un nodo de tipo
-    private String extraerNombreTipo(NodoASTY tipoNodo) {
-
-        // devolver guion bajo si el nodo es nulo
-        if (tipoNodo == null) {
-            return "_";
-        }
-
-        // extraer el nombre cuando es TipoDato
-        if (tipoNodo instanceof TipoDato) {
-            String nombre = ((TipoDato) tipoNodo).getNombre();
-
-            // usar guion bajo si el nombre es nulo
-            if (nombre == null) {
-                return "_";
-            }
-
-            return nombre;
-
-        }
-
-        return "_";
+        return manejadorEstructuras.visitarDefEstructura(nodo);
     }
 
     @Override
     public String visitarAtributoSimple(AtributoSimple nodo) {
-        // no genera cuarteta por si solo
-        return null;
+        return manejadorEstructuras.visitarAtributoSimple(nodo);
     }
 
     @Override
     public String visitarAtributoArray(AtributoArray nodo) {
-        // no genera cuarteta por si solo
-        return null;
+        return manejadorEstructuras.visitarAtributoArray(nodo);
     }
 
     // ==================== FUNCIONES ====================
 
     @Override
     public String visitarDefFuncionSinRetorno(DefFuncionSinRetorno nodo) {
-        // construir el string de tipos de parametros
-        String tiposParams = extraerTiposParametros(nodo.getParametros());
-
-        // agregar marcador de inicio a la lista de cuartetas
-        cuartetas.add(new Cuarteta("func_begin", nodo.getNombre(), tiposParams, "void", tiposParams, "_", "void"));
-
-        // visitar el cuerpo de la funcion si existe
-        if (nodo.getCuerpo() != null) {
-            nodo.getCuerpo().accept(this);
-        }
-
-        // agregar marcador de fin a la lista de cuartetas
-        cuartetas.add(new Cuarteta("func_end", nodo.getNombre(), "_", "_", "_", "_", "_"));
-
-        return null;
+        return manejadorFunciones.visitarDefFuncionSinRetorno(nodo);
     }
 
     @Override
     public String visitarDefFuncionConRetorno(DefFuncionConRetorno nodo) {
-
-        // construir el string de tipos de parametros
-        String tiposParams = extraerTiposParametros(nodo.getParametros());
-
-        // extraer el tipo de retorno
-        String tipoRetorno = "_";
-
-        if (nodo.getTipoRetorno() instanceof TipoDato) {
-            tipoRetorno = ((TipoDato) nodo.getTipoRetorno()).getNombre();
-        }
-
-        if (tipoRetorno == null) {
-            tipoRetorno = "_";
-        }
-
-        // agregar marcador de inicio a la lista de cuartetas
-        cuartetas.add(new Cuarteta("func_begin", nodo.getNombre(), tiposParams, tipoRetorno, tiposParams, "_", tipoRetorno));
-
-        // visitar el cuerpo de la funcion si existe
-        if (nodo.getCuerpo() != null) {
-            nodo.getCuerpo().accept(this);
-        }
-
-        // agregar marcador de fin a la lista de cuartetas
-        cuartetas.add(new Cuarteta("func_end", nodo.getNombre(), "_", "_", "_", "_", "_"));
-
-        return null;
-    }
-
-    // construir el string de params con formato nombre tipo separados por coma
-    private String extraerTiposParametros(NodoASTY parametrosNodo) {
-
-        // devolver guion bajo si no hay parametros
-        if (parametrosNodo == null) {
-            return "_";
-        }
-
-        // verificar que sea Parametros
-        if (!(parametrosNodo instanceof Parametros)) {
-            return "_";
-        }
-
-        // convertir al tipo concreto
-        Parametros parametros = (Parametros) parametrosNodo;
-
-        // verificar que la lista no sea nula
-        if (parametros.getParametros() == null || parametros.getParametros().isEmpty()) {
-            return "_";
-        }
-
-        // acumular los params separados por coma
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < parametros.getParametros().size(); i++) {
-            NodoASTY p = parametros.getParametros().get(i);
-            String nombre = "_";
-            String tipo = "_";
-            if (p instanceof ParamSimple) {
-                nombre = ((ParamSimple) p).getNombre();
-                NodoASTY tipoNodo = ((ParamSimple) p).getTipo();
-                if (tipoNodo instanceof TipoDato) {
-                    tipo = ((TipoDato) tipoNodo).getNombre();
-                }
-            } else if (p instanceof ParamArray) {
-                nombre = ((ParamArray) p).getNombre();
-                NodoASTY tipoNodo = ((ParamArray) p).getTipo();
-                if (tipoNodo instanceof TipoDato) {
-                    tipo = ((TipoDato) tipoNodo).getNombre() + "[]";
-                }
-            } else if (p instanceof ParamEstructura) {
-                nombre = ((ParamEstructura) p).getNombre();
-                tipo = ((ParamEstructura) p).getTipoEstructura();
-            }
-            if (nombre == null) {
-                nombre = "_";
-            }
-            if (tipo == null) {
-                tipo = "_";
-            }
-            if (i > 0) {
-                sb.append(",");
-            }
-            sb.append(nombre).append(":").append(tipo);
-        }
-
-        return sb.toString();
+        return manejadorFunciones.visitarDefFuncionConRetorno(nodo);
     }
 
     @Override
     public String visitarParamSimple(ParamSimple nodo) {
-        // TODO
-        return null;
+        return manejadorFunciones.visitarParamSimple(nodo);
     }
 
     @Override
     public String visitarParamArray(ParamArray nodo) {
-        // TODO
-        return null;
+        return manejadorFunciones.visitarParamArray(nodo);
     }
 
     @Override
     public String visitarParamEstructura(ParamEstructura nodo) {
-        // TODO
-        return null;
+        return manejadorFunciones.visitarParamEstructura(nodo);
     }
 
     // ==================== INSTRUCCIONES ====================
 
     @Override
     public String visitarStmtDeclaracion(StmtDeclaracion nodo) {
-        // visitar la declaracion si existe
-        if (nodo.getDeclaracion() != null) {
-            nodo.getDeclaracion().accept(this);
-        }
-
-        return null;
+        return manejadorDeclaraciones.visitarStmtDeclaracion(nodo);
     }
 
     @Override
     public String visitarStmtAsignacion(StmtAsignacion nodo) {
-        // visitar la asignacion si existe
-        if (nodo.getAsignacion() != null) {
-            nodo.getAsignacion().accept(this);
-        }
-
-        return null;
+        return manejadorDeclaraciones.visitarStmtAsignacion(nodo);
     }
 
     @Override
     public String visitarStmtEstructuraLocal(StmtEstructuraLocal nodo) {
-        // no agregar cuartetas a la lista porque los structs locales son solo tipos :D
-        return null;
+        return manejadorDeclaraciones.visitarStmtEstructuraLocal(nodo);
     }
 
     @Override
     public String visitarStmtCondicional(StmtCondicional nodo) {
-
-        // visitar el condicional si existe
-        if (nodo.getCondicional() != null) {
-            nodo.getCondicional().accept(this);
-        }
-
-        return null;
+        return manejadorFlujo.visitarStmtCondicional(nodo);
     }
 
     @Override
     public String visitarStmtSeleccion(StmtSeleccion nodo) {
-
-        // visitar la seleccion si existe
-        if (nodo.getSeleccion() != null) {
-            nodo.getSeleccion().accept(this);
-        }
-
-        return null;
+        return manejadorFlujo.visitarStmtSeleccion(nodo);
     }
 
     @Override
     public String visitarStmtCiclo(StmtCiclo nodo) {
-
-        // visitar el ciclo si existe
-        if (nodo.getCiclo() != null) {
-            nodo.getCiclo().accept(this);
-        }
-
-        return null;
+        return manejadorFlujo.visitarStmtCiclo(nodo);
     }
 
     @Override
     public String visitarStmtRetorno(StmtRetorno nodo) {
-        // evaluar la expresion de retorno si existe
-        if (nodo.getExpresion() != null) {
-
-            // obtener el valor de retorno
-            String valor = nodo.getExpresion().accept(this);
-
-            // usar valor por defecto si el resultado es nulo
-            if (valor == null) {
-                valor = "_";
-            }
-
-            // agregar el retorno con valor a la lista de cuartetas
-            cuartetas.add(new Cuarteta("return", valor, "_", "_", inferirTipoDe(valor, tiposConocidos), "_", "_"));
-        } else {
-
-            // agregar el retorno sin valor a la lista de cuartetas
-            cuartetas.add(new Cuarteta("return", "_", "_", "_", "_", "_", "_"));
-        }
-
-        return null;
+        return manejadorDeclaraciones.visitarStmtRetorno(nodo);
     }
 
     @Override
     public String visitarStmtContinuar(StmtContinuar nodo) {
-        // agregar salto a la etiqueta de continuar si existe a la lista de cuartetas
-        if (this.etiquetaContinueActual != null) {
-            cuartetas.add(new Cuarteta("goto", this.etiquetaContinueActual, "_", "_", "_", "_", "_"));
-        }
-
-        return null;
+        return manejadorDeclaraciones.visitarStmtContinuar(nodo);
     }
 
     @Override
     public String visitarStmtRomper(StmtRomper nodo) {
-        // agregar salto a la etiqueta de romper si existe a la lista de cuartetas
-        if (this.etiquetaBreakActual != null) {
-            cuartetas.add(new Cuarteta("goto", this.etiquetaBreakActual, "_", "_", "_", "_", "_"));
-        }
-
-        return null;
+        return manejadorDeclaraciones.visitarStmtRomper(nodo);
     }
 
     @Override
     public String visitarStmtExpresion(StmtExpresion nodo) {
-
-        // visitar la expresion si existe
-        if (nodo.getExpresion() != null) {
-            nodo.getExpresion().accept(this);
-        }
-
-        return null;
+        return manejadorDeclaraciones.visitarStmtExpresion(nodo);
     }
 
     // ==================== DECLARACIONES ====================
 
     @Override
     public String visitarDeclConTipoYValor(DeclConTipoYValor nodo) {
-        // agregar la asignacion a la lista de cuartetas inicial si hay valor
-        if (nodo.getValor() != null) {
-
-            // evaluar el valor inicial
-            String valor = nodo.getValor().accept(this);
-
-            // usar valor por defecto si el resultado es nulo
-            if (valor == null) {
-                valor = "_";
-            }
-
-            // agregar la asignacion a la variable a la lista de cuartetas
-            cuartetas.add(new Cuarteta(":=", valor, "_", nodo.getNombre(), inferirTipoDe(valor, tiposConocidos), "_", "_"));
-        }
-        return null;
+        return manejadorDeclaraciones.visitarDeclConTipoYValor(nodo);
     }
 
     @Override
     public String visitarDeclArraySinValores(DeclArraySinValores nodo) {
-        // evaluar el tamano del arreglo
-        String tamano = "_";
-        if (nodo.getTamano() != null) {
-            tamano = nodo.getTamano().accept(this);
-        }
-
-        // usar valor por defecto si el resultado es nulo
-        if (tamano == null) {
-            tamano = "_";
-        }
-
-        // agregar la reserva de memoria a la lista de cuartetas
-        cuartetas.add(new Cuarteta("alloc", tamano, "_", nodo.getNombre(), inferirTipoDe(tamano, tiposConocidos), "_", "_"));
-
-        return null;
+        return manejadorDeclaraciones.visitarDeclArraySinValores(nodo);
     }
 
     @Override
     public String visitarDeclArrayConValores(DeclArrayConValores nodo) {
-        // evaluar el tamano del arreglo
-        String tamano = "_";
-        if (nodo.getTamano() != null) {
-            tamano = nodo.getTamano().accept(this);
-        }
-
-        // usar valor por defecto si el resultado es nulo
-        if (tamano == null) {
-            tamano = "_";
-        }
-
-        // agregar la reserva de memoria a la lista de cuartetas
-        cuartetas.add(new Cuarteta("alloc", tamano, "_", nodo.getNombre(), inferirTipoDe(tamano, tiposConocidos), "_", "_"));
-
-        // obtener la lista de valores iniciales
-        NodoASTY lista = nodo.getListaValores();
-
-        // recorrer los valores si la lista existe
-        if (lista instanceof ListaExpresiones) {
-
-            // convertir la lista al tipo concreto
-            ListaExpresiones listaExpresiones = (ListaExpresiones) lista;
-
-            // recorrer cada valor de la lista
-            if (listaExpresiones.getExpresiones() != null) {
-                for (int i = 0; i < listaExpresiones.getExpresiones().size(); i++) {
-
-                    // evaluar el valor actual
-                    String valor = listaExpresiones.getExpresiones().get(i).accept(this);
-
-                    // usar valor por defecto si el resultado es nulo
-                    if (valor == null) {
-                        valor = "_";
-                    }
-
-                    // agregar la asignacion a la posicion actual a la lista de cuartetas
-                    cuartetas.add(new Cuarteta("[]=", nodo.getNombre(), String.valueOf(i), valor, "_", "entero", "_"));
-                }
-            }
-        } else {
-
-            // visitar la lista si tiene otro formato
-            if (lista != null) {
-                lista.accept(this);
-            }
-
-        }
-
-        return null;
+        return manejadorDeclaraciones.visitarDeclArrayConValores(nodo);
     }
 
     @Override
     public String visitarDeclMatriz(DeclMatriz nodo) {
-        // evaluar el tamano de filas
-        String filas = "_";
-        if (nodo.getTamanoFilas() != null) {
-            filas = nodo.getTamanoFilas().accept(this);
-        }
-
-        // usar valor por defecto si el resultado es nulo
-        if (filas == null) {
-            filas = "_";
-        }
-
-        // evaluar el tamano de columnas
-        String columnas = "_";
-        if (nodo.getTamanoColumnas() != null) {
-            columnas = nodo.getTamanoColumnas().accept(this);
-        }
-
-        // usar valor por defecto si el resultado es nulo
-        if (columnas == null) {
-            columnas = "_";
-        }
-
-        // agregar la reserva de memoria con ambas dimensiones a la lista de cuartetas
-        cuartetas.add(new Cuarteta("alloc", filas, columnas, nodo.getNombre(), inferirTipoDe(filas, tiposConocidos), inferirTipoDe(columnas, tiposConocidos), "_"));
-
-        return null;
+        return manejadorDeclaraciones.visitarDeclMatriz(nodo);
     }
 
     // ==================== VARIABLES ASIGNABLES ====================
 
     @Override
     public String visitarVarSimple(VarSimple nodo) {
-        // devolver el nombre directamente
-        return nodo.getNombre();
+        return manejadorDeclaraciones.visitarVarSimple(nodo);
     }
 
     @Override
     public String visitarVarArray(VarArray nodo) {
-        // evaluar la base del acceso
-        String base = "_";
-        if (nodo.getBase() != null) {
-            base = nodo.getBase().accept(this);
-        }
-
-        // usar valor por defecto si el resultado es nulo
-        if (base == null) {
-            base = "_";
-        }
-
-        // evaluar el indice del acceso
-        String indice = "_";
-        if (nodo.getIndice() != null) {
-            indice = nodo.getIndice().accept(this);
-        }
-
-        // usar valor por defecto si el resultado es nulo
-        if (indice == null) {
-            indice = "_";
-        }
-
-        // devolver la referencia compuesta sin agregar cuarteta a la lista :D
-        return base + "[" + indice + "]";
+        return manejadorDeclaraciones.visitarVarArray(nodo);
     }
 
     @Override
     public String visitarVarMiembro(VarMiembro nodo) {
-        // evaluar la base del acceso
-        String base = "_";
-        if (nodo.getBase() != null) {
-            base = nodo.getBase().accept(this);
-        }
-
-        // usar valor por defecto si el resultado es nulo
-        if (base == null) {
-            base = "_";
-        }
-
-        // devolver la referencia compuesta sin agregar cuarteta a la lista
-        return base + "." + nodo.getMiembro();
+        return manejadorDeclaraciones.visitarVarMiembro(nodo);
     }
 
     // ==================== CONDICIONAL ====================
 
     @Override
     public String visitarStatementSi(StatementSi nodo) {
-        // evaluar la condicion principal
-        String condicion = "_";
-        if (nodo.getCondicionPrincipal() != null) {
-            condicion = nodo.getCondicionPrincipal().accept(this);
-        }
-
-        // usar valor por defecto si el resultado es nulo
-        if (condicion == null) {
-            condicion = "_";
-        }
-
-        // crear la etiqueta final
-        String lfin = temporales.nuevaEtiqueta();
-
-        // crear la etiqueta de la rama que sigue
-        String lSiguiente = temporales.nuevaEtiqueta();
-
-        // agregar el salto a la rama que sigue si la condicion es falsa a la lista de cuartetas
-        cuartetas.add(new Cuarteta("if_false", condicion, lSiguiente, "_", "booleano", "_", "_"));
-
-        // visitar el bloque principal si existe
-        if (nodo.getBloquePrincipal() != null) {
-            nodo.getBloquePrincipal().accept(this);
-        }
-
-        // agregar el salto al final a la lista de cuartetas
-        cuartetas.add(new Cuarteta("goto", lfin, "_", "_", "_", "_", "_"));
-
-        // agregar la etiqueta de la rama que sigue a la lista de cuartetas
-        cuartetas.add(new Cuarteta("label", lSiguiente, "_", "_", "_", "_", "_"));
-
-        // recorrer las ramas sino si si existen
-        if (nodo.getCondicionesSino() != null) {
-
-            for (int i = 0; i < nodo.getCondicionesSino().size(); i++) {
-                // evaluar la condicion de la rama actual
-                String condicionSino = "_";
-                if (nodo.getCondicionesSino().get(i) != null) {
-                    condicionSino = nodo.getCondicionesSino().get(i).accept(this);
-                }
-
-                // usar valor por defecto si el resultado es nulo
-                if (condicionSino == null) {
-                    condicionSino = "_";
-                }
-
-                // crear la etiqueta de la rama que sigue
-                String lSiguienteSino = temporales.nuevaEtiqueta();
-
-                // agregar el salto si la condicion es falsa a la lista de cuartetas
-                cuartetas.add(new Cuarteta("if_false", condicionSino, lSiguienteSino, "_", "booleano", "_", "_"));
-
-                // visitar el bloque de la rama actual si existe
-                if (nodo.getBloquesSino() != null) {
-                    if (i < nodo.getBloquesSino().size()) {
-                        if (nodo.getBloquesSino().get(i) != null) {
-                            nodo.getBloquesSino().get(i).accept(this);
-                        }
-                    }
-                }
-
-                // agregar el salto al final a la lista de cuartetas
-                cuartetas.add(new Cuarteta("goto", lfin, "_", "_", "_", "_", "_"));
-
-                // agregar la etiqueta de la rama que sigue a la lista de cuartetas
-                cuartetas.add(new Cuarteta("label", lSiguienteSino, "_", "_", "_", "_", "_"));
-            }
-        }
-
-        // visitar el bloque contrario si existe
-        if (nodo.getBloqueContrario() != null) {
-            nodo.getBloqueContrario().accept(this);
-        }
-
-        // agregar la etiqueta final a la lista de cuartetas
-        cuartetas.add(new Cuarteta("label", lfin, "_", "_", "_", "_", "_"));
-
-        return null;
+        return manejadorFlujo.visitarStatementSi(nodo);
     }
 
     // ==================== SELECCION ====================
 
     @Override
     public String visitarStatementElegir(StatementElegir nodo) {
-        // evaluar la expresion de seleccion
-        String selector = "_";
-        if (nodo.getExpresion() != null) {
-            selector = nodo.getExpresion().accept(this);
-        }
-
-        // usar valor por defecto si el resultado es nulo
-        if (selector == null) {
-            selector = "_";
-        }
-
-        // crear la etiqueta final
-        String lfin = temporales.nuevaEtiqueta();
-
-        // recorrer cada caso de la seleccion
-        if (nodo.getCasos() != null) {
-
-            for (int i = 0; i < nodo.getCasos().size(); i++) {
-
-                // obtener el caso actual
-                NodoASTY caso = nodo.getCasos().get(i);
-
-                // omitir el caso si es nulo
-                if (caso == null) {
-                    continue;
-                }
-
-                // comparar el selector cuando el caso trae valor
-                if (caso instanceof CasoSeleccion) {
-
-                    // convertir el caso al tipo concreto
-                    CasoSeleccion casoSeleccion = (CasoSeleccion) caso;
-
-                    // evaluar el valor del caso
-                    String valorCaso = "_";
-                    if (casoSeleccion.getValor() != null) {
-                        valorCaso = casoSeleccion.getValor().accept(this);
-                    }
-
-                    // usar valor por defecto si el resultado es nulo
-                    if (valorCaso == null) {
-                        valorCaso = "_";
-                    }
-
-                    // comparar el selector con el valor del caso
-                    String temp = temporales.nuevoTemporal();
-
-                    // registrar el temporal como booleano
-                    tiposConocidos.put(temp, "booleano");
-                    cuartetas.add(new Cuarteta("==", selector, valorCaso, temp, inferirTipoDe(selector, tiposConocidos), inferirTipoDe(valorCaso, tiposConocidos), "booleano"));
-
-                    // crear la etiqueta del caso que sigue
-                    String lSiguiente = temporales.nuevaEtiqueta();
-
-                    // agregar el salto si no hay coincidencia a la lista de cuartetas
-                    cuartetas.add(new Cuarteta("if_false", temp, lSiguiente, "_", "booleano", "_", "_"));
-
-                    // visitar las instrucciones del caso
-                    if (casoSeleccion.getInstrucciones() != null) {
-
-                        for (NodoASTY instruccion : casoSeleccion.getInstrucciones()) {
-
-                            // visitar la instruccion actual si existe
-                            if (instruccion != null) {
-                                instruccion.accept(this);
-                            }
-
-                        }
-                    }
-
-                    // agregar el salto al final a la lista de cuartetas
-                    cuartetas.add(new Cuarteta("goto", lfin, "_", "_", "_", "_", "_"));
-
-                    // agregar la etiqueta del caso que sigue a la lista de cuartetas
-                    cuartetas.add(new Cuarteta("label", lSiguiente, "_", "_", "_", "_", "_"));
-
-                } else {
-
-                    // visitar el caso directamente
-                    caso.accept(this);
-
-                }
-            }
-        }
-
-        // visitar el caso por defecto si existe
-        if (nodo.getCasoDefecto() != null) {
-            nodo.getCasoDefecto().accept(this);
-        }
-
-        // agregar la etiqueta final a la lista de cuartetas
-        cuartetas.add(new Cuarteta("label", lfin, "_", "_", "_", "_", "_"));
-
-        return null;
+        return manejadorFlujo.visitarStatementElegir(nodo);
     }
 
     // ==================== CICLOS ====================
 
     @Override
     public String visitarCicloPara(CicloPara nodo) {
-
-        // guardar las etiquetas anteriores
-        String anteriorBreak = this.etiquetaBreakActual;
-        String anteriorContinue = this.etiquetaContinueActual;
-
-        // crear las etiquetas del ciclo
-        String lInicio = temporales.nuevaEtiqueta();
-        String lFin = temporales.nuevaEtiqueta();
-
-        // asignar las etiquetas actuales
-        this.etiquetaBreakActual = lFin;
-        this.etiquetaContinueActual = lInicio;
-
-        // visitar la inicializacion si existe
-        if (nodo.getInicializacion() != null) {
-            nodo.getInicializacion().accept(this);
-        }
-
-        // agregar la etiqueta de inicio a la lista de cuartetas
-        cuartetas.add(new Cuarteta("label", lInicio, "_", "_", "_", "_", "_"));
-
-        // evaluar la condicion si existeeeeeeeeeeeee
-        if (nodo.getCondicion() != null) {
-
-            // obtener el resultado de la condicion
-            String condicion = nodo.getCondicion().accept(this);
-
-            // usar valor por defecto si el resultado es nulo
-            if (condicion == null) {
-                condicion = "_";
-            }
-
-            // agregar el salto al final si la condicion es falsa a la lista de cuartetas
-            cuartetas.add(new Cuarteta("if_false", condicion, lFin, "_", "booleano", "_", "_"));
-        }
-        // visitar el bloque si existe
-        if (nodo.getBloque() != null) {
-            nodo.getBloque().accept(this);
-        }
-
-        // visitar el paso si existe
-        if (nodo.getPaso() != null) {
-            nodo.getPaso().accept(this);
-        }
-
-        // agregar el salto al inicio a la lista de cuartetas
-        cuartetas.add(new Cuarteta("goto", lInicio, "_", "_", "_", "_", "_"));
-
-        // agregar la etiqueta final a la lista de cuartetas
-        cuartetas.add(new Cuarteta("label", lFin, "_", "_", "_", "_", "_"));
-
-        // restaurar las etiquetas anteriores
-        this.etiquetaBreakActual = anteriorBreak;
-        this.etiquetaContinueActual = anteriorContinue;
-
-        return null;
+        return manejadorFlujo.visitarCicloPara(nodo);
     }
 
     @Override
     public String visitarCicloMientras(CicloMientras nodo) {
-
-        // guardar las etiquetas anteriores
-        String anteriorBreak = this.etiquetaBreakActual;
-        String anteriorContinue = this.etiquetaContinueActual;
-
-        // crear las etiquetas del ciclo
-        String lInicio = temporales.nuevaEtiqueta();
-        String lFin = temporales.nuevaEtiqueta();
-
-        // asignar las etiquetas actuales
-        this.etiquetaBreakActual = lFin;
-        this.etiquetaContinueActual = lInicio;
-
-        // agregar la etiqueta de inicio a la lista de cuartetas
-        cuartetas.add(new Cuarteta("label", lInicio, "_", "_", "_", "_", "_"));
-
-        // evaluar la condicion
-        String condicion = "_";
-        if (nodo.getCondicion() != null) {
-            condicion = nodo.getCondicion().accept(this);
-        }
-
-        // usar valor por defecto si el resultado es nulo
-        if (condicion == null) {
-            condicion = "_";
-        }
-
-        // agregar el salto al final si la condicion es falsa a la lista de cuartetas
-        cuartetas.add(new Cuarteta("if_false", condicion, lFin, "_", "booleano", "_", "_"));
-
-        // visitar el bloque si existe
-        if (nodo.getBloque() != null) {
-            nodo.getBloque().accept(this);
-        }
-
-        // agregar el salto al inicio a la lista de cuartetas
-        cuartetas.add(new Cuarteta("goto", lInicio, "_", "_", "_", "_", "_"));
-
-        // agregar la etiqueta final a la lista de cuartetas
-        cuartetas.add(new Cuarteta("label", lFin, "_", "_", "_", "_", "_"));
-
-        // restaurar las etiquetas anteriores
-        this.etiquetaBreakActual = anteriorBreak;
-        this.etiquetaContinueActual = anteriorContinue;
-
-        return null;
+        return manejadorFlujo.visitarCicloMientras(nodo);
     }
 
     @Override
     public String visitarCicloHacer(CicloHacer nodo) {
-
-        // guardar las etiquetas anteriores
-        String anteriorBreak = this.etiquetaBreakActual;
-        String anteriorContinue = this.etiquetaContinueActual;
-
-        // crear las etiquetas del ciclo
-        String lInicio = temporales.nuevaEtiqueta();
-        String lContinuar = temporales.nuevaEtiqueta();
-        String lFin = temporales.nuevaEtiqueta();
-
-        // asignar las etiquetas actuales
-        this.etiquetaBreakActual = lFin;
-        this.etiquetaContinueActual = lContinuar;
-
-        // agregar la etiqueta de inicio a la lista de cuartetas
-        cuartetas.add(new Cuarteta("label", lInicio, "_", "_", "_", "_", "_"));
-
-        // visitar el bloque si existe
-        if (nodo.getBloque() != null) {
-            nodo.getBloque().accept(this);
-        }
-
-        // agregar la etiqueta de continuar a la lista de cuartetas
-        cuartetas.add(new Cuarteta("label", lContinuar, "_", "_", "_", "_", "_"));
-
-        // evaluar la condicion
-        String condicion = "_";
-        if (nodo.getCondicion() != null) {
-            condicion = nodo.getCondicion().accept(this);
-        }
-
-        // usar valor por defecto si el resultado es nulo
-        if (condicion == null) {
-            condicion = "_";
-        }
-
-        // agregar el salto al final si la condicion es falsa a la lista de cuartetas
-        cuartetas.add(new Cuarteta("if_false", condicion, lFin, "_", "booleano", "_", "_"));
-
-        // agregar el salto al inicio a la lista de cuartetas
-        cuartetas.add(new Cuarteta("goto", lInicio, "_", "_", "_", "_", "_"));
-
-        // agregar la etiqueta final a la lista de cuartetas
-        cuartetas.add(new Cuarteta("label", lFin, "_", "_", "_", "_", "_"));
-
-        // restaurar las etiquetas anteriores
-        this.etiquetaBreakActual = anteriorBreak;
-        this.etiquetaContinueActual = anteriorContinue;
-
-        return null;
+        return manejadorFlujo.visitarCicloHacer(nodo);
     }
 
     // ==================== INIT Y PASO DEL PARA ====================
 
     @Override
     public String visitarInitParaDecl(InitParaDecl nodo) {
-
-        // agregar la asignacion a la lista de cuartetas inicial si hay expresion
-        if (nodo.getExpresion() != null) {
-
-            // evaluar la expresion inicial
-            String valor = nodo.getExpresion().accept(this);
-
-            // usar valor por defecto si el resultado es nulo
-            if (valor == null) {
-                valor = "_";
-            }
-
-            // agregar la asignacion a la variable a la lista de cuartetas
-            cuartetas.add(new Cuarteta(":=", valor, "_", nodo.getNombre(), inferirTipoDe(valor, tiposConocidos), "_", "_"));
-        }
-
-        return null;
+        return manejadorFlujo.visitarInitParaDecl(nodo);
     }
 
     @Override
     public String visitarInitParaAsig(InitParaAsig nodo) {
-
-        // evaluar la variable destino
-        String variable = "_";
-        if (nodo.getVariable() != null) {
-            variable = nodo.getVariable().accept(this);
-        }
-
-        // usar valor por defecto si el resultado es nulo
-        if (variable == null) {
-            variable = "_";
-        }
-
-        // evaluar la expresion inicial
-        String valor = "_";
-        if (nodo.getExpresion() != null) {
-            valor = nodo.getExpresion().accept(this);
-        }
-
-        // usar valor por defecto si el resultado es nulo
-        if (valor == null) {
-            valor = "_";
-        }
-
-        // agregar la asignacion a la lista de cuartetas
-        cuartetas.add(new Cuarteta(":=", valor, "_", variable, inferirTipoDe(valor, tiposConocidos), "_", "_"));
-
-        return null;
+        return manejadorFlujo.visitarInitParaAsig(nodo);
     }
 
     @Override
     public String visitarPasoParaExpr(PasoParaExpr nodo) {
-        // visitar la expresion del paso si existe
-        if (nodo.getExpresion() != null) {
-            nodo.getExpresion().accept(this);
-        }
-
-        return null;
+        return manejadorFlujo.visitarPasoParaExpr(nodo);
     }
 
     @Override
     public String visitarPasoParaAsig(PasoParaAsig nodo) {
-
-        // evaluar la variable destino
-        String variable = "_";
-        if (nodo.getVariable() != null) {
-            variable = nodo.getVariable().accept(this);
-        }
-
-        // usar valor por defecto si el resultado es nulo
-        if (variable == null) {
-            variable = "_";
-        }
-
-        // evaluar la expresion del paso
-        String valor = "_";
-        if (nodo.getExpresion() != null) {
-            valor = nodo.getExpresion().accept(this);
-        }
-
-        // usar valor por defecto si el resultado es nulo
-        if (valor == null) {
-            valor = "_";
-        }
-
-        // agregar la asignacion a la lista de cuartetas
-        cuartetas.add(new Cuarteta(":=", valor, "_", variable, inferirTipoDe(valor, tiposConocidos), "_", "_"));
-
-        return null;
+        return manejadorFlujo.visitarPasoParaAsig(nodo);
     }
 
     // ==================== EXPRESIONES ====================
 
     @Override
     public String visitarExprParentesis(ExprParentesis nodo) {
-        // visitar la expresion interna si existe
-        if (nodo.getExpresion() != null) {
-            return nodo.getExpresion().accept(this);
-        }
-
-        return null;
+        return manejadorExpresiones.visitarExprParentesis(nodo);
     }
 
     @Override
     public String visitarExprLlamadaFuncion(ExprLlamadaFuncion nodo) {
-        // evaluar los argumentos de la llamada
-        List<String> argumentos = new ArrayList<>();
-
-        if (nodo.getArgumentos() != null) {
-
-            for (int i = 0; i < nodo.getArgumentos().size(); i++) {
-
-                // evaluar el argumento actual
-                String argumento = nodo.getArgumentos().get(i).accept(this);
-
-                // usar valor por defecto si el resultado es nulo
-                if (argumento == null) {
-                    argumento = "_";
-                }
-
-                // agregar el argumento a la lista
-                argumentos.add(argumento);
-
-            }
-
-        }
-        // agregar un param por cada argumento a la lista de cuartetas
-        for (int i = 0; i < argumentos.size(); i++) {
-            cuartetas.add(new Cuarteta("param", argumentos.get(i), "_", "_", inferirTipoDe(argumentos.get(i), tiposConocidos), "_", "_"));
-        }
-
-        // agregar la llamada y guardar el resultado en un temporal a la lista de cuartetas
-        String temp = temporales.nuevoTemporal();
-        cuartetas.add(new Cuarteta("call", nodo.getNombre(), String.valueOf(argumentos.size()), temp, "_", "_", "_"));
-
-        return temp;
+        return manejadorExpresiones.visitarExprLlamadaFuncion(nodo);
     }
 
     @Override
     public String visitarExprAccesoArray(ExprAccesoArray nodo) {
-        // evaluar el objeto del acceso
-        String objeto = "_";
-        if (nodo.getObjeto() != null) {
-            objeto = nodo.getObjeto().accept(this);
-        }
-
-        // usar valor por defecto si el resultado es nulo
-        if (objeto == null) {
-            objeto = "_";
-        }
-
-        // evaluar el indice del acceso
-        String indice = "_";
-        if (nodo.getIndice() != null) {
-            indice = nodo.getIndice().accept(this);
-        }
-
-        // usar valor por defecto si el resultado es nulo
-        if (indice == null) {
-            indice = "_";
-        }
-
-        // generar el acceso a arreglo con temporal
-        String temp = temporales.nuevoTemporal();
-        cuartetas.add(new Cuarteta("=[]", objeto, indice, temp, "_", "entero", "_"));
-
-        return temp;
+        return manejadorExpresiones.visitarExprAccesoArray(nodo);
     }
 
     @Override
     public String visitarExprAccesoMiembro(ExprAccesoMiembro nodo) {
-        // evaluar el objeto del acceso
-        String objeto = "_";
-        if (nodo.getObjeto() != null) {
-            objeto = nodo.getObjeto().accept(this);
-        }
-
-        // usar valor por defecto si el resultado es nulo
-        if (objeto == null) {
-            objeto = "_";
-        }
-
-        // agregar el acceso a miembro con temporal a la lista de cuartetas
-        String temp = temporales.nuevoTemporal();
-        cuartetas.add(new Cuarteta(".", objeto, nodo.getMiembro(), temp, "_", "_", "_"));
-
-        return temp;
+        return manejadorExpresiones.visitarExprAccesoMiembro(nodo);
     }
 
     @Override
     public String visitarExprPostIncremento(ExprPostIncremento nodo) {
-        // evaluar la variable
-        String variable = "_";
-        if (nodo.getVariable() != null) {
-            variable = nodo.getVariable().accept(this);
-        }
-
-        // usar valor por defecto si el resultado es nulo
-        if (variable == null) {
-            variable = "_";
-        }
-
-        // agregar el incremento sobre la misma variable a la lista de cuartetas
-        cuartetas.add(new Cuarteta("+", variable, "1", variable, inferirTipoDe(variable, tiposConocidos), "entero", inferirTipoDe(variable, tiposConocidos)));
-
-        return variable;
+        return manejadorExpresiones.visitarExprPostIncremento(nodo);
     }
 
     @Override
     public String visitarExprPostDecremento(ExprPostDecremento nodo) {
-        // evaluar la variable
-        String variable = "_";
-        if (nodo.getVariable() != null) {
-            variable = nodo.getVariable().accept(this);
-        }
-
-        // usar valor por defecto si el resultado es nulo
-        if (variable == null) {
-            variable = "_";
-        }
-
-        // agregar el decremento sobre la misma variable a la lista de cuartetas
-        cuartetas.add(new Cuarteta("-", variable, "1", variable, inferirTipoDe(variable, tiposConocidos), "entero", inferirTipoDe(variable, tiposConocidos)));
-
-        return variable;
+        return manejadorExpresiones.visitarExprPostDecremento(nodo);
     }
 
     @Override
     public String visitarExprListaLiteral(ExprListaLiteral nodo) {
-        // no genera cuarteta por si solo en este contexto
-        return null;
+        return manejadorExpresiones.visitarExprListaLiteral(nodo);
     }
 
     @Override
     public String visitarExprNegativa(ExprNegativa nodo) {
-        // evaluar la expresion interna
-        String valor = "_";
-        if (nodo.getExpresion() != null) {
-            valor = nodo.getExpresion().accept(this);
-        }
-
-        // usar valor por defecto si el resultado es nulo
-        if (valor == null) {
-            valor = "_";
-        }
-
-        // agregar la negacion aritmetica con temporal a la lista de cuartetas :D
-        String temp = temporales.nuevoTemporal();
-
-        // inferir el tipo desde el operando
-        String tipoNeg = inferirTipoDe(valor, tiposConocidos);
-
-        // registrar el temporal con el tipo inferido
-        tiposConocidos.put(temp, tipoNeg);
-
-        // agregar menos unario con opcode propio a la lista de cuartetas
-        cuartetas.add(new Cuarteta("uminus", valor, "_", temp, tipoNeg, "_", tipoNeg));
-
-        return temp;
+        return manejadorExpresiones.visitarExprNegativa(nodo);
     }
 
     @Override
     public String visitarExprNegada(ExprNegada nodo) {
-
-        // evaluar la expresion interna
-        String valor = "_";
-        if (nodo.getExpresion() != null) {
-            valor = nodo.getExpresion().accept(this);
-        }
-
-        // usar valor por defecto si el resultado es nulo
-        if (valor == null) {
-            valor = "_";
-        }
-
-        // agregar la negacion logica con temporal a la lista de cuartetas
-        String temp = temporales.nuevoTemporal();
-        // registrar el temporal como booleano
-        tiposConocidos.put(temp, "booleano");
-        cuartetas.add(new Cuarteta("!", valor, "_", temp, inferirTipoDe(valor, tiposConocidos), "_", "booleano"));
-
-        return temp;
-
+        return manejadorExpresiones.visitarExprNegada(nodo);
     }
 
     @Override
     public String visitarExprMultiplicacionDivision(ExprMultiplicacionDivision nodo) {
-
-        // evaluar el operando izquierdo
-        String izquierdo = "_";
-        if (nodo.getIzquierdo() != null) {
-            izquierdo = nodo.getIzquierdo().accept(this);
-        }
-
-        // usar valor por defecto si el resultado es nulo
-        if (izquierdo == null) {
-            izquierdo = "_";
-        }
-
-        // evaluar el operando derecho
-        String derecho = "_";
-        if (nodo.getDerecho() != null) {
-            derecho = nodo.getDerecho().accept(this);
-        }
-
-        // usar valor por defecto si el resultado es nulo
-        if (derecho == null) {
-            derecho = "_";
-        }
-
-        // agregar la operacion con temporal a la lista de cuartetas
-        String temp = temporales.nuevoTemporal();
-
-        // inferir el tipo resultado de la operacion
-        String tipoResMult = tipoResultadoAritmetico(izquierdo, derecho);
-
-        // registrar el temporal con el tipo inferido
-        tiposConocidos.put(temp, tipoResMult);
-        cuartetas.add(new Cuarteta(nodo.getOperador(), izquierdo, derecho, temp, tipoAritmetico(izquierdo), tipoAritmetico(derecho), tipoResMult));
-
-        return temp;
+        return manejadorExpresiones.visitarExprMultiplicacionDivision(nodo);
     }
 
     @Override
     public String visitarExprSumaResta(ExprSumaResta nodo) {
-        // evaluar el operando izquierdo
-        String izquierdo = "_";
-        if (nodo.getIzquierdo() != null) {
-            izquierdo = nodo.getIzquierdo().accept(this);
-        }
-
-        // usar valor por defecto si el resultado es nulo
-        if (izquierdo == null) {
-            izquierdo = "_";
-        }
-
-        // evaluar el operando derecho
-        String derecho = "_";
-        if (nodo.getDerecho() != null) {
-            derecho = nodo.getDerecho().accept(this);
-        }
-
-        // usar valor por defecto si el resultado es nulo
-        if (derecho == null) {
-            derecho = "_";
-        }
-
-        // agregar la operacion con temporal a la lista de cuartetas
-        String temp = temporales.nuevoTemporal();
-
-        // inferir los tipos de los operandos
-        String tipoIzqSuma = inferirTipoDe(izquierdo, tiposConocidos);
-        String tipoDerSuma = inferirTipoDe(derecho, tiposConocidos);
-
-        // inferir el tipo resultado de la operacion
-        String tipoResSuma = tipoResultadoAritmetico(izquierdo, derecho);
-
-        // usar cadena cuando se concatena texto con mas
-        if ("+".equals(nodo.getOperador())) {
-            boolean izqEsCadenaSuma = esTipoCadena(tipoIzqSuma);
-            boolean derEsCadenaSuma = esTipoCadena(tipoDerSuma);
-
-            if (izqEsCadenaSuma || derEsCadenaSuma) {
-                tipoResSuma = "cadena";
-            }
-        }
-
-        // registrar el temporal con el tipo inferido
-        tiposConocidos.put(temp, tipoResSuma);
-        cuartetas.add(new Cuarteta(nodo.getOperador(), izquierdo, derecho, temp, tipoAritmetico(izquierdo), tipoAritmetico(derecho), tipoResSuma));
-
-        return temp;
+        return manejadorExpresiones.visitarExprSumaResta(nodo);
     }
 
     @Override
     public String visitarExprRelacional(ExprRelacional nodo) {
-        // evaluar el operando izquierdo
-        String izquierdo = "_";
-        if (nodo.getIzquierdo() != null) {
-            izquierdo = nodo.getIzquierdo().accept(this);
-        }
-
-        // usar valor por defecto si el resultado es nulo
-        if (izquierdo == null) {
-            izquierdo = "_";
-        }
-
-        // evaluar el operando derecho
-        String derecho = "_";
-        if (nodo.getDerecho() != null) {
-            derecho = nodo.getDerecho().accept(this);
-        }
-
-        // usar valor por defecto si el resultado es nulo
-        if (derecho == null) {
-            derecho = "_";
-        }
-
-        // agregar la comparacion con temporal a la lista de cuartetas
-        String temp = temporales.nuevoTemporal();
-
-        // registrar el temporal como booleano
-        tiposConocidos.put(temp, "booleano");
-        cuartetas.add(new Cuarteta(nodo.getOperador(), izquierdo, derecho, temp, inferirTipoDe(izquierdo, tiposConocidos), inferirTipoDe(derecho, tiposConocidos), "booleano"));
-
-        return temp;
+        return manejadorExpresiones.visitarExprRelacional(nodo);
     }
 
     @Override
     public String visitarExprAnd(ExprAnd nodo) {
-        // evaluar el operando izquierdo
-        String izquierdo = "_";
-        if (nodo.getIzquierdo() != null) {
-            izquierdo = nodo.getIzquierdo().accept(this);
-        }
-
-        // usar valor por defecto si el resultado es nulo
-        if (izquierdo == null) {
-            izquierdo = "_";
-        }
-
-        // evaluar el operando derecho
-        String derecho = "_";
-        if (nodo.getDerecho() != null) {
-            derecho = nodo.getDerecho().accept(this);
-        }
-
-        // usar valor por defecto si el resultado es nulo
-        if (derecho == null) {
-            derecho = "_";
-        }
-
-        // agregar la conjuncion con temporal a la lista de cuartetas
-        String temp = temporales.nuevoTemporal();
-
-        // registrar el temporal como booleano
-        tiposConocidos.put(temp, "booleano");
-        cuartetas.add(new Cuarteta("&&", izquierdo, derecho, temp, inferirTipoDe(izquierdo, tiposConocidos), inferirTipoDe(derecho, tiposConocidos), "booleano"));
-
-        return temp;
+        return manejadorExpresiones.visitarExprAnd(nodo);
     }
 
     @Override
     public String visitarExprOr(ExprOr nodo) {
-        // evaluar el operando izquierdo
-        String izquierdo = "_";
-        if (nodo.getIzquierdo() != null) {
-            izquierdo = nodo.getIzquierdo().accept(this);
-        }
-
-        // usar valor por defecto si el resultado es nulo
-        if (izquierdo == null) {
-            izquierdo = "_";
-        }
-
-        // evaluar el operando derecho
-        String derecho = "_";
-        if (nodo.getDerecho() != null) {
-            derecho = nodo.getDerecho().accept(this);
-        }
-
-        // usar valor por defecto si el resultado es nulo
-        if (derecho == null) {
-            derecho = "_";
-        }
-
-        // agregar la disyuncion con temporal a la lista de cuartetas
-        String temp = temporales.nuevoTemporal();
-
-        // registrar el temporal como booleano
-        tiposConocidos.put(temp, "booleano");
-        cuartetas.add(new Cuarteta("||", izquierdo, derecho, temp, inferirTipoDe(izquierdo, tiposConocidos), inferirTipoDe(derecho, tiposConocidos), "booleano"));
-
-        return temp;
+        return manejadorExpresiones.visitarExprOr(nodo);
     }
 
     @Override
     public String visitarExprPrimitivo(ExprPrimitivo nodo) {
-        // verificar si el valor es primitivo
-        if (nodo.getValor() instanceof ValorPrimitivo) {
-
-            // convertir el valor al tipo concreto
-            ValorPrimitivo primitivo = (ValorPrimitivo) nodo.getValor();
-
-            // devolver el identificador directo sin crear temporal
-            if (primitivo.getTipo() == TipoPrimitivo.IDENTIFICADOR) {
-                return primitivo.getValor();
-            }
-
-            // guardar el literal en un temporal
-            String temp = temporales.nuevoTemporal();
-
-            // inferir el tipo del literal
-            String tipoLiteral = inferirTipoLiteral(primitivo.getValor());
-
-            // registrar el temporal con el tipo inferido
-            tiposConocidos.put(temp, tipoLiteral);
-            cuartetas.add(new Cuarteta("=", primitivo.getValor(), "_", temp, tipoLiteral, "_", tipoLiteral));
-
-            return temp;
-        }
-
-        return null;
+        return manejadorExpresiones.visitarExprPrimitivo(nodo);
     }
 }
