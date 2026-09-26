@@ -6,6 +6,7 @@ import org.jrg.controller.compilador.CompiladorController;
 import org.jrg.service.archivos.GestorArchivosService;
 import org.jrg.service.colores.ColoresService;
 import io.javalin.Javalin;
+import io.javalin.http.staticfiles.Location;
 import org.jrg.service.compiler.CompiladorPigLatinService;
 import org.jrg.service.compiler.CompiladorYLenguajeService;
 import org.jrg.service.compiler.CompiladorZetarianoService;
@@ -20,6 +21,8 @@ public class Main {
                     rule.anyHost();
                 });
             });
+            // servir el frontend compilado desde la raiz
+            config.staticFiles.add("/public", Location.CLASSPATH);
         }).start(7070);
 
 
@@ -62,6 +65,7 @@ public class Main {
 
 
         // registrar ruta raiz de verificacion
-        app.get("/", ctx -> ctx.result("backend activo :D"));
+        // app.get("/", ctx -> ctx.result("backend activo :D"));
+        // version nueva: la raiz sirve el index del frontend compilado :D
     }
 }
