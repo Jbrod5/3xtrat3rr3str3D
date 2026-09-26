@@ -30,7 +30,7 @@ function crearEstadoInicial() {
     panelInferiorAbierto: true,
     panelDerechoAbierto: false,
     pestanaInferiorActiva: 'resultados',
-    pestanaDerechaActiva: 'pila',
+    pestanaDerechaActiva: 'cuartetas',
     alturaPanelInferior: 200,
     anchoPanelDerecho: 320,
     anchoSidebar: 220
