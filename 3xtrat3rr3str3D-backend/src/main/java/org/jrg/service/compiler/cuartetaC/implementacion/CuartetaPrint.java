@@ -30,6 +30,15 @@ public class CuartetaPrint extends CuartetaC {
     @Override
     public String obtenerCodigoC(ContextoTraduccion ctx) {
         // ver que print toca segun el tipo
-        return ctx.traducirPrint(arg1, tipoArg1);
+        // return ctx.traducirPrint(arg1, tipoArg1);
+        // buscar el tipo declarado en C cuando la cuarteta trae desconocido
+        String tipoEfectivo = tipoArg1;
+        if (tipoEfectivo == null || tipoEfectivo.equals("_") || tipoEfectivo.isEmpty()) {
+            String declarado = ctx.tiposDeclarados.get(arg1);
+            if (declarado != null && declarado.isEmpty() == false) {
+                tipoEfectivo = declarado;
+            }
+        }
+        return ctx.traducirPrint(arg1, tipoEfectivo);
     }
 }
