@@ -29,7 +29,17 @@ public class CuartetaAlloc extends CuartetaC {
     @Override
     public String obtenerCodigoC(ContextoTraduccion ctx) {
         // mapear el tipo base del arreglo a C
-        String tipo = ctx.mapearTipo(arg1);
+        // String tipo = ctx.mapearTipo(arg1);
+        // usar clases para que los arreglos de objetos salgan punteros
+        String tipo = ctx.mapearTipoConClases(arg1);
+        // marcar el arreglo como duenio del struct base
+        if (arg1 != null && resultado != null && ctx.structs.containsKey(arg1)) {
+            ctx.structDeNombre.put(resultado, arg1);
+        }
+        // marcar puntero cuando el base es una clase en heap
+        if (arg1 != null && resultado != null && ctx.clases.contains(arg1)) {
+            ctx.punteros.add(resultado);
+        }
         // construir la reserva con malloc y dimension protegida
         return ctx.prefijoDeclaracion(resultado, tipo + "*") + " = malloc(sizeof(" + tipo + ") * " + ctx.expresionDimension(arg2) + ");";
     }

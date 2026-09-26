@@ -386,7 +386,9 @@ public class ContextoTraduccion {
             }
         }
         // usar el tipo del valor por defecto
-        return mapearTipo(tipoArg1);
+        // return mapearTipo(tipoArg1);
+        // usar clases para no caer a int con nombres de clase
+        return mapearTipoConClases(tipoArg1);
     }
 
     /**
@@ -408,7 +410,9 @@ public class ContextoTraduccion {
             }
         }
         // usar el tipo del valor por defecto
-        return mapearTipo(tipoArg1);
+        // return mapearTipo(tipoArg1);
+        // usar clases para no caer a int con nombres de clase
+        return mapearTipoConClases(tipoArg1);
     }
 
     /**
@@ -697,19 +701,27 @@ public class ContextoTraduccion {
      * Preparar un operando para concatenacion convirtiendo numericos a string.
      */
     public String prepararOperandoParaConcat(String valor, String tipo, StringBuilder lineas) {
+        // preferir el tipo declarado en C, que manda sobre lo inferido
+        String tipoEfectivo = tipo;
+        if (valor != null) {
+            String declarado = tiposDeclarados.get(valor);
+            if (declarado != null && declarado.isEmpty() == false) {
+                tipoEfectivo = declarado;
+            }
+        }
         // dejar cadenas y desconocidos igual
-        if (tipo == null || esTipoTexto(tipo) || "_".equals(tipo)) {
+        if (tipoEfectivo == null || esTipoTexto(tipoEfectivo) || "_".equals(tipoEfectivo)) {
             return valor;
         }
         // elegir el % de sprintf segun el tipo
         String formato = "";
-        if ("entero".equals(tipo) || "numerus".equals(tipo) || "int".equals(tipo)) {
+        if ("entero".equals(tipoEfectivo) || "numerus".equals(tipoEfectivo) || "int".equals(tipoEfectivo)) {
             formato = "%d";
-        } else if ("flotante".equals(tipo) || "decimalis".equals(tipo) || "double".equals(tipo)) {
+        } else if ("flotante".equals(tipoEfectivo) || "decimalis".equals(tipoEfectivo) || "double".equals(tipoEfectivo)) {
             formato = "%f";
-        } else if ("caracter".equals(tipo) || "littera".equals(tipo) || "char".equals(tipo)) {
+        } else if ("caracter".equals(tipoEfectivo) || "littera".equals(tipoEfectivo) || "char".equals(tipoEfectivo)) {
             formato = "%c";
-        } else if ("booleano".equals(tipo) || "bool".equals(tipo) || "boolean".equals(tipo)) {
+        } else if ("booleano".equals(tipoEfectivo) || "bool".equals(tipoEfectivo) || "boolean".equals(tipoEfectivo)) {
             formato = "%d";
         }
         // dejar el valor igual si no hay que convertir

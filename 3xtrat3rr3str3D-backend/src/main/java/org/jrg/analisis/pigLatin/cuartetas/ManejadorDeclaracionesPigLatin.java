@@ -62,7 +62,10 @@ public class ManejadorDeclaracionesPigLatin {
         ctx.getTiposConocidos().put(temp, nodo.getTipo());
         ctx.getCuartetas().add(new Cuarteta("new", nodo.getTipo(), String.valueOf(args.size()), temp, nodo.getTipo(), "_", nodo.getTipo()));
         // asignar a variable
-        ctx.getCuartetas().add(new Cuarteta(":=", temp, "_", nodo.getIdentificador(), ctx.inferirTipoDe(temp, ctx.getTiposConocidos()), "_", "_"));
+        // ctx.getCuartetas().add(new Cuarteta(":=", temp, "_", nodo.getIdentificador(), ctx.inferirTipoDe(temp, ctx.getTiposConocidos()), "_", "_"));
+        // registrar la variable con el tipo del objeto
+        ctx.getTiposConocidos().put(nodo.getIdentificador(), nodo.getTipo());
+        ctx.getCuartetas().add(new Cuarteta(":=", temp, "_", nodo.getIdentificador(), ctx.inferirTipoDe(temp, ctx.getTiposConocidos()), "_", nodo.getTipo()));
         return null;
     }
 
@@ -96,7 +99,10 @@ public class ManejadorDeclaracionesPigLatin {
             }
         }
         // asignar la estructura a la variable
-        ctx.getCuartetas().add(new Cuarteta(":=", temp, "_", nodo.getIdentificador(), ctx.inferirTipoDe(temp, ctx.getTiposConocidos()), "_", "_"));
+        // ctx.getCuartetas().add(new Cuarteta(":=", temp, "_", nodo.getIdentificador(), ctx.inferirTipoDe(temp, ctx.getTiposConocidos()), "_", "_"));
+        // registrar la variable con el tipo de la estructura
+        ctx.getTiposConocidos().put(nodo.getIdentificador(), nodo.getTipo());
+        ctx.getCuartetas().add(new Cuarteta(":=", temp, "_", nodo.getIdentificador(), ctx.inferirTipoDe(temp, ctx.getTiposConocidos()), "_", nodo.getTipo()));
         return null;
     }
 
@@ -110,7 +116,20 @@ public class ManejadorDeclaracionesPigLatin {
             if (val != null) {
                 textoVal = val;
             }
-            ctx.getCuartetas().add(new Cuarteta(":=", textoVal, "_", nodo.getIdentificador(), ctx.inferirTipoDe(val, ctx.getTiposConocidos()), "_", "_"));
+            // extraer el nombre del tipo declarado para el resultado
+            String tipoDeclarado = null;
+            if (nodo.getTipo() instanceof TipoDato) {
+                tipoDeclarado = ((TipoDato) nodo.getTipo()).getTipo();
+            }
+            // usar el tipo inferido si no hay declarado
+            String tipoResDecl = "_";
+            if (tipoDeclarado != null && tipoDeclarado.isEmpty() == false) {
+                tipoResDecl = tipoDeclarado;
+                // registrar la variable con su tipo declarado
+                ctx.getTiposConocidos().put(nodo.getIdentificador(), tipoDeclarado);
+            }
+            // ctx.getCuartetas().add(new Cuarteta(":=", textoVal, "_", nodo.getIdentificador(), ctx.inferirTipoDe(val, ctx.getTiposConocidos()), "_", "_"));
+            ctx.getCuartetas().add(new Cuarteta(":=", textoVal, "_", nodo.getIdentificador(), ctx.inferirTipoDe(val, ctx.getTiposConocidos()), "_", tipoResDecl));
         }
         return null;
     }

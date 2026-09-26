@@ -72,7 +72,13 @@ public class CuartetaAsignacionSimple extends CuartetaC {
         }
         // declarar la variable si aun no existe
         if (destino != null && ctx.declaradas.contains(destino) == false) {
-            String tipo = ctx.tipoDestinoPara(destino, arg1, tipoArg1);
+            // usar el tipo declarado cuando la cuarteta lo trae
+            // String tipo = ctx.tipoDestinoPara(destino, arg1, tipoArg1);
+            String tipoValorDestino = tipoArg1;
+            if (tipoResultado != null && tipoResultado.equals("_") == false && tipoResultado.isEmpty() == false) {
+                tipoValorDestino = tipoResultado;
+            }
+            String tipo = ctx.tipoDestinoPara(destino, arg1, tipoValorDestino);
             linea = tipo + " " + destino + ";\n    ";
             ctx.declaradas.add(destino);
             ctx.tiposDeclarados.put(destino, tipo);

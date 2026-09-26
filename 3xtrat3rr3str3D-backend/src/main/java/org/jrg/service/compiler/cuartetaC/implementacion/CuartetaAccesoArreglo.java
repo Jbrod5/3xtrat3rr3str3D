@@ -30,7 +30,20 @@ public class CuartetaAccesoArreglo extends CuartetaC {
     @Override
     public String obtenerCodigoC(ContextoTraduccion ctx) {
         // mapear el tipo del resultado a C
+        // String tipo = ctx.mapearTipo(tipoResultado);
+        // heredar el struct del arreglo para elementos objeto
+        String baseElemento = ctx.structDeNombre.get(arg1);
+        if (baseElemento != null) {
+            ctx.structDeNombre.put(resultado, baseElemento);
+        }
+        // marcar puntero cuando el elemento es objeto en heap
+        if (baseElemento != null && ctx.clases.contains(baseElemento)) {
+            ctx.punteros.add(resultado);
+        }
         String tipo = ctx.mapearTipo(tipoResultado);
+        if (baseElemento != null) {
+            tipo = ctx.mapearTipoConClases(baseElemento);
+        }
         // construir la lectura del arreglo con indice traducido
         return ctx.ladoIzquierdo(resultado, tipo) + " = " + ctx.accesoCampo(arg1) + "[" + ctx.crearValor(arg2).obtenerCodigoC(ctx) + "];";
     }

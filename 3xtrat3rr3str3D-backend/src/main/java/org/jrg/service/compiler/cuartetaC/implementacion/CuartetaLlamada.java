@@ -37,6 +37,15 @@ public class CuartetaLlamada extends CuartetaC {
             if (ctx.paramsPendientes.isEmpty() == false && ctx.tiposParamsPendientes.isEmpty() == false) {
                 receptorTipo = ctx.tiposParamsPendientes.get(0);
             }
+            // usar la clase del objeto cuando el param trae desconocido
+            if (receptorTipo == null || ctx.clases.contains(receptorTipo) == false) {
+                if (ctx.paramsPendientes.isEmpty() == false) {
+                    String claseObjeto = ctx.claseDeObjeto(ctx.paramsPendientes.get(0));
+                    if (claseObjeto != null) {
+                        receptorTipo = claseObjeto;
+                    }
+                }
+            }
             // calificar el metodo con la clase del receptor
             String nombreLlamada = metodo;
             if (receptorTipo != null && ctx.clases.contains(receptorTipo) && metodo != null && metodo.indexOf('_') < 0) {

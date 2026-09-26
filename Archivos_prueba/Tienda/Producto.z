@@ -1,0 +1,42 @@
+public class Producto {
+    String nombre;
+    double precio;
+    int cantidad;
+
+    public Producto(String nombre1, double precio1, int cantidad1) {
+        nombre = nombre1;
+        precio = precio1;
+        cantidad = cantidad1;
+    }
+
+    public Producto() {
+        nombre = "Sin nombre";
+        precio = 0.0;
+        cantidad = 0;
+    }
+
+    public double valorTotal() {
+        return precio * cantidad;
+    }
+
+    public boolean vender(int n) {
+        if (n <= 0) {
+            return false;
+        }
+        if (n > cantidad) {
+            return false;
+        }
+        cantidad = cantidad - n;
+        return true;
+    }
+
+    public void reponer(int n) {
+        if (n > 0) {
+            cantidad = cantidad + n;
+        }
+    }
+
+    public String toString() {
+        return nombre;
+    }
+}

@@ -497,7 +497,13 @@ public class TraductorC {
             }
             // registrar la global con su tipo si es nueva
             if (ctx.globales.containsKey(destino) == false) {
-                ctx.globales.put(destino, ctx.tipoGlobalPara(c.getArg1(), c.getTipoArg1()));
+                // usar el tipo declarado de la global cuando viene en la cuarteta
+                // ctx.globales.put(destino, ctx.tipoGlobalPara(c.getArg1(), c.getTipoArg1()));
+                String tipoValorGlobal = c.getTipoArg1();
+                if (c.getTipoResultado() != null && c.getTipoResultado().equals("_") == false && c.getTipoResultado().isEmpty() == false) {
+                    tipoValorGlobal = c.getTipoResultado();
+                }
+                ctx.globales.put(destino, ctx.tipoGlobalPara(c.getArg1(), tipoValorGlobal));
                 ctx.declaradas.add(destino);
             }
         }
