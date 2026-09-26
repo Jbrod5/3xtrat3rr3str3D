@@ -11,7 +11,7 @@ public class CuartetaLlamada extends CuartetaC {
      */
     public CuartetaLlamada(String operador, String arg1, String arg2, String resultado,
                             String tipoArg1, String tipoArg2, String tipoResultado) {
-        // delegar al constructor de la clase base
+        // va al base
         super(operador, arg1, arg2, resultado, tipoArg1, tipoArg2, tipoResultado);
     }
 
@@ -20,7 +20,7 @@ public class CuartetaLlamada extends CuartetaC {
      */
     public CuartetaLlamada(String arg1, String arg2, String resultado,
                             String tipoArg1, String tipoArg2, String tipoResultado) {
-        // delegar al constructor de la clase base con operador call
+        // cae al base con operador fijo
         super("call", arg1, arg2, resultado, tipoArg1, tipoArg2, tipoResultado);
     }
 
@@ -42,7 +42,7 @@ public class CuartetaLlamada extends CuartetaC {
             if (receptorTipo != null && ctx.clases.contains(receptorTipo) && metodo != null && metodo.indexOf('_') < 0) {
                 nombreLlamada = receptorTipo + "_" + metodo;
             }
-            // agregar sufijo con el conteo sin el receptor para sobrecargas
+            // poner _N sin contar el receptor si hay sobrecarga
             int numeroReales = ctx.paramsPendientes.size() - 1;
             if (numeroReales < 0) {
                 numeroReales = 0;
@@ -80,7 +80,7 @@ public class CuartetaLlamada extends CuartetaC {
             ctx.limpiarParams();
             return variante + "(" + args + ");";
         }
-        // contar los argumentos para el mangling antes de limpiar
+        // contar args para el nombre con numero antes de limpiar
         int numeroArgs = ctx.paramsPendientes.size();
         ctx.limpiarParams();
         // calificar llamadas a metodos de la clase actual sin receptor

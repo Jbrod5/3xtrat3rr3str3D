@@ -21,39 +21,22 @@ class ContextoSemanticoPigLatin {
 
 
 
-    // recolector donde se acumulan los errores semanticos
     private final RecolectorErrores recolectorErrores;
-    
-    // ambito raiz del programa
     private Ambito ambitoGlobal;
-    
-    // pila de ambitos activos,  el actual es siempre el ultimo que entro :D
-    private final Stack<Ambito> ambitos;
-    
-    // tipos auxiliares que no viven en un ambito (por ejemplo los arreglos)
-    private final List<Tipo> tiposExtra;
-    
-    // tipos primitivos del lenguaje: numerus, decimalis, textum, littera, bool etc etc
+    private final Stack<Ambito> ambitos; // pila activa, el actual es el ultimo que entro
+    private final List<Tipo> tiposExtra; // auxiliares que no viven en un ambito, por ejemplo arreglos
     private final Map<String, Tipo> tiposPrimitivos;
-    
-    // tipos no primitivos (clases, structs, importados) indexados por nombre
     private final Map<String, Tipo> tiposNoPrimitivos;
-    
-    // tipos donde el esquema de campos se conoce para validar miembros
-    private final Set<String> tiposConEsquema;
-    
-    // contador para nombrar ambitos hijos
+    private final Set<String> tiposConEsquema; // esquema de campos conocido para validar miembros
     private int contadorAmbitos;
-    
-    // profundidad actual de ciclos anidados
-    private int profundidadCiclos;
+    private int profundidadCiclos; // profundidad actual de ciclos anidados
 
 
 
 
 
 
-    // crear el contexto con un recolector de errores :D
+    // crear el contexto con su recolector
     ContextoSemanticoPigLatin(RecolectorErrores recolectorErrores) {
 
         // si no viene recolector se crea uno nuevo
@@ -95,7 +78,7 @@ class ContextoSemanticoPigLatin {
         this.ambitos.push(this.ambitoGlobal);
     }
 
-    // registrar los cinco tipos primitivos del lenguaje :D
+    // meter los cinco primitivos
     void registrarTiposPrimitivos() {
         agregarTipoPrimitivo("numerus", true);
         agregarTipoPrimitivo("decimalis", true);
@@ -413,7 +396,7 @@ class ContextoSemanticoPigLatin {
         return simbolo;
     }
 
-    // resolver si existe por claridad semantica :D
+    // resolver si existe, es lo mismo
     Simbolo resolverLocalOGlobal(String nombre, NodoAST nodo) {
         return resolver(nombre, nodo);
     }
@@ -488,7 +471,7 @@ class ContextoSemanticoPigLatin {
             return true;
         }
 
-        // en el resto delegar a esCompatible
+        // si no, ver esCompatible
         return esCompatible(esperado, real);
     }
 
@@ -511,7 +494,7 @@ class ContextoSemanticoPigLatin {
     }
 
     // calcular el tipo de mayor jerarquia entre dos tipos
-    // si hay decimalis gana decimalis, si no gana numerus :D
+    // si hay decimalis gana, si no numerus
     Tipo tipoMayorJerarquia(Tipo izquierdo, Tipo derecho) {
         if (izquierdo == null) {
             return derecho;
@@ -585,7 +568,7 @@ class ContextoSemanticoPigLatin {
         Simbolo campo = new Simbolo(nombre, CategoriaSimbolo.CAMPO_ESTRUCTURA, tipoCampo, null, nodo == null ? 0 : nodo.getLinea(), nodo == null ? 0 : nodo.getColumna());
         tipo.agregarCampo(campo);
 
-        // ya conocemos el esquema del tipo :D
+        // ya se conoce el esquema
         marcarEsquemaConocido(tipo);
 
         return campo;

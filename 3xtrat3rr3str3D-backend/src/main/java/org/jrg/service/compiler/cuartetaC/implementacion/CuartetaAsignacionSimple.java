@@ -11,7 +11,7 @@ public class CuartetaAsignacionSimple extends CuartetaC {
      */
     public CuartetaAsignacionSimple(String operador, String arg1, String arg2, String resultado,
                                      String tipoArg1, String tipoArg2, String tipoResultado) {
-        // delegar al constructor de la clase base
+        // va al base
         super(operador, arg1, arg2, resultado, tipoArg1, tipoArg2, tipoResultado);
     }
 
@@ -20,7 +20,7 @@ public class CuartetaAsignacionSimple extends CuartetaC {
      */
     public CuartetaAsignacionSimple(String arg1, String arg2, String resultado,
                                      String tipoArg1, String tipoArg2, String tipoResultado) {
-        // delegar al constructor de la clase base con operador dos puntos igual
+        // cae al base con operador fijo
         super(":=", arg1, arg2, resultado, tipoArg1, tipoArg2, tipoResultado);
     }
 
@@ -55,12 +55,12 @@ public class CuartetaAsignacionSimple extends CuartetaC {
             }
             return declObj + ctx.crearValor(objetoDest).obtenerCodigoC(ctx) + accesoDest + campoDest + " = " + ctx.crearValor(arg1).obtenerCodigoC(ctx) + ";";
         }
-        // propagar el struct del valor al destino
+        // pasar el struct del valor al destino
         if (arg1 != null && destino != null) {
             String structOrigen = ctx.structDeNombre.get(arg1);
             if (structOrigen != null) {
                 ctx.structDeNombre.put(destino, structOrigen);
-                // propagar la marca de puntero a heap
+                // pasar la marca de puntero si viene de heap
                 if (ctx.punteros.contains(arg1)) {
                     ctx.punteros.add(destino);
                 }

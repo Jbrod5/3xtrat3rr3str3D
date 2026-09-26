@@ -17,61 +17,39 @@ import org.jrg.service.compiler.cuartetaC.valor.ValorVariable;
 // estado compartido para la traduccion de cuartetas a codigo C
 public class ContextoTraduccion {
 
-    // valores de params pendientes del siguiente call
     public List<String> paramsPendientes;
-    // tipos de params pendientes del siguiente call
     public List<String> tiposParamsPendientes;
-    // builtins usados en orden de aparicion
     public List<String> builtinsUsados;
-    // prototipos de funciones en orden de aparicion
     public List<String> prototipos;
-    // variables globales con su tipo en C
     public Map<String, String> globales;
-    // nombres ya declarados en la funcion actual
     public Set<String> declaradas;
-    // nombre de la funcion actual
     public String funcionActual;
-    // indicar si ya se agrego la primera funcion
     public boolean primeraFuncionAgregada;
-    // indicar si ya aparecio el primer func_begin
     public boolean dentroDeFuncion;
-    // lineas del cuerpo de la funcion en proceso
     public StringBuilder bufferFuncion;
-    // cuartetas crudas del cuerpo de la funcion en proceso
     public List<CuartetaResultado> crudasFuncion;
-    // nombres llamados en la funcion en proceso
     public Set<String> llamadasFuncion;
     // tipos de params del func_begin en proceso
     public String tiposParamsFuncion;
-    // tipo de retorno del func_begin en proceso
     public String tipoRetornoFuncion;
-    // retornos conocidos por nombre de funcion
     public Map<String, String> retornosFuncion;
     // cuartetas previas a funciones para agregar al cuerpo en la siguiente
     public List<CuartetaResultado> preMain;
-    // tipos de params de la funcion actual por nombre
     public Map<String, String> tiposParamsActuales;
-    // tipos de nombres declarados por nombre
     public Map<String, String> tiposDeclarados;
-    // contador global de temporales de string para concat
     public int contadorTempsString;
-    // campos por nombre de struct con tipo fuente
     public Map<String, Map<String, String>> structs;
-    // orden de campos por nombre de struct
     public Map<String, List<String>> ordenCampos;
-    // nombres de structs en orden de aparicion
     public List<String> ordenStructs;
     // struct al que pertenece cada temporal o variable
     public Map<String, String> structDeNombre;
     // nombres de clases de Zetariano detectadas por prefijo Clase_
     public final Set<String> clases;
-    // nombres de funciones conocidas por func_begin
     public final Set<String> funcionesConocidas;
     // temporales y variables que guardan punteros a heap
     public final Set<String> punteros;
     // temporales que guardan nulo para retornos enteros
     public final Set<String> nulosConocidos;
-    // clase del metodo en proceso o vacio fuera de metodos
     public String nombreClaseActual;
 
     /**
@@ -176,7 +154,7 @@ public class ContextoTraduccion {
     }
 
     /**
-     * Detectar las clases de Zetariano por prefijo en funciones.
+     * Buscar clases de Zetariano por nombre de funcion.
      */
     public void detectarClases(List<CuartetaResultado> cuartetas) {
         // reiniciar los conjuntos de deteccion
@@ -209,9 +187,9 @@ public class ContextoTraduccion {
                 if (nombreFunc != null && nombreFunc.isEmpty() == false) {
                     funcionesConocidas.add(nombreFunc);
                 }
-                // extraer el posible prefijo de clase
+                // sacar el posible inicio de clase
                 String posibleClase = prefijoFuncion(nombreFunc);
-                // marcar la clase solo si tiene struct_def propio
+                // marcar la clase solo si tiene su struct_def
                 if (posibleClase != null && nombresStruct.contains(posibleClase)) {
                     clases.add(posibleClase);
                 }
@@ -220,7 +198,7 @@ public class ContextoTraduccion {
     }
 
     /**
-     * Extraer el prefijo crudo antes del primer guion bajo.
+     * Sacar lo de antes del primer guion bajo.
      */
     public String prefijoFuncion(String nombreFuncion) {
         // omitir nombres nulos o vacios
@@ -244,7 +222,7 @@ public class ContextoTraduccion {
         if (prefijo == null) {
             return null;
         }
-        // aceptar solo prefijos marcados como clase
+        // aceptar solo inicios marcados como clase
         if (clases.contains(prefijo) == false) {
             return null;
         }
@@ -255,7 +233,7 @@ public class ContextoTraduccion {
      * Mapear un tipo a C resolviendo clases como punteros a heap.
      */
     public String mapearTipoConClases(String tipo) {
-        // usar puntero a struct para clases detectadas
+        // usar struct con * para clases ya vistas
         if (tipo != null && clases.contains(tipo)) {
             return "struct " + tipo + "*";
         }
@@ -270,28 +248,28 @@ public class ContextoTraduccion {
         if (tipo == null || tipo.equals("_") || tipo.isEmpty()) {
             return "int";
         }
-        // conservar arreglos agregando corchetes al tipo base
+        // dejar arreglos con corchetes en el tipo base
         if (tipo.endsWith("[]")) {
             String base = tipo.substring(0, tipo.length() - 2);
             return mapearTipo(base) + "[]";
         }
-        // mapear enteros
+        // pasar enteros
         if (tipo.equals("entero") || tipo.equals("numerus") || tipo.equals("int")) {
             return "int";
         }
-        // mapear flotantes
+        // pasar flotantes
         if (tipo.equals("flotante") || tipo.equals("decimalis") || tipo.equals("double")) {
             return "double";
         }
-        // mapear cadenas
+        // pasar cadenas
         if (tipo.equals("cadena") || tipo.equals("textum") || tipo.equals("String")) {
             return "char*";
         }
-        // mapear caracteres
+        // pasar caracteres
         if (tipo.equals("caracter") || tipo.equals("littera") || tipo.equals("char")) {
             return "char";
         }
-        // mapear booleanos
+        // pasar booleanos
         if (tipo.equals("booleano") || tipo.equals("bool") || tipo.equals("boolean")) {
             return "bool";
         }
@@ -303,7 +281,7 @@ public class ContextoTraduccion {
         if (clases.contains(tipo)) {
             return "struct " + tipo + "*";
         }
-        // usar int como respaldo para tipos desconocidos
+        // usar int si el tipo no se conoce
         return "int";
     }
 
@@ -677,23 +655,23 @@ public class ContextoTraduccion {
      * Crear el valor concreto segun la forma del texto.
      */
     public ValorC crearValor(String texto) {
-        // conservar nulos y vacios como literales sin cambios
+        // dejar nulos y vacios como literales
         if (texto == null || texto.isEmpty()) {
             return new ValorLiteral(texto);
         }
-        // crear nulo para desconocidos y nulos
+        // poner nulo si no se conoce
         if ("_".equals(texto) || "null".equals(texto) || "NULL".equals(texto)) {
             return new ValorNulo(texto);
         }
-        // crear booleano para constantes de los tres lenguajes
+        // poner booleano para verum, true y demas
         if ("verum".equals(texto) || "verdadero".equals(texto) || "true".equals(texto) || "falsus".equals(texto) || "falso".equals(texto) || "false".equals(texto)) {
             return new ValorBooleano(texto);
         }
-        // crear literal para cadenas y caracteres entre comillas
+        // poner literal si empieza con comilla
         if (texto.startsWith("\"") || texto.startsWith("'")) {
             return new ValorLiteral(texto);
         }
-        // crear variable para nombres temporales y numeros
+        // poner variable para lo demas
         return new ValorVariable(texto);
     }
 
@@ -702,7 +680,7 @@ public class ContextoTraduccion {
      */
     public String traducirPrint(String valor, String tipoArg) {
         String texto = crearValor(valor).obtenerCodigoC(this);
-        // elegir el formato segun el tipo
+        // elegir %d %f %c o %s segun el tipo
         if ("cadena".equals(tipoArg) || "textum".equals(tipoArg) || "String".equals(tipoArg) || "char*".equals(tipoArg)) {
             return "printf(\"%s\\n\", " + texto + ");";
         }
@@ -719,11 +697,11 @@ public class ContextoTraduccion {
      * Preparar un operando para concatenacion convirtiendo numericos a string.
      */
     public String prepararOperandoParaConcat(String valor, String tipo, StringBuilder lineas) {
-        // conservar cadenas y desconocidos sin conversion
+        // dejar cadenas y desconocidos igual
         if (tipo == null || esTipoTexto(tipo) || "_".equals(tipo)) {
             return valor;
         }
-        // determinar el formato de sprintf segun el tipo
+        // elegir el % de sprintf segun el tipo
         String formato = "";
         if ("entero".equals(tipo) || "numerus".equals(tipo) || "int".equals(tipo)) {
             formato = "%d";
@@ -734,14 +712,14 @@ public class ContextoTraduccion {
         } else if ("booleano".equals(tipo) || "bool".equals(tipo) || "boolean".equals(tipo)) {
             formato = "%d";
         }
-        // devolver el valor original si no necesita conversion
+        // dejar el valor igual si no hay que convertir
         if (formato.isEmpty()) {
             return crearValor(valor).obtenerCodigoC(this);
         }
-        // generar un nombre unico para el temporal de string
+        // armar un nombre nuevo para el temporal de string
         String tempStr = "__str_" + this.contadorTempsString;
         this.contadorTempsString = this.contadorTempsString + 1;
-        // agregar la reserva y la conversion con indentacion propia al cuerpo
+        // meter el malloc y el sprintf al cuerpo
         lineas.append("char* ").append(tempStr).append(" = malloc(32);\n    ");
         lineas.append("sprintf(").append(tempStr).append(", \"").append(formato).append("\", ").append(crearValor(valor).obtenerCodigoC(this)).append(");\n    ");
         // devolver el nombre del temporal de string
@@ -752,7 +730,7 @@ public class ContextoTraduccion {
      * Unir los params pendientes separados por coma.
      */
     public String unirParams() {
-        // acumular los argumentos traducidos
+        // unir los args ya traducidos con coma
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < paramsPendientes.size(); i++) {
             if (i > 0) {
@@ -781,9 +759,9 @@ public class ContextoTraduccion {
         if (paramsPendientes.isEmpty()) {
             sufijo = "";
         } else {
-            // inferir el tipo del primer argumento pendiente
+            // adivinar el tipo del primer arg pendiente
             String tipo = inferirTipoParametro(paramsPendientes.get(0));
-            // mapear el tipo C al sufijo correspondiente
+            // sacar el final int str float char o bool segun el tipo
             if ("char*".equals(tipo)) {
                 sufijo = "str";
             } else if ("double".equals(tipo)) {
@@ -796,12 +774,12 @@ public class ContextoTraduccion {
                 sufijo = "int";
             }
         }
-        // construir el nombre de la variante
+        // armar el nombre con su final
         String variante = nombre;
         if (sufijo.isEmpty() == false) {
             variante = nombre + "_" + sufijo;
         }
-        // registrar la variante para definirla en la cabecera
+        // guardar la variante para el encabezado
         if (builtinsUsados.contains(variante) == false) {
             builtinsUsados.add(variante);
         }
@@ -809,19 +787,19 @@ public class ContextoTraduccion {
     }
 
     /**
-     * Inferir el tipo C de un argumento de builtin.
+     * Adivinar el tipo C de un arg de builtin.
      */
     public String inferirTipoParametro(String nombre) {
         // usar entero si el nombre es nulo o vacio de tipo
         if (nombre == null || nombre.isEmpty() || nombre.equals("_")) {
             return "int";
         }
-        // buscar en los tipos declarados incluyendo temporales
+        // buscar en lo ya declarado con temporales
         String declarado = tiposDeclarados.get(nombre);
         if (declarado != null) {
             return declarado;
         }
-        // buscar en los params de la funcion actual
+        // buscar en los params actuales
         String deParam = tiposParamsActuales.get(nombre);
         if (deParam != null) {
             return deParam;
@@ -833,12 +811,12 @@ public class ContextoTraduccion {
                 return tipoCampo;
             }
         }
-        // inferir por la forma del literal con entero por defecto
+        // adivinar por la forma, int si no se sabe
         return mapearTipo(inferirTipoLiteralParametro(nombre));
     }
 
     /**
-     * Inferir el tipo fuente de un valor por su forma.
+     * Adivinar el tipo por como se ve el valor.
      */
     public String inferirTipoLiteralParametro(String valor) {
         // rechazar nulos y vacios
@@ -881,9 +859,9 @@ public class ContextoTraduccion {
         if ("println".equals(variante)) {
             return "void println(void) { printf(\"\\n\"); }\n";
         }
-        // extraer el nombre base y el sufijo
+        // partir el nombre en base y final
         int guion = variante.lastIndexOf('_');
-        // usar definicion generica si no hay sufijo
+        // dejar vacio si no hay final
         if (guion < 0) {
             return "";
         }
@@ -891,7 +869,7 @@ public class ContextoTraduccion {
         String sufijo = variante.substring(guion + 1);
         String tipo = "int";
         String formato = "%d";
-        // mapear el sufijo al tipo y formato
+        // pasar el final a tipo y %
         if ("str".equals(sufijo)) {
             tipo = "char*";
             formato = "%s";
@@ -912,15 +890,15 @@ public class ContextoTraduccion {
      * Construir la expresion de dimension para alloc.
      */
     public String expresionDimension(String dimension) {
-        // usar uno cuando la dimension es desconocida
+        // poner 1 si no se sabe la dimension
         if (dimension == null || dimension.equals("_") || dimension.isEmpty()) {
             return "1";
         }
-        // usar la dimension directa cuando es numerica
+        // usar el numero directo si es numero
         if (esNumerico(dimension)) {
             return dimension;
         }
-        // proteger dimensiones variables con comparacion positiva
+        // cuidar el tamano con (n > 0 ? n : 1)
         return "(" + dimension + " > 0 ? " + dimension + " : 1)";
     }
 
@@ -944,7 +922,7 @@ public class ContextoTraduccion {
         if (tiposParams == null || tiposParams.isEmpty()) {
             return;
         }
-        // dividir los params por coma
+        // partir los params por coma
         String[] partes = tiposParams.split(",");
         for (int i = 0; i < partes.length; i++) {
             String parte = partes[i].trim();
@@ -994,7 +972,7 @@ public class ContextoTraduccion {
      * Construir la firma desde listas de nombres y tipos.
      */
     public String firmaConListas(String nombre, String tipoRetorno, List<String> nombres, List<String> tipos) {
-        // acumular cada parametro con su nombre
+        // unir cada param con su nombre
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < nombres.size(); i++) {
             if (i > 0) {
@@ -1002,7 +980,7 @@ public class ContextoTraduccion {
             }
             sb.append(tipos.get(i)).append(" ").append(nombres.get(i));
         }
-        // forzar int en main aunque el marcador diga void
+        // dejar int en main aunque diga void
         if ("main".equals(nombre)) {
             // usar void cuando no hay parametros
             if (sb.length() == 0) {
@@ -1020,7 +998,7 @@ public class ContextoTraduccion {
     }
 
     /**
-     * Recolectar identificadores candidatos de una cuarteta del cuerpo.
+     * Juntar los nombres que parecen params de una cuarteta.
      */
     public void recolectarIdentificadores(CuartetaResultado c, List<String> identificadores) {
         // omitir cuartetas nulas
@@ -1028,7 +1006,7 @@ public class ContextoTraduccion {
             return;
         }
         String operador = c.getOperador();
-        // revisar valores segun el operador
+        // ver valores segun el operador
         if ("param".equals(operador)) {
             agregarCandidato(c.getArg1(), identificadores);
             return;
@@ -1096,7 +1074,7 @@ public class ContextoTraduccion {
             agregarCandidato(c.getArg2(), identificadores);
             return;
         }
-        // omitir calls news labels gotos halts y reads por destino
+        // saltar calls, news, labels, gotos, halts y reads
     }
 
     /**
@@ -1147,7 +1125,7 @@ public class ContextoTraduccion {
         if (globales.containsKey(nombre)) {
             return;
         }
-        // agregar sin duplicados en orden de aparicion
+        // meter sin repetir en orden
         if (identificadores.contains(nombre) == false) {
             identificadores.add(nombre);
         }

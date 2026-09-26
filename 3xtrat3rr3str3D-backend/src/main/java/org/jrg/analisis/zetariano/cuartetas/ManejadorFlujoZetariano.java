@@ -26,7 +26,6 @@ public class ManejadorFlujoZetariano {
 
     // crear la manejadora con contexto y generador
     public ManejadorFlujoZetariano(ContextoCuartetasZetariano ctx, GeneradorCuartetasZetariano generador) {
-        // asignar las dependencias recibidas
         this.ctx = ctx;
         this.generador = generador;
     }
@@ -68,7 +67,6 @@ public class ManejadorFlujoZetariano {
             condicion = nodo.getCondicion().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
         if (condicion == null) {
             condicion = "_";
         }
@@ -104,7 +102,6 @@ public class ManejadorFlujoZetariano {
                     condicionSino = nodo.getCondicionesSinoSi().get(i).accept(generador);
                 }
 
-                // usar valor por defecto si el resultado es nulo
                 if (condicionSino == null) {
                     condicionSino = "_";
                 }
@@ -151,7 +148,7 @@ public class ManejadorFlujoZetariano {
             selector = nodo.getExpresion().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
+        // si es nulo usar lo de respaldo
         if (selector == null) {
             selector = "_";
         }
@@ -184,7 +181,6 @@ public class ManejadorFlujoZetariano {
                         valorCaso = casoSwitch.getValor().accept(generador);
                     }
 
-                    // usar valor por defecto si el resultado es nulo
                     if (valorCaso == null) {
                         valorCaso = "_";
                     }
@@ -192,7 +188,7 @@ public class ManejadorFlujoZetariano {
                     // guardar el valor del caso en un temporal
                     String tCaso = ctx.getTemporales().nuevoTemporal();
 
-                    // inferir el tipo del valor del caso
+                    // adivinar el tipo del valor del caso
                     String tipoCaso = ctx.inferirTipoDe(valorCaso, ctx.getTiposConocidos());
 
                     // registrar el temporal con el tipo inferido
@@ -276,7 +272,6 @@ public class ManejadorFlujoZetariano {
             // obtener el resultado de la condicion
             String condicion = nodo.getCondicion().accept(generador);
 
-            // usar valor por defecto si el resultado es nulo
             if (condicion == null) {
                 condicion = "_";
             }
@@ -331,7 +326,6 @@ public class ManejadorFlujoZetariano {
             condicion = nodo.getCondicion().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
         if (condicion == null) {
             condicion = "_";
         }
@@ -418,7 +412,6 @@ public class ManejadorFlujoZetariano {
             // evaluar la expresion inicial
             String valor = nodo.getExpresion().accept(generador);
 
-            // usar valor por defecto si el resultado es nulo
             if (valor == null) {
                 valor = "_";
             }
@@ -438,7 +431,6 @@ public class ManejadorFlujoZetariano {
             variable = nodo.getVariable().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
         if (variable == null) {
             variable = "_";
         }
@@ -449,7 +441,7 @@ public class ManejadorFlujoZetariano {
             valor = nodo.getExpresion().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
+        // si es nulo usar lo de respaldo
         if (valor == null) {
             valor = "_";
         }
@@ -478,7 +470,6 @@ public class ManejadorFlujoZetariano {
             variable = nodo.getVariable().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
         if (variable == null) {
             variable = "_";
         }
@@ -489,7 +480,6 @@ public class ManejadorFlujoZetariano {
             valor = nodo.getExpresion().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
         if (valor == null) {
             valor = "_";
         }

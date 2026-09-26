@@ -128,7 +128,7 @@ public class AmbitoSemantico {
             return null;
         }
 
-        // delegar busqueda al ambito padre
+        // buscar en el padre si aqui no esta
         return padre.buscarSimbolo(nombre);
     }
 

@@ -19,14 +19,11 @@ import org.jrg.model.cuarteta.Cuarteta;
 // generar cuartetas del programa y sus secciones en el lenguaje Y
 public class ManejadorProgramaY {
 
-    // estado compartido de la generacion
     private final ContextoCuartetasY ctx;
-    // generador duenio para el descenso recursivo
     private final GeneradorCuartetasY generador;
 
     // crear la manejadora con contexto y generador
     public ManejadorProgramaY(ContextoCuartetasY ctx, GeneradorCuartetasY generador) {
-        // asignar las dependencias recibidas
         this.ctx = ctx;
         this.generador = generador;
     }
@@ -141,7 +138,6 @@ public class ManejadorProgramaY {
             if (nodo.getValor() != null) {
                 derechaArr = nodo.getValor().accept(generador);
             }
-            // usar valor por defecto si el resultado es nulo
             if (derechaArr == null) {
                 derechaArr = "_";
             }
@@ -152,7 +148,6 @@ public class ManejadorProgramaY {
             if (acceso.getBase() != null) {
                 base = acceso.getBase().accept(generador);
             }
-            // usar valor por defecto si el resultado es nulo
             if (base == null) {
                 base = "_";
             }
@@ -161,7 +156,7 @@ public class ManejadorProgramaY {
             if (acceso.getIndice() != null) {
                 indice = acceso.getIndice().accept(generador);
             }
-            // usar valor por defecto si el resultado es nulo
+            // si es nulo usar lo de respaldo
             if (indice == null) {
                 indice = "_";
             }
@@ -176,7 +171,6 @@ public class ManejadorProgramaY {
             izquierda = nodo.getVariable().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
         if (izquierda == null) {
             izquierda = "_";
         }
@@ -187,7 +181,6 @@ public class ManejadorProgramaY {
             derecha = nodo.getValor().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
         if (derecha == null) {
             derecha = "_";
         }

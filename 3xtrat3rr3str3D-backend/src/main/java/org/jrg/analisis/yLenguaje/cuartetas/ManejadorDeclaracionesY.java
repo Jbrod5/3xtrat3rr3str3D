@@ -24,14 +24,11 @@ import org.jrg.model.cuarteta.Cuarteta;
 // generar cuartetas de declaraciones y asignables en el lenguaje Y
 public class ManejadorDeclaracionesY {
 
-    // estado compartido de la generacion
     private final ContextoCuartetasY ctx;
-    // generador duenio para el descenso recursivo
     private final GeneradorCuartetasY generador;
 
     // crear la manejadora con contexto y generador
     public ManejadorDeclaracionesY(ContextoCuartetasY ctx, GeneradorCuartetasY generador) {
-        // asignar las dependencias recibidas
         this.ctx = ctx;
         this.generador = generador;
     }
@@ -70,7 +67,6 @@ public class ManejadorDeclaracionesY {
             // obtener el valor de retorno
             String valor = nodo.getExpresion().accept(generador);
 
-            // usar valor por defecto si el resultado es nulo
             if (valor == null) {
                 valor = "_";
             }
@@ -125,7 +121,6 @@ public class ManejadorDeclaracionesY {
             // evaluar el valor inicial
             String valor = nodo.getValor().accept(generador);
 
-            // usar valor por defecto si el resultado es nulo
             if (valor == null) {
                 valor = "_";
             }
@@ -144,7 +139,7 @@ public class ManejadorDeclaracionesY {
             tamano = nodo.getTamano().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
+        // si es nulo usar lo de respaldo
         if (tamano == null) {
             tamano = "_";
         }
@@ -163,7 +158,6 @@ public class ManejadorDeclaracionesY {
             tamano = nodo.getTamano().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
         if (tamano == null) {
             tamano = "_";
         }
@@ -187,7 +181,6 @@ public class ManejadorDeclaracionesY {
                     // evaluar el valor actual
                     String valor = listaExpresiones.getExpresiones().get(i).accept(generador);
 
-                    // usar valor por defecto si el resultado es nulo
                     if (valor == null) {
                         valor = "_";
                     }
@@ -218,7 +211,6 @@ public class ManejadorDeclaracionesY {
             filas = nodo.getTamanoFilas().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
         if (filas == null) {
             filas = "_";
         }
@@ -254,7 +246,6 @@ public class ManejadorDeclaracionesY {
             filas = nodo.getTamanoFilas().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
         if (filas == null) {
             filas = "_";
         }
@@ -265,7 +256,6 @@ public class ManejadorDeclaracionesY {
             columnas = nodo.getTamanoColumnas().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
         if (columnas == null) {
             columnas = "_";
         }
@@ -288,7 +278,7 @@ public class ManejadorDeclaracionesY {
                 for (int c = 0; c < fila.size(); c++) {
                     // evaluar el valor actual
                     String val = fila.get(c).accept(generador);
-                    // usar valor por defecto si el resultado es nulo
+                    // si es nulo usar lo de respaldo
                     if (val == null) {
                         val = "_";
                     }
@@ -320,7 +310,6 @@ public class ManejadorDeclaracionesY {
             base = nodo.getBase().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
         if (base == null) {
             base = "_";
         }
@@ -331,7 +320,6 @@ public class ManejadorDeclaracionesY {
             indice = nodo.getIndice().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
         if (indice == null) {
             indice = "_";
         }
@@ -348,7 +336,6 @@ public class ManejadorDeclaracionesY {
             base = nodo.getBase().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
         if (base == null) {
             base = "_";
         }

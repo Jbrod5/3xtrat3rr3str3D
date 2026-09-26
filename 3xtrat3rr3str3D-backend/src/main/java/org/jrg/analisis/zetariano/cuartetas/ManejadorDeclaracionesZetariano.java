@@ -31,7 +31,6 @@ public class ManejadorDeclaracionesZetariano {
 
     // crear la manejadora con contexto y generador
     public ManejadorDeclaracionesZetariano(ContextoCuartetasZetariano ctx, GeneradorCuartetasZetariano generador) {
-        // asignar las dependencias recibidas
         this.ctx = ctx;
         this.generador = generador;
     }
@@ -65,7 +64,6 @@ public class ManejadorDeclaracionesZetariano {
             // obtener el valor de retorno
             String valor = nodo.getExpresion().accept(generador);
 
-            // usar valor por defecto si el resultado es nulo
             if (valor == null) {
                 valor = "_";
             }
@@ -137,7 +135,6 @@ public class ManejadorDeclaracionesZetariano {
                 // evaluar el valor inicial
                 String valor = nodo.getValor().accept(generador);
 
-                // usar valor por defecto si el resultado es nulo
                 if (valor == null) {
                     valor = "_";
                 }
@@ -155,7 +152,7 @@ public class ManejadorDeclaracionesZetariano {
             // evaluar el valor inicial
             String valor = nodo.getValor().accept(generador);
 
-            // usar valor por defecto si el resultado es nulo
+            // si es nulo usar lo de respaldo
             if (valor == null) {
                 valor = "_";
             }
@@ -194,7 +191,6 @@ public class ManejadorDeclaracionesZetariano {
                     // evaluar el valor actual
                     String valor = listaExpresiones.getExpresiones().get(i).accept(generador);
 
-                    // usar valor por defecto si el resultado es nulo
                     if (valor == null) {
                         valor = "_";
                     }
@@ -271,7 +267,6 @@ public class ManejadorDeclaracionesZetariano {
             // evaluar la hoja escalar actual
             if (elemento instanceof NodoASTZetariano) {
                 String val = ((NodoASTZetariano) elemento).accept(generador);
-                // usar valor por defecto si el resultado es nulo
                 if (val == null) {
                     val = "_";
                 }
@@ -292,7 +287,6 @@ public class ManejadorDeclaracionesZetariano {
             derecha = nodo.getExpresion().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
         if (derecha == null) {
             derecha = "_";
         }
@@ -320,7 +314,6 @@ public class ManejadorDeclaracionesZetariano {
                 indice = acceso.getIndice().accept(generador);
             }
 
-            // usar valor por defecto si el resultado es nulo
             if (indice == null) {
                 indice = "_";
             }
@@ -336,7 +329,6 @@ public class ManejadorDeclaracionesZetariano {
             izquierda = nodo.getVariable().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
         if (izquierda == null) {
             izquierda = "_";
         }
@@ -368,7 +360,7 @@ public class ManejadorDeclaracionesZetariano {
             izquierda = nodo.getVariable().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
+        // si es nulo usar lo de respaldo
         if (izquierda == null) {
             izquierda = "_";
         }
@@ -379,7 +371,6 @@ public class ManejadorDeclaracionesZetariano {
             derecha = nodo.getExpresion().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
         if (derecha == null) {
             derecha = "_";
         }
@@ -387,7 +378,7 @@ public class ManejadorDeclaracionesZetariano {
         // agregar la operacion con temporal a la lista de cuartetas
         String temp = ctx.getTemporales().nuevoTemporal();
 
-        // inferir el tipo resultado de la operacion
+        // adivinar que tipo sale de la cuenta
         String tipoResComp = ctx.tipoResultadoAritmetico(izquierda, derecha);
 
         // registrar el temporal con el tipo inferido
@@ -407,7 +398,6 @@ public class ManejadorDeclaracionesZetariano {
                 base = acceso.getVariable().accept(generador);
             }
 
-            // usar valor por defecto si el resultado es nulo
             if (base == null) {
                 base = "_";
             }
@@ -418,7 +408,6 @@ public class ManejadorDeclaracionesZetariano {
                 indice = acceso.getIndice().accept(generador);
             }
 
-            // usar valor por defecto si el resultado es nulo
             if (indice == null) {
                 indice = "_";
             }
@@ -460,7 +449,6 @@ public class ManejadorDeclaracionesZetariano {
             indice = nodo.getIndice().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
         if (indice == null) {
             indice = "_";
         }
@@ -477,7 +465,6 @@ public class ManejadorDeclaracionesZetariano {
             base = nodo.getVariable().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
         if (base == null) {
             base = "_";
         }

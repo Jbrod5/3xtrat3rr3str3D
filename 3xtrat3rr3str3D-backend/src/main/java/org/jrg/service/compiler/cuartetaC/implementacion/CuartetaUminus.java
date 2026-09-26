@@ -11,7 +11,7 @@ public class CuartetaUminus extends CuartetaC {
      */
     public CuartetaUminus(String operador, String arg1, String arg2, String resultado,
                            String tipoArg1, String tipoArg2, String tipoResultado) {
-        // delegar al constructor de la clase base
+        // va al base
         super(operador, arg1, arg2, resultado, tipoArg1, tipoArg2, tipoResultado);
     }
 
@@ -20,7 +20,7 @@ public class CuartetaUminus extends CuartetaC {
      */
     public CuartetaUminus(String arg1, String arg2, String resultado,
                            String tipoArg1, String tipoArg2, String tipoResultado) {
-        // delegar al constructor de la clase base con opcode uminus
+        // usar el constructor base con opcode uminus
         super("uminus", arg1, arg2, resultado, tipoArg1, tipoArg2, tipoResultado);
     }
 

@@ -9,7 +9,7 @@ public class ValorLiteral extends ValorC {
      * Crear un valor literal con su texto original.
      */
     public ValorLiteral(String texto) {
-        // delegar al constructor de la clase base
+        // usar el constructor base
         super(texto);
     }
 

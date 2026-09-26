@@ -106,7 +106,6 @@ public class YLenguajeASTBuilder extends YLenguajeBaseVisitor<NodoASTY> {
                 funciones.add(visit(defCtx));
             }
         }
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo seccion funciones
@@ -132,7 +131,6 @@ public class YLenguajeASTBuilder extends YLenguajeBaseVisitor<NodoASTY> {
         } else {
             nombre = "";
         }
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo tipo dato
@@ -149,7 +147,6 @@ public class YLenguajeASTBuilder extends YLenguajeBaseVisitor<NodoASTY> {
                 parametros.add(visit(paramCtx));
             }
         }
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo parametros
@@ -166,7 +163,6 @@ public class YLenguajeASTBuilder extends YLenguajeBaseVisitor<NodoASTY> {
                 instrucciones.add(visit(instCtx));
             }
         }
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo cuerpo funcion
@@ -183,7 +179,6 @@ public class YLenguajeASTBuilder extends YLenguajeBaseVisitor<NodoASTY> {
                 instrucciones.add(visit(instCtx));
             }
         }
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo bloque
@@ -202,7 +197,6 @@ public class YLenguajeASTBuilder extends YLenguajeBaseVisitor<NodoASTY> {
                 atributos.add(visit(attrCtx));
             }
         }
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo definicion estructura
@@ -215,7 +209,6 @@ public class YLenguajeASTBuilder extends YLenguajeBaseVisitor<NodoASTY> {
         NodoASTY tipo = visit(ctx.tipo_dato());
         // obtener identificador
         String identificador = ctx.IDENTIFICADOR().getText();
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo atributo simple
@@ -224,13 +217,12 @@ public class YLenguajeASTBuilder extends YLenguajeBaseVisitor<NodoASTY> {
 
     @Override
     public NodoASTY visitAtributoArray(YLenguajeParser.AtributoArrayContext ctx) {
-        // visitar tipo de dato
+        // ver que tipo es
         NodoASTY tipo = visit(ctx.tipo_dato());
-        // obtener identificador
+        // sacar el nombre
         String identificador = ctx.IDENTIFICADOR().getText();
         // parsear tamano del array
         int tamano = Integer.parseInt(ctx.NUMERO_ENTERO().getText());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo atributo array
@@ -248,7 +240,6 @@ public class YLenguajeASTBuilder extends YLenguajeBaseVisitor<NodoASTY> {
         }
         // visitar cuerpo de la funcion
         NodoASTY cuerpo = visit(ctx.cuerpo_funcion());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo definicion funcion sin retorno
@@ -268,7 +259,6 @@ public class YLenguajeASTBuilder extends YLenguajeBaseVisitor<NodoASTY> {
         }
         // visitar cuerpo de la funcion
         NodoASTY cuerpo = visit(ctx.cuerpo_funcion());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo definicion funcion con retorno
@@ -277,11 +267,8 @@ public class YLenguajeASTBuilder extends YLenguajeBaseVisitor<NodoASTY> {
 
     @Override
     public NodoASTY visitParamSimple(YLenguajeParser.ParamSimpleContext ctx) {
-        // visitar tipo de dato
         NodoASTY tipo = visit(ctx.tipo_dato());
-        // obtener identificador
         String identificador = ctx.IDENTIFICADOR().getText();
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo parametro simple
@@ -294,7 +281,6 @@ public class YLenguajeASTBuilder extends YLenguajeBaseVisitor<NodoASTY> {
         NodoASTY tipo = visit(ctx.tipo_dato());
         // obtener identificador
         String identificador = ctx.IDENTIFICADOR().getText();
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo parametro array
@@ -306,7 +292,6 @@ public class YLenguajeASTBuilder extends YLenguajeBaseVisitor<NodoASTY> {
         // obtener tipo de estructura y nombre
         String tipoEstructura = ctx.IDENTIFICADOR(0).getText();
         String nombre = ctx.IDENTIFICADOR(1).getText();
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo parametro estructura
@@ -317,7 +302,6 @@ public class YLenguajeASTBuilder extends YLenguajeBaseVisitor<NodoASTY> {
     public NodoASTY visitStmtDeclaracion(YLenguajeParser.StmtDeclaracionContext ctx) {
         // visitar declaracion de variable
         NodoASTY declaracion = visit(ctx.declaracion_variable());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo stmt declaracion
@@ -328,7 +312,6 @@ public class YLenguajeASTBuilder extends YLenguajeBaseVisitor<NodoASTY> {
     public NodoASTY visitStmtAsignacion(YLenguajeParser.StmtAsignacionContext ctx) {
         // visitar asignacion
         NodoASTY asignacion = visit(ctx.asignacion());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo stmt asignacion
@@ -339,7 +322,6 @@ public class YLenguajeASTBuilder extends YLenguajeBaseVisitor<NodoASTY> {
     public NodoASTY visitStmtEstructuraLocal(YLenguajeParser.StmtEstructuraLocalContext ctx) {
         // visitar definicion de estructura
         NodoASTY estructura = visit(ctx.definicion_struct());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo stmt estructura local
@@ -350,7 +332,6 @@ public class YLenguajeASTBuilder extends YLenguajeBaseVisitor<NodoASTY> {
     public NodoASTY visitStmtCondicional(YLenguajeParser.StmtCondicionalContext ctx) {
         // visitar condicional
         NodoASTY condicional = visit(ctx.condicional());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo stmt condicional
@@ -361,7 +342,6 @@ public class YLenguajeASTBuilder extends YLenguajeBaseVisitor<NodoASTY> {
     public NodoASTY visitStmtSeleccion(YLenguajeParser.StmtSeleccionContext ctx) {
         // visitar seleccion
         NodoASTY seleccion = visit(ctx.seleccion());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo stmt seleccion
@@ -372,7 +352,6 @@ public class YLenguajeASTBuilder extends YLenguajeBaseVisitor<NodoASTY> {
     public NodoASTY visitStmtCiclo(YLenguajeParser.StmtCicloContext ctx) {
         // visitar ciclo
         NodoASTY ciclo = visit(ctx.ciclo());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo stmt ciclo
@@ -383,7 +362,6 @@ public class YLenguajeASTBuilder extends YLenguajeBaseVisitor<NodoASTY> {
     public NodoASTY visitStmtRetorno(YLenguajeParser.StmtRetornoContext ctx) {
         // visitar expresion de retorno
         NodoASTY expresion = visit(ctx.retorno().expresion());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo stmt retorno
@@ -392,7 +370,6 @@ public class YLenguajeASTBuilder extends YLenguajeBaseVisitor<NodoASTY> {
 
     @Override
     public NodoASTY visitStmtContinuar(YLenguajeParser.StmtContinuarContext ctx) {
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo stmt continuar
@@ -401,7 +378,6 @@ public class YLenguajeASTBuilder extends YLenguajeBaseVisitor<NodoASTY> {
 
     @Override
     public NodoASTY visitStmtRomper(YLenguajeParser.StmtRomperContext ctx) {
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo stmt romper
@@ -412,7 +388,6 @@ public class YLenguajeASTBuilder extends YLenguajeBaseVisitor<NodoASTY> {
     public NodoASTY visitStmtExpresion(YLenguajeParser.StmtExpresionContext ctx) {
         // visitar expresion
         NodoASTY expresion = visit(ctx.expresion());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo stmt expresion
@@ -421,16 +396,15 @@ public class YLenguajeASTBuilder extends YLenguajeBaseVisitor<NodoASTY> {
 
     @Override
     public NodoASTY visitDeclConTipoYValor(YLenguajeParser.DeclConTipoYValorContext ctx) {
-        // visitar tipo de dato
+        // ver que tipo es
         NodoASTY tipo = visit(ctx.tipo_dato());
-        // obtener identificador
+        // sacar el nombre
         String nombre = ctx.IDENTIFICADOR().getText();
         // visitar valor inicial si existe
         NodoASTY valor = null;
         if (ctx.expresion() != null) {
             valor = visit(ctx.expresion());
         }
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo declaracion con tipo y valor
@@ -439,13 +413,10 @@ public class YLenguajeASTBuilder extends YLenguajeBaseVisitor<NodoASTY> {
 
     @Override
     public NodoASTY visitDeclArraySinValores(YLenguajeParser.DeclArraySinValoresContext ctx) {
-        // visitar tipo de dato
         NodoASTY tipo = visit(ctx.tipo_dato());
-        // obtener identificador
         String nombre = ctx.IDENTIFICADOR().getText();
         // visitar expresion de tamano
         NodoASTY tamano = visit(ctx.expresion());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo declaracion array sin valores
@@ -462,7 +433,6 @@ public class YLenguajeASTBuilder extends YLenguajeBaseVisitor<NodoASTY> {
         NodoASTY tamano = visit(ctx.expresion());
         // visitar lista de expresiones
         NodoASTY listaValores = visit(ctx.lista_expresiones());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo declaracion array con valores
@@ -471,14 +441,13 @@ public class YLenguajeASTBuilder extends YLenguajeBaseVisitor<NodoASTY> {
 
     @Override
     public NodoASTY visitDeclMatriz(YLenguajeParser.DeclMatrizContext ctx) {
-        // visitar tipo de dato
+        // ver que tipo es
         NodoASTY tipo = visit(ctx.tipo_dato());
-        // obtener identificador
+        // sacar el nombre
         String nombre = ctx.IDENTIFICADOR().getText();
         // visitar expresiones de tamano
         NodoASTY tamanoFilas = visit(ctx.expresion(0));
         NodoASTY tamanoColumnas = visit(ctx.expresion(1));
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo declaracion matriz
@@ -487,14 +456,12 @@ public class YLenguajeASTBuilder extends YLenguajeBaseVisitor<NodoASTY> {
 
     @Override
     public NodoASTY visitDeclMatrizConValores(YLenguajeParser.DeclMatrizConValoresContext ctx) {
-        // visitar tipo de dato
         NodoASTY tipo = visit(ctx.tipo_dato());
-        // obtener identificador
         String nombre = ctx.IDENTIFICADOR().getText();
         // visitar expresiones de tamano
         NodoASTY tamanoFilas = visit(ctx.expresion(0));
         NodoASTY tamanoColumnas = visit(ctx.expresion(1));
-        // recolectar las filas con sus valores
+        // juntar las filas con sus valores
         List<List<NodoASTY>> filas = new ArrayList<>();
         for (int i = 0; i < ctx.fila_matriz().size(); i++) {
             // visitar la lista de la fila actual
@@ -506,7 +473,6 @@ public class YLenguajeASTBuilder extends YLenguajeBaseVisitor<NodoASTY> {
             }
             filas.add(valores);
         }
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo declaracion matriz con valores
@@ -519,7 +485,6 @@ public class YLenguajeASTBuilder extends YLenguajeBaseVisitor<NodoASTY> {
         NodoASTY variable = visit(ctx.variable_asignable());
         // visitar expresion valor
         NodoASTY expresion = visit(ctx.expresion());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo asignacion
@@ -530,7 +495,7 @@ public class YLenguajeASTBuilder extends YLenguajeBaseVisitor<NodoASTY> {
     public NodoASTY visitVarSimple(YLenguajeParser.VarSimpleContext ctx) {
         // obtener identificador
         String nombre = ctx.IDENTIFICADOR().getText();
-        // obtener ubicacion del nodo
+        // sacar linea y columna del ctx
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo variable simple
@@ -543,7 +508,6 @@ public class YLenguajeASTBuilder extends YLenguajeBaseVisitor<NodoASTY> {
         NodoASTY base = visit(ctx.variable_asignable());
         // visitar indice
         NodoASTY indice = visit(ctx.expresion());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo variable array
@@ -556,7 +520,6 @@ public class YLenguajeASTBuilder extends YLenguajeBaseVisitor<NodoASTY> {
         NodoASTY base = visit(ctx.variable_asignable());
         // obtener nombre del miembro
         String miembro = ctx.IDENTIFICADOR().getText();
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo variable miembro
@@ -582,7 +545,6 @@ public class YLenguajeASTBuilder extends YLenguajeBaseVisitor<NodoASTY> {
         if (ctx.bloque().size() > ctx.expresion().size()) {
             bloqueContrario = visit(ctx.bloque(ctx.bloque().size() - 1));
         }
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo statement si
@@ -606,7 +568,6 @@ public class YLenguajeASTBuilder extends YLenguajeBaseVisitor<NodoASTY> {
         if (ctx.caso_defecto() != null) {
             casoDefecto = visit(ctx.caso_defecto());
         }
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo statement elegir
@@ -625,7 +586,6 @@ public class YLenguajeASTBuilder extends YLenguajeBaseVisitor<NodoASTY> {
                 instrucciones.add(visit(instCtx));
             }
         }
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo caso seleccion
@@ -642,7 +602,6 @@ public class YLenguajeASTBuilder extends YLenguajeBaseVisitor<NodoASTY> {
                 instrucciones.add(visit(instCtx));
             }
         }
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo caso defecto
@@ -659,7 +618,6 @@ public class YLenguajeASTBuilder extends YLenguajeBaseVisitor<NodoASTY> {
         NodoASTY paso = visit(ctx.paso_para());
         // visitar bloque
         NodoASTY bloque = visit(ctx.bloque());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo ciclo para
@@ -672,7 +630,6 @@ public class YLenguajeASTBuilder extends YLenguajeBaseVisitor<NodoASTY> {
         NodoASTY condicion = visit(ctx.expresion());
         // visitar bloque
         NodoASTY bloque = visit(ctx.bloque());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo ciclo mientras
@@ -685,7 +642,6 @@ public class YLenguajeASTBuilder extends YLenguajeBaseVisitor<NodoASTY> {
         NodoASTY bloque = visit(ctx.bloque());
         // visitar condicion
         NodoASTY condicion = visit(ctx.expresion());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo ciclo hacer
@@ -696,11 +652,10 @@ public class YLenguajeASTBuilder extends YLenguajeBaseVisitor<NodoASTY> {
     public NodoASTY visitInitParaDecl(YLenguajeParser.InitParaDeclContext ctx) {
         // visitar tipo de dato
         NodoASTY tipo = visit(ctx.tipo_dato());
-        // obtener identificador
+        // sacar el nombre
         String nombre = ctx.IDENTIFICADOR().getText();
         // visitar expresion
         NodoASTY expresion = visit(ctx.expresion());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo init para decl
@@ -713,7 +668,6 @@ public class YLenguajeASTBuilder extends YLenguajeBaseVisitor<NodoASTY> {
         NodoASTY variable = visit(ctx.variable_asignable());
         // visitar expresion
         NodoASTY expresion = visit(ctx.expresion());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo init para asig
@@ -724,7 +678,6 @@ public class YLenguajeASTBuilder extends YLenguajeBaseVisitor<NodoASTY> {
     public NodoASTY visitPasoParaExpr(YLenguajeParser.PasoParaExprContext ctx) {
         // visitar expresion
         NodoASTY expresion = visit(ctx.expresion());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo paso para expr
@@ -737,7 +690,6 @@ public class YLenguajeASTBuilder extends YLenguajeBaseVisitor<NodoASTY> {
         NodoASTY variable = visit(ctx.variable_asignable());
         // visitar expresion
         NodoASTY expresion = visit(ctx.expresion());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo paso para asig
@@ -748,7 +700,6 @@ public class YLenguajeASTBuilder extends YLenguajeBaseVisitor<NodoASTY> {
     public NodoASTY visitExprParentesis(YLenguajeParser.ExprParentesisContext ctx) {
         // visitar expresion entre parentesis
         NodoASTY expresion = visit(ctx.expresion());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo expresion parentesis
@@ -767,7 +718,6 @@ public class YLenguajeASTBuilder extends YLenguajeBaseVisitor<NodoASTY> {
                 argumentos = ((ListaExpresiones) lista).getExpresiones();
             }
         }
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo llamada funcion
@@ -780,7 +730,6 @@ public class YLenguajeASTBuilder extends YLenguajeBaseVisitor<NodoASTY> {
         NodoASTY objeto = visit(ctx.expresion(0));
         // visitar indice
         NodoASTY indice = visit(ctx.expresion(1));
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo acceso array
@@ -793,7 +742,6 @@ public class YLenguajeASTBuilder extends YLenguajeBaseVisitor<NodoASTY> {
         NodoASTY objeto = visit(ctx.expresion());
         // obtener nombre del miembro
         String miembro = ctx.IDENTIFICADOR().getText();
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo acceso miembro
@@ -804,7 +752,6 @@ public class YLenguajeASTBuilder extends YLenguajeBaseVisitor<NodoASTY> {
     public NodoASTY visitExprPostIncremento(YLenguajeParser.ExprPostIncrementoContext ctx) {
         // visitar variable
         NodoASTY variable = visit(ctx.variable_asignable());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo post incremento
@@ -815,7 +762,6 @@ public class YLenguajeASTBuilder extends YLenguajeBaseVisitor<NodoASTY> {
     public NodoASTY visitExprPostDecremento(YLenguajeParser.ExprPostDecrementoContext ctx) {
         // visitar variable
         NodoASTY variable = visit(ctx.variable_asignable());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo post decremento
@@ -830,7 +776,6 @@ public class YLenguajeASTBuilder extends YLenguajeBaseVisitor<NodoASTY> {
         if (lista instanceof ListaExpresiones) {
             elementos = ((ListaExpresiones) lista).getExpresiones();
         }
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo lista literal
@@ -841,7 +786,6 @@ public class YLenguajeASTBuilder extends YLenguajeBaseVisitor<NodoASTY> {
     public NodoASTY visitExprNegativa(YLenguajeParser.ExprNegativaContext ctx) {
         // visitar expresion
         NodoASTY expresion = visit(ctx.expresion());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo expresion negativa
@@ -852,7 +796,6 @@ public class YLenguajeASTBuilder extends YLenguajeBaseVisitor<NodoASTY> {
     public NodoASTY visitExprNegada(YLenguajeParser.ExprNegadaContext ctx) {
         // visitar expresion
         NodoASTY expresion = visit(ctx.expresion());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo expresion negada
@@ -867,7 +810,6 @@ public class YLenguajeASTBuilder extends YLenguajeBaseVisitor<NodoASTY> {
         String operador = ctx.getChild(1).getText();
         // visitar operando derecho
         NodoASTY derecho = visit(ctx.expresion(1));
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo multiplicacion division
@@ -876,13 +818,12 @@ public class YLenguajeASTBuilder extends YLenguajeBaseVisitor<NodoASTY> {
 
     @Override
     public NodoASTY visitExprSumaResta(YLenguajeParser.ExprSumaRestaContext ctx) {
-        // visitar operando izquierdo
+        // ver lado izq
         NodoASTY izquierdo = visit(ctx.expresion(0));
         // obtener operador
         String operador = ctx.getChild(1).getText();
-        // visitar operando derecho
+        // ver lado der
         NodoASTY derecho = visit(ctx.expresion(1));
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo suma resta
@@ -891,13 +832,10 @@ public class YLenguajeASTBuilder extends YLenguajeBaseVisitor<NodoASTY> {
 
     @Override
     public NodoASTY visitExprRelacional(YLenguajeParser.ExprRelacionalContext ctx) {
-        // visitar operando izquierdo
         NodoASTY izquierdo = visit(ctx.expresion(0));
         // obtener operador
         String operador = ctx.getChild(1).getText();
-        // visitar operando derecho
         NodoASTY derecho = visit(ctx.expresion(1));
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo expresion relacional
@@ -910,7 +848,6 @@ public class YLenguajeASTBuilder extends YLenguajeBaseVisitor<NodoASTY> {
         NodoASTY izquierdo = visit(ctx.expresion(0));
         // visitar operando derecho
         NodoASTY derecho = visit(ctx.expresion(1));
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo expresion and
@@ -919,11 +856,10 @@ public class YLenguajeASTBuilder extends YLenguajeBaseVisitor<NodoASTY> {
 
     @Override
     public NodoASTY visitExprOr(YLenguajeParser.ExprOrContext ctx) {
-        // visitar operando izquierdo
+        // ver lado izq
         NodoASTY izquierdo = visit(ctx.expresion(0));
-        // visitar operando derecho
+        // ver lado der
         NodoASTY derecho = visit(ctx.expresion(1));
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo expresion or
@@ -934,7 +870,6 @@ public class YLenguajeASTBuilder extends YLenguajeBaseVisitor<NodoASTY> {
     public NodoASTY visitExprPrimitivo(YLenguajeParser.ExprPrimitivoContext ctx) {
         // visitar valor primitivo
         NodoASTY valor = visit(ctx.valor_primitivo());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo expresion primitivo
@@ -971,7 +906,6 @@ public class YLenguajeASTBuilder extends YLenguajeBaseVisitor<NodoASTY> {
             valor = "";
             tipoDato = TipoPrimitivo.DESCONOCIDO;
         }
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo valor primitivo
@@ -986,7 +920,6 @@ public class YLenguajeASTBuilder extends YLenguajeBaseVisitor<NodoASTY> {
         for (YLenguajeParser.ExpresionContext exprCtx : ctx.expresion()) {
             expresiones.add(visit(exprCtx));
         }
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo lista expresiones

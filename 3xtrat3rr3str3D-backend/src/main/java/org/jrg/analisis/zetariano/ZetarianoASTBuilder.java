@@ -102,7 +102,6 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
     public NodoASTZetariano visitMiembroAtributo(ZetarianoParser.MiembroAtributoContext ctx) {
         // visitar atributo de clase
         NodoASTZetariano atributo = visit(ctx.atributo_clase());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo miembro atributo
@@ -113,7 +112,6 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
     public NodoASTZetariano visitMiembroConstructor(ZetarianoParser.MiembroConstructorContext ctx) {
         // visitar constructor
         NodoASTZetariano constructor = visit(ctx.constructor());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo miembro constructor
@@ -124,7 +122,6 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
     public NodoASTZetariano visitMiembroMetodo(ZetarianoParser.MiembroMetodoContext ctx) {
         // visitar metodo
         NodoASTZetariano metodo = visit(ctx.metodo());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo miembro metodo
@@ -150,7 +147,6 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
         } else {
             tipo = "";
         }
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo tipo dato
@@ -163,7 +159,6 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
         NodoASTZetariano tipo = visit(ctx.tipo_dato());
         // obtener identificador
         String identificador = ctx.IDENTIFICADOR().getText();
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo atributo simple
@@ -172,13 +167,12 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
 
     @Override
     public NodoASTZetariano visitAtributoArray(ZetarianoParser.AtributoArrayContext ctx) {
-        // visitar tipo de dato
+        // ver que tipo es
         NodoASTZetariano tipo = visit(ctx.tipo_dato());
-        // obtener identificador
+        // sacar el nombre
         String identificador = ctx.IDENTIFICADOR().getText();
         // contar dimensiones por corchetes
         int dimensiones = ctx.CORCHETE_IZQ().size();
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo atributo array
@@ -202,7 +196,6 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
                 instrucciones.add(visit(instCtx));
             }
         }
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo definicion constructor
@@ -226,7 +219,6 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
                 instrucciones.add(visit(instCtx));
             }
         }
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo metodo sin retorno
@@ -252,7 +244,6 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
                 instrucciones.add(visit(instCtx));
             }
         }
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo metodo con retorno
@@ -269,7 +260,6 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
                 parametros.add(visit(paramCtx));
             }
         }
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo parametros
@@ -278,11 +268,8 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
 
     @Override
     public NodoASTZetariano visitParamSimple(ZetarianoParser.ParamSimpleContext ctx) {
-        // visitar tipo de dato
         NodoASTZetariano tipo = visit(ctx.tipo_dato());
-        // obtener identificador
         String identificador = ctx.IDENTIFICADOR().getText();
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo parametro simple
@@ -297,7 +284,6 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
         String identificador = ctx.IDENTIFICADOR().getText();
         // contar dimensiones por corchetes
         int dimensiones = ctx.CORCHETE_IZQ().size();
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo parametro array
@@ -308,7 +294,6 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
     public NodoASTZetariano visitStmtDeclaracion(ZetarianoParser.StmtDeclaracionContext ctx) {
         // visitar declaracion de variable
         NodoASTZetariano declaracion = visit(ctx.declaracion_variable());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo stmt declaracion
@@ -319,7 +304,6 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
     public NodoASTZetariano visitStmtAsignacion(ZetarianoParser.StmtAsignacionContext ctx) {
         // visitar asignacion
         NodoASTZetariano asignacion = visit(ctx.asignacion());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo stmt asignacion
@@ -330,7 +314,6 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
     public NodoASTZetariano visitStmtCondicional(ZetarianoParser.StmtCondicionalContext ctx) {
         // visitar condicional
         NodoASTZetariano condicional = visit(ctx.condicional());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo stmt condicional
@@ -341,7 +324,6 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
     public NodoASTZetariano visitStmtSeleccion(ZetarianoParser.StmtSeleccionContext ctx) {
         // visitar seleccion
         NodoASTZetariano seleccion = visit(ctx.seleccion());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo stmt seleccion
@@ -352,7 +334,6 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
     public NodoASTZetariano visitStmtCiclo(ZetarianoParser.StmtCicloContext ctx) {
         // visitar ciclo
         NodoASTZetariano ciclo = visit(ctx.ciclo());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo stmt ciclo
@@ -366,7 +347,6 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
         if (ctx.expresion() != null) {
             expresion = visit(ctx.expresion());
         }
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo stmt return
@@ -375,7 +355,6 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
 
     @Override
     public NodoASTZetariano visitStmtBreak(ZetarianoParser.StmtBreakContext ctx) {
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo stmt break
@@ -384,7 +363,6 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
 
     @Override
     public NodoASTZetariano visitStmtContinue(ZetarianoParser.StmtContinueContext ctx) {
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo stmt continue
@@ -395,7 +373,6 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
     public NodoASTZetariano visitStmtExpresion(ZetarianoParser.StmtExpresionContext ctx) {
         // visitar expresion
         NodoASTZetariano expresion = visit(ctx.expresion());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo stmt expresion
@@ -404,9 +381,9 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
 
     @Override
     public NodoASTZetariano visitDeclConTipo(ZetarianoParser.DeclConTipoContext ctx) {
-        // visitar tipo de dato
+        // ver que tipo es
         NodoASTZetariano tipo = visit(ctx.tipo_dato());
-        // obtener identificador
+        // sacar el nombre
         String identificador = ctx.IDENTIFICADOR().getText();
         // contar dimensiones por corchetes
         int dimensiones = ctx.CORCHETE_IZQ().size();
@@ -415,7 +392,6 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
         if (ctx.expresion() != null) {
             valor = visit(ctx.expresion());
         }
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo declaracion con tipo
@@ -424,15 +400,12 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
 
     @Override
     public NodoASTZetariano visitDeclConListaLiteral(ZetarianoParser.DeclConListaLiteralContext ctx) {
-        // visitar tipo de dato
         NodoASTZetariano tipo = visit(ctx.tipo_dato());
-        // obtener identificador
         String identificador = ctx.IDENTIFICADOR().getText();
         // contar dimensiones por corchetes
         int dimensiones = ctx.CORCHETE_IZQ().size();
         // visitar lista de expresiones
         NodoASTZetariano listaExpresiones = visit(ctx.lista_expresiones());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo declaracion con lista literal
@@ -449,7 +422,6 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
         int dimensiones = ctx.CORCHETE_IZQ().size();
         // construir los valores anidados por niveles
         List<Object> valores = construirNivelMatriz(ctx.init_matriz());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo declaracion con matriz literal
@@ -485,7 +457,6 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
         NodoASTZetariano variable = visit(ctx.variable_asignable());
         // visitar expresion valor
         NodoASTZetariano expresion = visit(ctx.expresion());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo asignacion simple
@@ -507,7 +478,6 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
         }
         // visitar expresion valor
         NodoASTZetariano expresion = visit(ctx.expresion());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo asignacion compuesta
@@ -518,7 +488,6 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
     public NodoASTZetariano visitVarSimple(ZetarianoParser.VarSimpleContext ctx) {
         // obtener identificador simple
         String identificador = ctx.IDENTIFICADOR().getText();
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo variable simple
@@ -531,7 +500,6 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
         NodoASTZetariano variable = visit(ctx.variable_asignable());
         // visitar indice
         NodoASTZetariano indice = visit(ctx.expresion());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo variable array
@@ -544,7 +512,6 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
         NodoASTZetariano variable = visit(ctx.variable_asignable());
         // obtener nombre del miembro
         String miembro = ctx.IDENTIFICADOR().getText();
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo variable miembro
@@ -570,7 +537,7 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
         if (ctx.bloque().size() > ctx.expresion().size()) {
             bloqueSino = visit(ctx.bloque(ctx.bloque().size() - 1));
         }
-        // obtener ubicacion del nodo
+        // sacar linea y columna del ctx
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo statement if
@@ -587,7 +554,6 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
                 instrucciones.add(visit(instCtx));
             }
         }
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo bloque
@@ -611,7 +577,6 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
         if (ctx.caso_default() != null) {
             casoDefecto = visit(ctx.caso_default());
         }
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo statement switch
@@ -630,7 +595,6 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
                 instrucciones.add(visit(instCtx));
             }
         }
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo caso switch
@@ -647,7 +611,6 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
                 instrucciones.add(visit(instCtx));
             }
         }
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo caso default
@@ -673,7 +636,6 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
         }
         // visitar bloque del ciclo
         NodoASTZetariano bloque = visit(ctx.bloque());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo ciclo for
@@ -686,7 +648,6 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
         NodoASTZetariano condicion = visit(ctx.expresion());
         // visitar bloque del ciclo
         NodoASTZetariano bloque = visit(ctx.bloque());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo ciclo while
@@ -699,7 +660,6 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
         NodoASTZetariano bloque = visit(ctx.bloque());
         // visitar condicion del ciclo
         NodoASTZetariano condicion = visit(ctx.expresion());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo ciclo do while
@@ -708,13 +668,12 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
 
     @Override
     public NodoASTZetariano visitInitForDecl(ZetarianoParser.InitForDeclContext ctx) {
-        // visitar tipo de dato
+        // ver que tipo es
         NodoASTZetariano tipo = visit(ctx.tipo_dato());
-        // obtener identificador
+        // sacar el nombre
         String identificador = ctx.IDENTIFICADOR().getText();
         // visitar expresion inicial
         NodoASTZetariano expresion = visit(ctx.expresion());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo init for declaracion
@@ -727,7 +686,6 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
         NodoASTZetariano variable = visit(ctx.variable_asignable());
         // visitar expresion valor
         NodoASTZetariano expresion = visit(ctx.expresion());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo init for asignacion
@@ -738,7 +696,6 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
     public NodoASTZetariano visitPasoForExpr(ZetarianoParser.PasoForExprContext ctx) {
         // visitar expresion de paso
         NodoASTZetariano expresion = visit(ctx.expresion());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo paso for expresion
@@ -751,7 +708,6 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
         NodoASTZetariano variable = visit(ctx.variable_asignable());
         // visitar expresion valor
         NodoASTZetariano expresion = visit(ctx.expresion());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo paso for asignacion
@@ -762,7 +718,6 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
     public NodoASTZetariano visitExprParentesis(ZetarianoParser.ExprParentesisContext ctx) {
         // visitar expresion entre parentesis
         NodoASTZetariano expresion = visit(ctx.expresion());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo expresion parentesis
@@ -778,7 +733,6 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
         if (ctx.lista_expresiones() != null) {
             argumentos = visit(ctx.lista_expresiones());
         }
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo instancia objeto
@@ -795,7 +749,6 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
         for (ZetarianoParser.ExpresionContext exprCtx : ctx.expresion()) {
             dimensiones.add(visit(exprCtx));
         }
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo instancia arreglo
@@ -811,7 +764,6 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
         if (ctx.lista_expresiones() != null) {
             argumentos = visit(ctx.lista_expresiones());
         }
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo llamada funcion
@@ -829,7 +781,6 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
         if (ctx.lista_expresiones() != null) {
             argumentos = visit(ctx.lista_expresiones());
         }
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo llamada metodo
@@ -842,7 +793,6 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
         NodoASTZetariano objeto = visit(ctx.expresion(0));
         // visitar indice de acceso
         NodoASTZetariano indice = visit(ctx.expresion(1));
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo acceso array
@@ -855,7 +805,6 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
         NodoASTZetariano objeto = visit(ctx.expresion());
         // obtener nombre del miembro
         String miembro = ctx.IDENTIFICADOR().getText();
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo acceso miembro
@@ -866,7 +815,6 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
     public NodoASTZetariano visitExprPostIncremento(ZetarianoParser.ExprPostIncrementoContext ctx) {
         // visitar variable a incrementar
         NodoASTZetariano variable = visit(ctx.variable_asignable());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo post incremento
@@ -877,7 +825,6 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
     public NodoASTZetariano visitExprPostDecremento(ZetarianoParser.ExprPostDecrementoContext ctx) {
         // visitar variable a decrementar
         NodoASTZetariano variable = visit(ctx.variable_asignable());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo post decremento
@@ -890,7 +837,6 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
         String operador = ctx.RESTA().getText();
         // visitar expresion negada
         NodoASTZetariano expresion = visit(ctx.expresion());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo expresion negativa
@@ -903,7 +849,6 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
         String operador = ctx.NEGACION().getText();
         // visitar expresion negada
         NodoASTZetariano expresion = visit(ctx.expresion());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo expresion negada
@@ -925,7 +870,6 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
         }
         // visitar operando derecho
         NodoASTZetariano operandoDerecho = visit(ctx.expresion(1));
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo multiplicacion division modulo
@@ -934,7 +878,7 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
 
     @Override
     public NodoASTZetariano visitExprSumaResta(ZetarianoParser.ExprSumaRestaContext ctx) {
-        // visitar operando izquierdo
+        // ver lado izq
         NodoASTZetariano operandoIzquierdo = visit(ctx.expresion(0));
         // determinar operador suma resta
         String operador;
@@ -943,9 +887,8 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
         } else {
             operador = ctx.RESTA().getText();
         }
-        // visitar operando derecho
+        // ver lado der
         NodoASTZetariano operandoDerecho = visit(ctx.expresion(1));
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo suma resta
@@ -954,7 +897,6 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
 
     @Override
     public NodoASTZetariano visitExprRelacional(ZetarianoParser.ExprRelacionalContext ctx) {
-        // visitar operando izquierdo
         NodoASTZetariano operandoIzquierdo = visit(ctx.expresion(0));
         // determinar operador relacional
         String operador;
@@ -971,9 +913,7 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
         } else {
             operador = ctx.MENOR_IGUAL_QUE().getText();
         }
-        // visitar operando derecho
         NodoASTZetariano operandoDerecho = visit(ctx.expresion(1));
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo expresion relacional
@@ -988,7 +928,6 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
         String operador = ctx.AND().getText();
         // visitar operando derecho
         NodoASTZetariano operandoDerecho = visit(ctx.expresion(1));
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo expresion and
@@ -997,13 +936,12 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
 
     @Override
     public NodoASTZetariano visitExprOr(ZetarianoParser.ExprOrContext ctx) {
-        // visitar operando izquierdo
+        // ver lado izq
         NodoASTZetariano operandoIzquierdo = visit(ctx.expresion(0));
         // obtener operador or
         String operador = ctx.OR().getText();
-        // visitar operando derecho
+        // ver lado der
         NodoASTZetariano operandoDerecho = visit(ctx.expresion(1));
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo expresion or
@@ -1018,7 +956,6 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
         NodoASTZetariano valorVerdadero = visit(ctx.expresion(1));
         // visitar valor falso
         NodoASTZetariano valorFalso = visit(ctx.expresion(2));
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo expresion ternario
@@ -1034,7 +971,6 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
         if (valor instanceof ValorPrimitivo) {
             tipoDato = ((ValorPrimitivo) valor).getTipoDato();
         }
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo expresion primitivo
@@ -1074,7 +1010,6 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
             valor = "";
             tipoDato = TipoPrimitivo.DESCONOCIDO;
         }
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo valor primitivo
@@ -1089,7 +1024,6 @@ public class ZetarianoASTBuilder extends ZetarianoBaseVisitor<NodoASTZetariano> 
         for (ZetarianoParser.ExpresionContext exprCtx : ctx.expresion()) {
             expresiones.add(visit(exprCtx));
         }
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo lista expresiones

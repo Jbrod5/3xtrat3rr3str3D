@@ -9,7 +9,7 @@ public class ValorBooleano extends ValorC {
      * Crear un valor booleano con su texto original.
      */
     public ValorBooleano(String texto) {
-        // delegar al constructor de la clase base
+        // usar el constructor base
         super(texto);
     }
 

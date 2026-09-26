@@ -13,18 +13,12 @@ import org.jrg.model.cuarteta.GeneradorTemporales;
 // estado compartido para la generacion de cuartetas del lenguaje Y
 public class ContextoCuartetasY {
 
-    // lista de cuartetas generadas
     private final List<Cuarteta> cuartetas;
-    // generador de temporales y etiquetas
-    private final GeneradorTemporales temporales;
-    // etiqueta actual para romper
+    private final GeneradorTemporales temporales; // tambien genera etiquetas
     private String etiquetaBreakActual;
-    // etiqueta actual para continuar
     private String etiquetaContinueActual;
-    // tipos conocidos de temporales y variables
-    private final Map<String, String> tiposConocidos;
-    // tipos de variables declaradas por nombre
-    private final Map<String, String> tiposDeVariables;
+    private final Map<String, String> tiposConocidos; // incluye temporales y variables
+    private final Map<String, String> tiposDeVariables; // clave por nombre
 
     /**
      * Crear el contexto con estructuras vacias.
@@ -124,7 +118,7 @@ public class ContextoCuartetasY {
         return "_";
     }
 
-    // inferir el tipo de un literal por su forma
+    // adivinar el tipo del literal por como se ve
     public String inferirTipoLiteral(String valor) {
         // devolver guion bajo si el valor es nulo o vacio de tipo
         if (valor == null || valor.equals("_")) {
@@ -154,7 +148,7 @@ public class ContextoCuartetasY {
         return "_";
     }
 
-    // inferir el tipo de un nombre usando el mapa o su forma literal
+    // adivinar el tipo con el mapa o por como se ve
     public String inferirTipoDe(String nombre, Map<String, String> tipos) {
 
         // devolver guion bajo si el nombre es nulo o vacio de tipo
@@ -174,7 +168,7 @@ public class ContextoCuartetasY {
             return tipoVariable;
         }
 
-        // inferir por la forma del literal
+        // adivinar por como se ve el literal
         return inferirTipoLiteral(nombre);
     }
 
@@ -188,10 +182,10 @@ public class ContextoCuartetasY {
         return false;
     }
 
-    // inferir el tipo de un operando aritmetico con entero por defecto
+    // adivinar el tipo del numero, int si no se sabe
     public String tipoAritmetico(String nombre) {
 
-        // inferir el tipo conocido del operando
+        // adivinar el tipo del operando si ya se sabe
         String tipo = inferirTipoDe(nombre, tiposConocidos);
 
         // usar entero cuando el tipo es desconocido
@@ -202,10 +196,10 @@ public class ContextoCuartetasY {
         return tipo;
     }
 
-    // inferir el tipo resultado de una operacion aritmetica
+    // adivinar que tipo sale de la cuenta
     public String tipoResultadoAritmetico(String a, String b) {
 
-        // inferir los tipos de ambos operandos
+        // adivinar los tipos de los dos lados
         String tipoA = inferirTipoDe(a, tiposConocidos);
         String tipoB = inferirTipoDe(b, tiposConocidos);
 

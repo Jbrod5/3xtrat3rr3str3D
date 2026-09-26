@@ -3,24 +3,17 @@ package org.jrg.model.cuarteta;
 // clase que representa una cuarteta para codigo de tres direcciones
 public class Cuarteta {
 
-    // operador de la cuarteta
     private final String operador;
-    // primer argumento
     private final String arg1;
-    // segundo argumento
     private final String arg2;
-    // resultado de la operacion
     private final String resultado;
-    // tipo del primer argumento
-    private final String tipoArg1;
-    // tipo del segundo argumento
-    private final String tipoArg2;
-    // tipo del resultado
-    private final String tipoResultado;
+    private final String tipoArg1; // tipo del primer argumento
+    private final String tipoArg2; // tipo del segundo argumento
+    private final String tipoResultado; // tipo del resultado
 
     // crear la cuarteta con sus cuatro campos
     public Cuarteta(String operador, String arg1, String arg2, String resultado) {
-        // delegar al constructor completo con tipos desconocidos
+        // usar el constructor completo con tipos en _
         this(operador, arg1, arg2, resultado, "_", "_", "_");
     }
 

@@ -70,19 +70,12 @@ import org.jrg.model.cuarteta.Cuarteta;
 // generador de cuartetas para el lenguaje Y que delega en manejadoras
 public class GeneradorCuartetasY implements YAstVisitor<String> {
 
-    // estado compartido de la generacion
     private final ContextoCuartetasY ctx;
-    // manejadora de programa y secciones
     private final ManejadorProgramaY manejadorPrograma;
-    // manejadora de estructuras
     private final ManejadorEstructurasY manejadorEstructuras;
-    // manejadora de funciones
     private final ManejadorFuncionesY manejadorFunciones;
-    // manejadora de declaraciones y asignables
     private final ManejadorDeclaracionesY manejadorDeclaraciones;
-    // manejadora de flujo y ciclos
     private final ManejadorFlujoY manejadorFlujo;
-    // manejadora de expresiones
     private final ManejadorExpresionesY manejadorExpresiones;
 
     /**
@@ -109,7 +102,7 @@ public class GeneradorCuartetasY implements YAstVisitor<String> {
 
     // registrar el tipo de una variable declarada
     public void registrarTipoVariable(String nombre, String tipo) {
-        // delegar el registro al contexto compartido
+        // anotarlo en el contexto
         ctx.registrarTipoVariable(nombre, tipo);
     }
 

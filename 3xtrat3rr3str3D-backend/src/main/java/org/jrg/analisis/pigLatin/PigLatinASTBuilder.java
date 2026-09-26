@@ -110,7 +110,6 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
         for (org.antlr.v4.runtime.tree.TerminalNode id : ctx.IDENTIFICADOR()) {
             identificadores.add(id.getText());
         }
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo ruta importacion
@@ -127,7 +126,6 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
                 declaraciones.add(visit(declCtx));
             }
         }
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo seccion variables globales
@@ -144,7 +142,6 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
                 instrucciones.add(visit(instCtx));
             }
         }
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo seccion maior
@@ -170,7 +167,6 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
         } else {
             tipo = "";
         }
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo tipo dato
@@ -181,7 +177,6 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
     public NodoAST visitValorAsignableSimple(PigLatinParser.ValorAsignableSimpleContext ctx) {
         // obtener identificador simple
         String identificador = ctx.IDENTIFICADOR().getText();
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo variable asignable simple
@@ -194,7 +189,6 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
         NodoAST base = visit(ctx.variable_asignable());
         // visitar indice del array
         NodoAST indice = visit(ctx.expresion());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo variable asignable array
@@ -207,7 +201,6 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
         NodoAST base = visit(ctx.variable_asignable());
         // obtener nombre del miembro
         String miembro = ctx.IDENTIFICADOR().getText();
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo variable asignable miembro
@@ -218,7 +211,6 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
     public NodoAST visitExprParentesis(PigLatinParser.ExprParentesisContext ctx) {
         // visitar expresion entre parentesis
         NodoAST expresion = visit(ctx.expresion());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo expresion parentesis
@@ -234,7 +226,6 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
         if (ctx.lista_expresiones() != null) {
             argumentos = visit(ctx.lista_expresiones());
         }
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo instancia objeto
@@ -250,7 +241,6 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
         if (ctx.lista_expresiones() != null) {
             argumentos = visit(ctx.lista_expresiones());
         }
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo llamada funcion
@@ -268,7 +258,6 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
         if (ctx.lista_expresiones() != null) {
             argumentos = visit(ctx.lista_expresiones());
         }
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo llamada metodo
@@ -281,7 +270,6 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
         NodoAST array = visit(ctx.expresion(0));
         // visitar indice de acceso
         NodoAST indice = visit(ctx.expresion(1));
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo acceso posicion array
@@ -294,7 +282,6 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
         NodoAST objeto = visit(ctx.expresion());
         // obtener nombre del miembro
         String miembro = ctx.IDENTIFICADOR().getText();
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo acceso miembro estructura
@@ -305,7 +292,6 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
     public NodoAST visitExprPostIncremento(PigLatinParser.ExprPostIncrementoContext ctx) {
         // visitar variable a incrementar
         NodoAST variable = visit(ctx.variable_asignable());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo post incremento
@@ -316,7 +302,6 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
     public NodoAST visitExprPostDecremento(PigLatinParser.ExprPostDecrementoContext ctx) {
         // visitar variable a decrementar
         NodoAST variable = visit(ctx.variable_asignable());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo post decremento
@@ -327,7 +312,6 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
     public NodoAST visitExprListaLiteral(PigLatinParser.ExprListaLiteralContext ctx) {
         // visitar lista de expresiones
         NodoAST listaExpresiones = visit(ctx.lista_expresiones());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo lista literal
@@ -340,7 +324,6 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
         String operador = ctx.RESTA().getText();
         // visitar expresion negada
         NodoAST expresion = visit(ctx.expresion());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo expresion negativa
@@ -353,7 +336,6 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
         String operador = ctx.NON().getText();
         // visitar expresion negada
         NodoAST expresion = visit(ctx.expresion());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo expresion negada
@@ -366,7 +348,6 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
         String operador = ctx.INCREMENTO().getText();
         // visitar variable a incrementar
         NodoAST variable = visit(ctx.variable_asignable());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo pre incremento
@@ -379,7 +360,6 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
         String operador = ctx.DECREMENTO().getText();
         // visitar variable a decrementar
         NodoAST variable = visit(ctx.variable_asignable());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo pre decremento
@@ -399,7 +379,6 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
         }
         // visitar operando derecho
         NodoAST operandoDerecho = visit(ctx.expresion(1));
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo multiplicacion division
@@ -408,7 +387,7 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
 
     @Override
     public NodoAST visitExprSumaResta(PigLatinParser.ExprSumaRestaContext ctx) {
-        // visitar operando izquierdo
+        // ver lado izq
         NodoAST operandoIzquierdo = visit(ctx.expresion(0));
         // determinar operador suma o resta
         String operador;
@@ -417,9 +396,8 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
         } else {
             operador = ctx.RESTA().getText();
         }
-        // visitar operando derecho
+        // ver lado der
         NodoAST operandoDerecho = visit(ctx.expresion(1));
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo suma resta
@@ -428,7 +406,6 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
 
     @Override
     public NodoAST visitExprRelacional(PigLatinParser.ExprRelacionalContext ctx) {
-        // visitar operando izquierdo
         NodoAST operandoIzquierdo = visit(ctx.expresion(0));
         // determinar operador relacional
         String operador;
@@ -445,9 +422,7 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
         } else {
             operador = ctx.MENOR_IGUAL_QUE().getText();
         }
-        // visitar operando derecho
         NodoAST operandoDerecho = visit(ctx.expresion(1));
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo expresion relacional
@@ -462,7 +437,6 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
         String operador = ctx.AND().getText();
         // visitar operando derecho
         NodoAST operandoDerecho = visit(ctx.expresion(1));
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo expresion and
@@ -471,13 +445,12 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
 
     @Override
     public NodoAST visitExprOr(PigLatinParser.ExprOrContext ctx) {
-        // visitar operando izquierdo
+        // ver lado izq
         NodoAST operandoIzquierdo = visit(ctx.expresion(0));
         // obtener operador or
         String operador = ctx.OR().getText();
-        // visitar operando derecho
+        // ver lado der
         NodoAST operandoDerecho = visit(ctx.expresion(1));
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo expresion or
@@ -493,7 +466,6 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
         if (valor instanceof ValorPrimitivo) {
             tipoDato = ((ValorPrimitivo) valor).getTipoDato();
         }
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo expresion primitivo
@@ -530,7 +502,6 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
             valor = "";
             tipoDato = TipoPrimitivo.DESCONOCIDO;
         }
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo valor primitivo
@@ -545,7 +516,6 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
         for (PigLatinParser.ExpresionContext exprCtx : ctx.expresion()) {
             expresiones.add(visit(exprCtx));
         }
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo lista expresiones
@@ -562,7 +532,6 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
                 atributos.add(visit(attrCtx));
             }
         }
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo lista atributos instancia
@@ -575,7 +544,6 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
         String nombre = ctx.IDENTIFICADOR().getText();
         // visitar valor del campo
         NodoAST valor = visit(ctx.expresion());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo campo con nombre
@@ -586,7 +554,7 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
     public NodoAST visitCampoPosicional(PigLatinParser.CampoPosicionalContext ctx) {
         // visitar valor del campo posicional
         NodoAST valor = visit(ctx.expresion());
-        // obtener ubicacion del nodo
+        // sacar linea y columna del ctx
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo campo posicional
@@ -604,7 +572,6 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
         if (ctx.lista_expresiones() != null) {
             argumentos = visit(ctx.lista_expresiones());
         }
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo declaracion objeto novus
@@ -619,7 +586,6 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
         String tipo = ctx.IDENTIFICADOR(1).getText();
         // visitar atributos de la instancia
         NodoAST atributos = visit(ctx.lista_atributos_instancia());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo declaracion estructura con valores
@@ -642,7 +608,6 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
         if (ctx.expresion() != null) {
             valor = visit(ctx.expresion());
         }
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo declaracion con tipo y valor
@@ -660,7 +625,6 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
         } else {
             valor = "falsus";
         }
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo declaracion booleana implicita
@@ -673,9 +637,8 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
         String identificador = ctx.IDENTIFICADOR().getText();
         // visitar tamano del array
         NodoAST tamano = visit(ctx.expresion());
-        // visitar tipo de dato
+        // ver que tipo es
         NodoAST tipo = visit(ctx.tipo_dato());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo declaracion array sin datos
@@ -688,7 +651,6 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
         String identificador = ctx.IDENTIFICADOR().getText();
         // visitar tamano del array
         NodoAST tamano = visit(ctx.expresion());
-        // visitar tipo de dato
         NodoAST tipo = visit(ctx.tipo_dato());
         // crear lista para valores
         List<NodoAST> valores = new ArrayList<>();
@@ -697,7 +659,6 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
             NodoAST listaExpr = visit(ctx.lista_expresiones());
             valores = ((ListaExpresiones) listaExpr).getExpresiones();
         }
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo declaracion array con datos
@@ -713,7 +674,6 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
         NodoAST tamanoColumnas = visit(ctx.expresion(1));
         // visitar tipo de dato
         NodoAST tipo = visit(ctx.tipo_dato());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo declaracion matriz sin datos
@@ -727,9 +687,9 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
         // visitar tamanos de filas y columnas
         NodoAST tamanoFilas = visit(ctx.expresion(0));
         NodoAST tamanoColumnas = visit(ctx.expresion(1));
-        // visitar tipo de dato
+        // ver que tipo es
         NodoAST tipo = visit(ctx.tipo_dato());
-        // recolectar las filas con sus valores
+        // juntar las filas con sus valores
         List<List<NodoAST>> filas = new ArrayList<>();
         for (int i = 0; i < ctx.fila_matriz_pig().size(); i++) {
             // visitar la lista de la fila actual
@@ -741,7 +701,6 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
             }
             filas.add(valores);
         }
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo declaracion matriz con datos
@@ -756,7 +715,6 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
         NodoAST tamano = visit(ctx.expresion());
         // obtener tipo de la estructura
         String tipo = ctx.IDENTIFICADOR(1).getText();
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo declaracion array estructura
@@ -771,7 +729,6 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
         String operador = ctx.ASIGNACION().getText();
         // visitar valor asignado
         NodoAST valor = visit(ctx.expresion());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo asignacion general
@@ -782,7 +739,6 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
     public NodoAST visitStmtAsignacion(PigLatinParser.StmtAsignacionContext ctx) {
         // visitar asignacion
         NodoAST asignacion = visit(ctx.asignacion());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo stmt asignacion
@@ -793,7 +749,6 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
     public NodoAST visitStmtCondicional(PigLatinParser.StmtCondicionalContext ctx) {
         // visitar condicional
         NodoAST condicional = visit(ctx.condicional());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo stmt condicional
@@ -804,7 +759,6 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
     public NodoAST visitStmtCiclo(PigLatinParser.StmtCicloContext ctx) {
         // visitar ciclo
         NodoAST ciclo = visit(ctx.ciclo());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo stmt ciclo
@@ -815,7 +769,6 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
     public NodoAST visitStmtLectura(PigLatinParser.StmtLecturaContext ctx) {
         // visitar instruccion lectura
         NodoAST lectura = visit(ctx.instruccion_lectura());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo stmt lectura
@@ -826,7 +779,6 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
     public NodoAST visitStmtImpresion(PigLatinParser.StmtImpresionContext ctx) {
         // visitar instruccion impresion
         NodoAST impresion = visit(ctx.instruccion_impresion());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo stmt impresion
@@ -835,7 +787,6 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
 
     @Override
     public NodoAST visitStmtInterrumpe(PigLatinParser.StmtInterrumpeContext ctx) {
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo stmt interrumpe
@@ -844,7 +795,6 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
 
     @Override
     public NodoAST visitStmtPerge(PigLatinParser.StmtPergeContext ctx) {
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo stmt perge
@@ -855,7 +805,6 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
     public NodoAST visitStmtExpresion(PigLatinParser.StmtExpresionContext ctx) {
         // visitar expresion
         NodoAST expresion = visit(ctx.expresion());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo stmt expresion
@@ -872,7 +821,6 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
                 instrucciones.add(visit(instCtx));
             }
         }
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo bloque
@@ -898,7 +846,6 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
         if (ctx.bloque().size() > ctx.expresion().size()) {
             bloqueAliter = visit(ctx.bloque(ctx.bloque().size() - 1));
         }
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo statement si
@@ -911,7 +858,6 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
         NodoAST condicion = visit(ctx.expresion());
         // visitar bloque del ciclo
         NodoAST bloque = visit(ctx.bloque());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo ciclo dum
@@ -924,7 +870,6 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
         NodoAST bloque = visit(ctx.bloque());
         // visitar condicion del ciclo
         NodoAST condicion = visit(ctx.expresion());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo ciclo facere
@@ -941,7 +886,6 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
         NodoAST paso = visit(ctx.paso_per());
         // visitar bloque del ciclo
         NodoAST bloque = visit(ctx.bloque());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo ciclo per
@@ -952,7 +896,6 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
     public NodoAST visitInitPerDecl(PigLatinParser.InitPerDeclContext ctx) {
         // obtener identificador
         String identificador = ctx.IDENTIFICADOR().getText();
-        // visitar tipo de dato
         NodoAST tipo = visit(ctx.tipo_dato());
         // obtener operador asignacion si existe
         String asignacion = null;
@@ -961,7 +904,6 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
         }
         // visitar valor inicial
         NodoAST valor = visit(ctx.expresion());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo init per declaracion
@@ -976,7 +918,6 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
         String operador = ctx.ASIGNACION().getText();
         // visitar valor asignado
         NodoAST valor = visit(ctx.expresion());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo init per asignacion
@@ -987,7 +928,6 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
     public NodoAST visitPasoPerExpr(PigLatinParser.PasoPerExprContext ctx) {
         // visitar expresion de paso
         NodoAST expresion = visit(ctx.expresion());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo paso per expresion
@@ -1002,7 +942,6 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
         String operador = ctx.ASIGNACION().getText();
         // visitar valor asignado
         NodoAST valor = visit(ctx.expresion());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo paso per asignacion
@@ -1011,7 +950,6 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
 
     @Override
     public NodoAST visitLecturaConsolaSimple(PigLatinParser.LecturaConsolaSimpleContext ctx) {
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo lectura consola simple
@@ -1022,7 +960,6 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
     public NodoAST visitLecturaConsolaAVariable(PigLatinParser.LecturaConsolaAVariableContext ctx) {
         // visitar variable destino
         NodoAST variable = visit(ctx.variable_asignable());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo lectura consola a variable
@@ -1037,7 +974,6 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
         for (PigLatinParser.Elemento_imprimirContext elemCtx : ctx.elemento_imprimir()) {
             elementos.add(visit(elemCtx));
         }
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo impresion encadenada
@@ -1048,7 +984,6 @@ public class PigLatinASTBuilder extends PigLatinBaseVisitor<NodoAST> {
     public NodoAST visitElemento_imprimir(PigLatinParser.Elemento_imprimirContext ctx) {
         // visitar expresion a imprimir
         NodoAST expresion = visit(ctx.expresion());
-        // obtener ubicacion del nodo
         int linea = ctx.getStart().getLine();
         int columna = ctx.getStart().getCharPositionInLine();
         // crear nodo elemento imprimir

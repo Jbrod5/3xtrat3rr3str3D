@@ -29,7 +29,7 @@ public class EscuchaErroresAntlr extends BaseErrorListener {
             int charPositionInLine,
             String msg,
             RecognitionException e) {
-        // ajustar la columna a base 1 y delegar al recolector
+        // poner la columna en base 1 y pasarla al recolector
         this.recolector.agregar(this.tipoError, line, charPositionInLine + 1, msg);
     }
 }

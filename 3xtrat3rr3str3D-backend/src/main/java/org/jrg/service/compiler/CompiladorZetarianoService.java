@@ -42,7 +42,7 @@ public class CompiladorZetarianoService {
      * Analizar un programa Zetariano y devolver el resultado completo.
      */
     public ResultadoAnalisis analizar(String codigoFuente) {
-        // delegar sin nombre de archivo
+        // llamar al de abajo sin nombre de archivo
         return analizar(codigoFuente, null);
     }
 
@@ -113,7 +113,7 @@ public class CompiladorZetarianoService {
                 AnalizadorSemanticoZetariano analizador = new AnalizadorSemanticoZetariano(recolector);
                 analizador.visitarPrograma((Programa) ast);
 
-                // recorrer el arbol de ambitos del global para recolectar los simbolos
+                // pasar por los ambitos para juntar simbolos
                 if (analizador.obtenerAmbitoGlobal() != null) {
                     AmbitoSemantico raiz = analizador.obtenerAmbitoGlobal();
                     colectarSimbolos(raiz, simbolos, tipos);
@@ -274,7 +274,7 @@ public class CompiladorZetarianoService {
             programas.add(programa);
             recolectores.add(recolector);
 
-            // crear el analizador con el ambito compartido
+            // crear el analizador con el ambito comun
             if (programa != null) {
                 analizadores.add(new AnalizadorSemanticoZetariano(recolector, ambitoCompartido));
             } else {
@@ -333,7 +333,7 @@ public class CompiladorZetarianoService {
             }
         }
 
-        // recolectar simbolos y tipos desde el ambito compartido
+        // juntar simbolos y tipos del ambito comun
         List<Simbolo> simbolos = new ArrayList<>();
         List<Tipo> tipos = new ArrayList<>();
         colectarSimbolos(ambitoCompartido, simbolos, tipos);
@@ -411,7 +411,7 @@ public class CompiladorZetarianoService {
         }
     }
 
-    // recorrer el arbol de ambitos y recolectar simbolos y tipos
+    // pasar por los ambitos y juntar todo
     private void colectarSimbolos(AmbitoSemantico ambito, List<Simbolo> simbolos, List<Tipo> tipos) {
         if (ambito == null) {
             return;

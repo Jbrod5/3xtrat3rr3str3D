@@ -37,7 +37,6 @@ public class ManejadorExpresionesZetariano {
 
     // crear la manejadora con contexto y generador
     public ManejadorExpresionesZetariano(ContextoCuartetasZetariano ctx, GeneradorCuartetasZetariano generador) {
-        // asignar las dependencias recibidas
         this.ctx = ctx;
         this.generador = generador;
     }
@@ -69,7 +68,6 @@ public class ManejadorExpresionesZetariano {
                     // evaluar el argumento actual
                     String argumento = lista.getExpresiones().get(i).accept(generador);
 
-                    // usar valor por defecto si el resultado es nulo
                     if (argumento == null) {
                         argumento = "_";
                     }
@@ -119,7 +117,6 @@ public class ManejadorExpresionesZetariano {
                     // evaluar la dimension actual
                     String valorDimension = nodo.getDimensiones().get(i).accept(generador);
 
-                    // usar valor por defecto si el resultado es nulo
                     if (valorDimension == null) {
                         valorDimension = "_";
                     }
@@ -159,7 +156,7 @@ public class ManejadorExpresionesZetariano {
                     // evaluar el argumento actual
                     String argumento = lista.getExpresiones().get(i).accept(generador);
 
-                    // usar valor por defecto si el resultado es nulo
+                    // si es nulo usar lo de respaldo
                     if (argumento == null) {
                         argumento = "_";
                     }
@@ -190,7 +187,6 @@ public class ManejadorExpresionesZetariano {
             objeto = nodo.getObjeto().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
         if (objeto == null) {
             objeto = "_";
         }
@@ -209,7 +205,6 @@ public class ManejadorExpresionesZetariano {
                     // evaluar el argumento actual
                     String argumento = lista.getExpresiones().get(i).accept(generador);
 
-                    // usar valor por defecto si el resultado es nulo
                     if (argumento == null) {
                         argumento = "_";
                     }
@@ -243,7 +238,6 @@ public class ManejadorExpresionesZetariano {
             objeto = nodo.getObjeto().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
         if (objeto == null) {
             objeto = "_";
         }
@@ -274,7 +268,6 @@ public class ManejadorExpresionesZetariano {
             objeto = nodo.getObjeto().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
         if (objeto == null) {
             objeto = "_";
         }
@@ -294,7 +287,6 @@ public class ManejadorExpresionesZetariano {
             variable = nodo.getVariable().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
         if (variable == null) {
             variable = "_";
         }
@@ -313,7 +305,7 @@ public class ManejadorExpresionesZetariano {
             variable = nodo.getVariable().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
+        // si es nulo usar lo de respaldo
         if (variable == null) {
             variable = "_";
         }
@@ -332,7 +324,6 @@ public class ManejadorExpresionesZetariano {
             valor = nodo.getExpresion().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
         if (valor == null) {
             valor = "_";
         }
@@ -340,7 +331,7 @@ public class ManejadorExpresionesZetariano {
         // agregar la negacion aritmetica con temporal a la lista de cuartetas
         String temp = ctx.getTemporales().nuevoTemporal();
 
-        // inferir el tipo desde el operando
+        // adivinar el tipo desde el operando
         String tipoNeg = ctx.inferirTipoDe(valor, ctx.getTiposConocidos());
 
         // registrar el temporal con el tipo inferido
@@ -360,7 +351,6 @@ public class ManejadorExpresionesZetariano {
             valor = nodo.getExpresion().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
         if (valor == null) {
             valor = "_";
         }
@@ -383,7 +373,6 @@ public class ManejadorExpresionesZetariano {
             izquierdo = nodo.getOperandoIzquierdo().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
         if (izquierdo == null) {
             izquierdo = "_";
         }
@@ -402,7 +391,7 @@ public class ManejadorExpresionesZetariano {
         // agregar la operacion con temporal a la lista de cuartetas
         String temp = ctx.getTemporales().nuevoTemporal();
 
-        // inferir el tipo resultado de la operacion
+        // adivinar que tipo sale de la cuenta
         String tipoResMult = ctx.tipoResultadoAritmetico(izquierdo, derecho);
 
         // registrar el temporal con el tipo inferido
@@ -420,7 +409,6 @@ public class ManejadorExpresionesZetariano {
             izquierdo = nodo.getOperandoIzquierdo().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
         if (izquierdo == null) {
             izquierdo = "_";
         }
@@ -431,7 +419,6 @@ public class ManejadorExpresionesZetariano {
             derecho = nodo.getOperandoDerecho().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
         if (derecho == null) {
             derecho = "_";
         }
@@ -439,11 +426,11 @@ public class ManejadorExpresionesZetariano {
         // agregar la operacion con temporal a la lista de cuartetas
         String temp = ctx.getTemporales().nuevoTemporal();
 
-        // inferir los tipos de los operandos
+        // adivinar los tipos de los dos lados
         String tipoIzqSuma = ctx.inferirTipoDe(izquierdo, ctx.getTiposConocidos());
         String tipoDerSuma = ctx.inferirTipoDe(derecho, ctx.getTiposConocidos());
 
-        // inferir el tipo resultado de la operacion
+        // adivinar que tipo sale de la cuenta
         String tipoResSuma = ctx.tipoResultadoAritmetico(izquierdo, derecho);
 
         // usar cadena cuando se concatena texto con mas
@@ -470,7 +457,7 @@ public class ManejadorExpresionesZetariano {
             izquierdo = nodo.getOperandoIzquierdo().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
+        // si es nulo usar lo de respaldo
         if (izquierdo == null) {
             izquierdo = "_";
         }
@@ -481,7 +468,6 @@ public class ManejadorExpresionesZetariano {
             derecho = nodo.getOperandoDerecho().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
         if (derecho == null) {
             derecho = "_";
         }
@@ -504,7 +490,6 @@ public class ManejadorExpresionesZetariano {
             izquierdo = nodo.getOperandoIzquierdo().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
         if (izquierdo == null) {
             izquierdo = "_";
         }
@@ -515,7 +500,6 @@ public class ManejadorExpresionesZetariano {
             derecho = nodo.getOperandoDerecho().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
         if (derecho == null) {
             derecho = "_";
         }
@@ -549,7 +533,6 @@ public class ManejadorExpresionesZetariano {
             derecho = nodo.getOperandoDerecho().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
         if (derecho == null) {
             derecho = "_";
         }
@@ -572,7 +555,6 @@ public class ManejadorExpresionesZetariano {
             condicion = nodo.getCondicion().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
         if (condicion == null) {
             condicion = "_";
         }
@@ -595,12 +577,12 @@ public class ManejadorExpresionesZetariano {
             verdadero = nodo.getValorVerdadero().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
+        // si es nulo usar lo de respaldo
         if (verdadero == null) {
             verdadero = "_";
         }
 
-        // inferir los tipos de ambas ramas
+        // adivinar los tipos de las dos ramas
         String tipoVerdadero = ctx.inferirTipoDe(verdadero, ctx.getTiposConocidos());
 
         // agregar la asignacion del valor verdadero a la lista de cuartetas
@@ -618,12 +600,11 @@ public class ManejadorExpresionesZetariano {
             falso = nodo.getValorFalso().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
         if (falso == null) {
             falso = "_";
         }
 
-        // inferir los tipos de ambas ramas
+        // adivinar los tipos de las dos ramas
         String tipoFalso = ctx.inferirTipoDe(falso, ctx.getTiposConocidos());
 
         // agregar la asignacion del valor falso a la lista de cuartetas
@@ -664,7 +645,7 @@ public class ManejadorExpresionesZetariano {
             // guardar el literal en un temporal
             String temp = ctx.getTemporales().nuevoTemporal();
 
-            // inferir el tipo del literal
+            // adivinar el tipo del literal
             String tipoLiteral = ctx.inferirTipoLiteral(primitivo.getValor());
 
             // registrar el temporal con el tipo inferido

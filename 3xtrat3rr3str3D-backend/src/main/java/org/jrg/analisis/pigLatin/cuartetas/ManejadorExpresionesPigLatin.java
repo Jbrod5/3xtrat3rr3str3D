@@ -34,14 +34,11 @@ import org.jrg.model.cuarteta.Cuarteta;
 // generar cuartetas de expresiones y asignables en Pig Latin
 public class ManejadorExpresionesPigLatin {
 
-    // estado compartido de la generacion
     private final ContextoCuartetasPigLatin ctx;
-    // generador duenio para el descenso recursivo
     private final GeneradorCuartetasPigLatin generador;
 
     // crear la manejadora con contexto y generador
     public ManejadorExpresionesPigLatin(ContextoCuartetasPigLatin ctx, GeneradorCuartetasPigLatin generador) {
-        // asignar las dependencias recibidas
         this.ctx = ctx;
         this.generador = generador;
     }
@@ -292,7 +289,7 @@ public class ManejadorExpresionesPigLatin {
         }
         // crear temporal para el resultado
         String temp = ctx.getTemporales().nuevoTemporal();
-        // inferir el tipo desde el operando
+        // adivinar el tipo desde el operando
         String tipoNeg = ctx.inferirTipoDe(val, ctx.getTiposConocidos());
         // registrar el temporal con el tipo inferido
         ctx.getTiposConocidos().put(temp, tipoNeg);
@@ -363,7 +360,7 @@ public class ManejadorExpresionesPigLatin {
         }
         String op = expr.getOperador();
         String temp = ctx.getTemporales().nuevoTemporal();
-        // inferir el tipo resultado de la operacion
+        // adivinar que tipo sale de la cuenta
         String tipoResMult = ctx.tipoResultadoAritmetico(izq, der);
         // registrar el temporal con el tipo inferido
         ctx.getTiposConocidos().put(temp, tipoResMult);
@@ -386,10 +383,10 @@ public class ManejadorExpresionesPigLatin {
         String izq = expr.getOperandoIzquierdo().accept(generador);
         String der = expr.getOperandoDerecho().accept(generador);
         String temp = ctx.getTemporales().nuevoTemporal();
-        // inferir los tipos de los operandos
+        // adivinar los tipos de los dos lados
         String tipoIzq = ctx.inferirTipoDe(izq, ctx.getTiposConocidos());
         String tipoDer = ctx.inferirTipoDe(der, ctx.getTiposConocidos());
-        // inferir el tipo resultado de la operacion
+        // adivinar que tipo sale de la cuenta
         String tipoResSuma = ctx.tipoResultadoAritmetico(izq, der);
         // usar cadena cuando se concatena texto con mas
         if ("+".equals(expr.getOperador())) {
@@ -448,7 +445,7 @@ public class ManejadorExpresionesPigLatin {
             }
             // si es literal, meterlo en un temporal
             String temp = ctx.getTemporales().nuevoTemporal();
-            // inferir el tipo del literal
+            // adivinar el tipo del literal
             String tipoLiteral = ctx.inferirTipoLiteral(vp.getValor());
             // registrar el temporal con el tipo inferido
             ctx.getTiposConocidos().put(temp, tipoLiteral);

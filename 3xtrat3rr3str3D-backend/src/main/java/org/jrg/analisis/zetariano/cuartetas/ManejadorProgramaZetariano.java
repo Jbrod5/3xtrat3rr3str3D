@@ -20,7 +20,6 @@ public class ManejadorProgramaZetariano {
 
     // crear la manejadora con contexto y generador
     public ManejadorProgramaZetariano(ContextoCuartetasZetariano ctx, GeneradorCuartetasZetariano generador) {
-        // asignar las dependencias recibidas
         this.ctx = ctx;
         this.generador = generador;
     }

@@ -313,7 +313,7 @@ public class Ambito {
         List<String> ruta = new ArrayList<>();
         List<Ambito> cadena = new ArrayList<>();
         Ambito actual = this;
-        // recolectar cadena hasta la raiz
+        // subir juntando la cadena hasta la raiz
         while (actual != null) {
             cadena.add(actual);
             actual = actual.padre;

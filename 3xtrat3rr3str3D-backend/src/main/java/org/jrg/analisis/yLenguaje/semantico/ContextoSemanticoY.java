@@ -18,15 +18,10 @@ import org.jrg.service.error.RecolectorErrores;
 // es la memoria del analizador: guarda ambitos, simbolos, tipos y errores
 public class ContextoSemanticoY {
 
-    // recolector donde se acumulan los errores semanticos
     private final RecolectorErrores recolectorErrores;
-    // ambito raiz del programa
     private AmbitoSemantico ambitoGlobal;
-    // pila de ambitos activos donde el actual es siempre el ultimo que entro
-    private final Stack<AmbitoSemantico> ambitos;
-    // tipos primitivos del lenguaje: entero, flotante, cadena, caracter, booleano :D
+    private final Stack<AmbitoSemantico> ambitos; // el actual es siempre el ultimo que entro
     private final Map<String, Tipo> tiposPrimitivos;
-    // profundidad actual de ciclos anidados
     private int profundidadCiclos;
 
     /**
@@ -40,7 +35,7 @@ public class ContextoSemanticoY {
             this.recolectorErrores = recolectorErrores;
         }
 
-        // inicializar las estructuras internas :D
+        // dejar todo en cero para empezar
         this.ambitos = new Stack<>();
         this.tiposPrimitivos = new HashMap<>();
         this.profundidadCiclos = 0;
@@ -124,7 +119,7 @@ public class ContextoSemanticoY {
         AmbitoSemantico nuevo = new AmbitoSemantico(nombre, padre);
 
 
-        // el constructor de AmbitoSemantico ya registra el hijo en el padre :D
+        // el constructor ya mete el hijo en el padre
 
         // enlazar el nuevo ambito con su padre
         //if (padre != null) {
@@ -132,7 +127,7 @@ public class ContextoSemanticoY {
         //}
 
 
-        // apilarlo como ambito actual :D
+        // apilarlo como actual
         this.ambitos.push(nuevo);
     }
 
@@ -171,7 +166,6 @@ public class ContextoSemanticoY {
         return this.profundidadCiclos > 0;
     }
 
-    // profundidad actual de selecciones elegir anidadas
     private int profundidadSeleccion;
 
     /**
@@ -264,7 +258,7 @@ public class ContextoSemanticoY {
             return false;
         }
 
-        // no permitir duplicados en el mismo ambito >:c
+        // no dejar duplicados aqui
         if (ambitoActual().buscarSimboloLocal(nombre) != null) {
             agregarError(nodo, "declaracion duplicada en el mismo ambito");
             return false;
@@ -307,7 +301,7 @@ public class ContextoSemanticoY {
             return null;
         }
 
-        // dimension 1, tipo base apuntado y sin campos :D
+        // dimension 1 con su base y sin campos
         Tipo tipo = new Tipo(base.getNombre(), base.esPrimitivo(), 1, base, new ArrayList<>(), null);
         return tipo;
     }
@@ -385,7 +379,7 @@ public class ContextoSemanticoY {
             return false;
         }
 
-        // mismo nombre y misma dimension son compatibles :D
+        // mismo nombre y dimension es compatible
         if (esperado.getNombre().equals(real.getNombre()) && esperado.getDimension() == real.getDimension()) {
             return true;
         }
@@ -426,7 +420,7 @@ public class ContextoSemanticoY {
             return tipoPrimitivo("flotante");
         }
 
-        // si alguno es entero gana entero :D
+        // si hay entero gana entero
         if (esEntero(a) || esEntero(b)) {
             return tipoPrimitivo("entero");
         }

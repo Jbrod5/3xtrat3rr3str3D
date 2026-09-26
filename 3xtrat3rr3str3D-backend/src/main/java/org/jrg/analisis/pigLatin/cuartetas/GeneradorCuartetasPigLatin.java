@@ -27,15 +27,10 @@ import org.jrg.model.cuarteta.Cuarteta;
 // generador de cuartetas para Pig Latin que delega en manejadoras
 public class GeneradorCuartetasPigLatin implements LatinusAstVisitor<String> {
 
-    // estado compartido de la generacion
     private final ContextoCuartetasPigLatin ctx;
-    // manejadora de programa y secciones
     private final ManejadorProgramaPigLatin manejadorPrograma;
-    // manejadora de expresiones y asignables
     private final ManejadorExpresionesPigLatin manejadorExpresiones;
-    // manejadora de declaraciones y asignaciones
     private final ManejadorDeclaracionesPigLatin manejadorDeclaraciones;
-    // manejadora de flujo lectura e impresion
     private final ManejadorFlujoPigLatin manejadorFlujo;
 
     // crear el generador con su contexto y sus manejadoras
@@ -56,13 +51,13 @@ public class GeneradorCuartetasPigLatin implements LatinusAstVisitor<String> {
 
     // registrar los campos de un struct importado en orden
     public void registrarCamposDeStruct(String nombreStruct, List<String> campos) {
-        // delegar el registro al contexto compartido
+        // anotarlo en el contexto
         ctx.registrarCamposDeStruct(nombreStruct, campos);
     }
 
     // registrar el tipo de una variable declarada
     public void registrarTipoVariable(String nombre, String tipo) {
-        // delegar el registro al contexto compartido
+        // anotarlo en el contexto
         ctx.registrarTipoVariable(nombre, tipo);
     }
 

@@ -12,14 +12,11 @@ import org.jrg.model.cuarteta.Cuarteta;
 // generar cuartetas de estructuras en el lenguaje Y
 public class ManejadorEstructurasY {
 
-    // estado compartido de la generacion
     private final ContextoCuartetasY ctx;
-    // generador duenio para el descenso recursivo
     private final GeneradorCuartetasY generador;
 
     // crear la manejadora con contexto y generador
     public ManejadorEstructurasY(ContextoCuartetasY ctx, GeneradorCuartetasY generador) {
-        // asignar las dependencias recibidas
         this.ctx = ctx;
         this.generador = generador;
     }

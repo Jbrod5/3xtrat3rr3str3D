@@ -107,7 +107,7 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
 
     // registrar el tipo de una variable declarada
     public void registrarTipoVariable(String nombre, String tipo) {
-        // delegar el registro al contexto compartido
+        // anotarlo en el contexto
         ctx.registrarTipoVariable(nombre, tipo);
     }
 

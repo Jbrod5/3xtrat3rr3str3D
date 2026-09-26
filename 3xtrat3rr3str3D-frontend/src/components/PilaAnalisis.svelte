@@ -303,21 +303,23 @@ function mostrarTamano(simbolo) {
           </button>
         </div>
         {#if archivoActivo?.resultado?.resultadoGcc}
-          <div class="mb-2 p-2 rounded border"
-               class:border-success={archivoActivo.resultado.resultadoGcc.compilo}
-               class:border-danger={!archivoActivo.resultado.resultadoGcc.compilo}
-               style="font-size: 12px;">
-            <div class="d-flex justify-content-between align-items-center mb-1">
-              <span class="fw-bold">
+          {#if !archivoActivo.resultado.resultadoGcc.compilo && !(archivoActivo.resultado.codigoC || '').includes('int main')}
+            <div class="alert alert-info py-1 px-2 small mb-2" style="font-size: 11px;">
+              <i class="bi bi-info-circle"></i> Este archivo no genera <code>main</code>: los <code>.y</code> y <code>.z</code> son librerias. Compila el <code>.pig</code> que los importa para obtener el binario completo.
+            </div>
+          {/if}
+          <div class="alert {archivoActivo.resultado.resultadoGcc.compilo ? 'alert-success' : 'alert-danger'} py-1 px-2 small mb-2" style="font-size: 12px;">
+            <div class="d-flex justify-content-between align-items-center">
+              <span>
                 {#if archivoActivo.resultado.resultadoGcc.compilo}
-                  <i class="bi bi-check-circle text-success"></i> Compilacion exitosa
+                  <i class="bi bi-check-circle"></i> Compilacion exitosa
                 {:else}
-                  <i class="bi bi-x-circle text-danger"></i> Errores de compilacion
+                  <i class="bi bi-x-circle"></i> Errores de compilacion
                 {/if}
               </span>
             </div>
             {#if archivoActivo.resultado.resultadoGcc.rutaBinario}
-              <div class="mb-1 text-secondary">
+              <div class="mt-1 text-secondary">
                 Binario generado en:
                 <code>{archivoActivo.resultado.resultadoGcc.rutaBinario}</code>
                 <button
@@ -329,10 +331,11 @@ function mostrarTamano(simbolo) {
                 </button>
               </div>
             {/if}
-            <div class="mb-1 text-muted small font-monospace" style="font-size: 10px;">
-              {archivoActivo.resultado.resultadoGcc.comando}
-            </div>
-            <pre class="mb-0 text-dark" style="font-size: 11px; white-space: pre-wrap; max-height: 150px; overflow-y: auto;">{archivoActivo.resultado.resultadoGcc.salida}</pre>
+            <details class="mt-1">
+              <summary class="text-muted" style="cursor: pointer; font-size: 11px;">Ver salida de gcc</summary>
+              <div class="text-muted font-monospace mt-1" style="font-size: 10px;">{archivoActivo.resultado.resultadoGcc.comando}</div>
+              <pre class="mb-0 mt-1" style="font-size: 11px; white-space: pre-wrap; max-height: 150px; overflow-y: auto;">{archivoActivo.resultado.resultadoGcc.salida}</pre>
+            </details>
           </div>
         {/if}
         <pre class="bg-light p-2 rounded border text-dark mb-0" style="border-color: #e9ecef !important; font-size: 12px; white-space: pre-wrap;">{archivoActivo.resultado.codigoC}</pre>

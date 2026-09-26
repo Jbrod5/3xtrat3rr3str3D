@@ -36,7 +36,7 @@ import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaRetorno;
 import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaStructDef;
 import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaUminus;
 
-// orquestar la traduccion de cuartetas de codigo de tres direcciones a codigo C
+// armar el C final a partir de las cuartetas
 public class TraductorC {
 
     // estado compartido de la traduccion en curso
@@ -62,7 +62,7 @@ public class TraductorC {
         }
         // preprocesar definiciones de structs y sus temporales
         ctx.preprocesarStructs(cuartetas);
-        // detectar clases de Zetariano por prefijo en funciones
+        // buscar clases de Zetariano por nombre de funcion
         ctx.detectarClases(cuartetas);
         // acumular el cuerpo de las funciones
         StringBuilder cuerpo = new StringBuilder();
@@ -99,11 +99,11 @@ public class TraductorC {
         if (ctx.bufferFuncion != null) {
             terminarFuncion(cuerpo);
         }
-        // ensamblar el programa completo
+        // unir todo en el programa final
         return ensamblar(cuerpo.toString());
     }
 
-    // crear la cuarteta concreta segun el operador con polimorfismo :D
+    // armar la cuarteta segun el operador :D
     private CuartetaC crearCuarteta(CuartetaResultado c) {
         // extraer el operador y los campos de la cuarteta
         String op = c.getOperador();
@@ -117,46 +117,46 @@ public class TraductorC {
         if ("param".equals(op)) {
             return new CuartetaParametro(op, a1, a2, res, t1, t2, tr);
         }
-        // delegar llamadas a funcion y a metodo
+        // ver llamadas a funcion y a metodo
         if ("call".equals(op) || "call_method".equals(op)) {
             return new CuartetaLlamada(op, a1, a2, res, t1, t2, tr);
         }
-        // delegar carga de literal
+        // ver carga de literal
         if ("=".equals(op)) {
             return new CuartetaAsignacionLiteral(op, a1, a2, res, t1, t2, tr);
         }
-        // delegar asignacion simple
+        // ver asignacion simple
         if (":=".equals(op)) {
             return new CuartetaAsignacionSimple(op, a1, a2, res, t1, t2, tr);
         }
-        // delegar suma segun sea texto o numero
+        // sumar segun sea texto o numero
         if ("+".equals(op)) {
             if (ctx.esTipoTexto(tr)) {
                 return new CuartetaConcatenacion(op, a1, a2, res, t1, t2, tr);
             }
             return new CuartetaAritmetica(op, a1, a2, res, t1, t2, tr);
         }
-        // delegar resto de operaciones aritmeticas
+        // ver el resto de cuentas aritmeticas
         if ("-".equals(op) || "*".equals(op) || "/".equals(op) || "%".equals(op)) {
             return new CuartetaAritmetica(op, a1, a2, res, t1, t2, tr);
         }
-        // delegar comparaciones
+        // ver comparaciones
         if ("==".equals(op) || "!=".equals(op) || "<".equals(op) || ">".equals(op) || "<=".equals(op) || ">=".equals(op)) {
             return new CuartetaComparacion(op, a1, a2, res, t1, t2, tr);
         }
-        // delegar operadores logicos binarios
+        // ver && y ||
         if ("&&".equals(op) || "||".equals(op)) {
             return new CuartetaLogica(op, a1, a2, res, t1, t2, tr);
         }
-        // delegar negacion logica
+        // ver negacion con !
         if ("!".equals(op)) {
             return new CuartetaNegacion(op, a1, a2, res, t1, t2, tr);
         }
-        // delegar menos unario con opcode propio
+        // ver menos unario con su codigo
         if ("uminus".equals(op)) {
             return new CuartetaUminus(op, a1, a2, res, t1, t2, tr);
         }
-        // delegar etiquetas y saltos
+        // ver etiquetas y saltos
         if ("label".equals(op)) {
             return new CuartetaEtiqueta(op, a1, a2, res, t1, t2, tr);
         }
@@ -166,47 +166,47 @@ public class TraductorC {
         if ("if_false".equals(op)) {
             return new CuartetaIfFalse(op, a1, a2, res, t1, t2, tr);
         }
-        // delegar retorno
+        // ver retorno
         if ("return".equals(op)) {
             return new CuartetaRetorno(op, a1, a2, res, t1, t2, tr);
         }
-        // delegar impresion
+        // ver impresion
         if ("print".equals(op)) {
             return new CuartetaPrint(op, a1, a2, res, t1, t2, tr);
         }
-        // delegar lectura
+        // ver lectura
         if ("read".equals(op)) {
             return new CuartetaRead(op, a1, a2, res, t1, t2, tr);
         }
-        // delegar acceso a miembro
+        // ver acceso a campo
         if (".".equals(op)) {
             return new CuartetaAccesoMiembro(op, a1, a2, res, t1, t2, tr);
         }
-        // delegar asignacion a miembro
+        // ver asignacion a campo
         if (".,=".equals(op)) {
             return new CuartetaAsignacionMiembro(op, a1, a2, res, t1, t2, tr);
         }
-        // delegar acceso a arreglo
+        // ver acceso a arreglo
         if ("=[]".equals(op)) {
             return new CuartetaAccesoArreglo(op, a1, a2, res, t1, t2, tr);
         }
-        // delegar asignacion a arreglo
+        // ver asignacion a arreglo
         if ("[]=".equals(op)) {
             return new CuartetaAsignacionArreglo(op, a1, a2, res, t1, t2, tr);
         }
-        // delegar reserva de memoria
+        // ver reserva con malloc
         if ("alloc".equals(op)) {
             return new CuartetaAlloc(op, a1, a2, res, t1, t2, tr);
         }
-        // delegar instanciacion de objeto y de struct
+        // ver new de objeto y de struct
         if ("new".equals(op) || "new_struct".equals(op)) {
             return new CuartetaNew(op, a1, a2, res, t1, t2, tr);
         }
-        // delegar halt
+        // ver halt
         if ("halt".equals(op)) {
             return new CuartetaHalt(op, a1, a2, res, t1, t2, tr);
         }
-        // delegar marcadores que gestiona el orquestador
+        // ver marcadores que se arman aparte
         if ("func_begin".equals(op)) {
             return new CuartetaFuncBegin(op, a1, a2, res, t1, t2, tr);
         }
@@ -231,7 +231,7 @@ public class TraductorC {
         return sb.toString();
     }
 
-    // ensamblar includes mas builtins mas prototipos mas globales mas cuerpo
+    // unir includes, builtins, prototipos, globales y cuerpo
     private String ensamblar(String cuerpo) {
         // crear el acumulador de salida
         StringBuilder salida = new StringBuilder();
@@ -286,7 +286,7 @@ public class TraductorC {
         ctx.dentroDeFuncion = true;
         // guardar el nombre de la funcion actual
         ctx.funcionActual = c.getArg1();
-        // detectar la clase actual desde el prefijo del nombre
+        // sacar la clase actual desde el inicio del nombre
         String claseDetectada = ctx.claseDeFuncion(c.getArg1());
         ctx.nombreClaseActual = "";
         if (claseDetectada != null) {
@@ -325,7 +325,7 @@ public class TraductorC {
 
     // cerrar la funcion agregando la firma con nombres reales
     private void terminarFuncion(StringBuilder cuerpo) {
-        // recolectar los nombres llamados en el cuerpo
+        // juntar los nombres llamados en el cuerpo
         for (int i = 0; i < ctx.crudasFuncion.size(); i++) {
             CuartetaResultado c = ctx.crudasFuncion.get(i);
             // omitir cuartetas nulas
@@ -339,7 +339,7 @@ public class TraductorC {
                 }
             }
         }
-        // recolectar identificadores candidatos en orden de aparicion
+        // juntar los posibles params en orden
         List<String> identificadores = new ArrayList<>();
         for (int i = 0; i < ctx.crudasFuncion.size(); i++) {
             ctx.recolectarIdentificadores(ctx.crudasFuncion.get(i), identificadores);
@@ -481,7 +481,7 @@ public class TraductorC {
         }
         // registrar destinos de asignacion como globales
         if (":=".equals(operador)) {
-            // propagar el struct del valor al destino
+            // pasar el struct del valor al destino
             if (c.getArg1() != null && c.getResultado() != null) {
                 String structOrigen = ctx.structDeNombre.get(c.getArg1());
                 if (structOrigen != null) {

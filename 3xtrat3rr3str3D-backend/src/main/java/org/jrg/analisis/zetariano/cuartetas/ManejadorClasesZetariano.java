@@ -28,7 +28,6 @@ public class ManejadorClasesZetariano {
 
     // crear la manejadora con contexto y generador
     public ManejadorClasesZetariano(ContextoCuartetasZetariano ctx, GeneradorCuartetasZetariano generador) {
-        // asignar las dependencias recibidas
         this.ctx = ctx;
         this.generador = generador;
     }
@@ -180,7 +179,7 @@ public class ManejadorClasesZetariano {
         return null;
     }
 
-    // contar los parametros para el mangling de sobrecargas
+    // contar params para el sobrecargasss xd
     private int contarParametros(NodoASTZetariano parametrosNodo) {
         // devolver cero si no es lista de parametros
         if (parametrosNodo instanceof Parametros == false) {
@@ -194,9 +193,9 @@ public class ManejadorClasesZetariano {
         return parametros.getParametros().size();
     }
 
-    // componer el nombre con sufijo de conteo cuando hay params
+    // armar el nombre con _N cuando hay params
     private String componerNombre(String base, int cantidad) {
-        // usar la base sin sufijo cuando no hay params
+        // dejar el nombre pelon si no hay params xd
         if (cantidad <= 0) {
             return base;
         }
@@ -236,7 +235,7 @@ public class ManejadorClasesZetariano {
         // construir el string de tipos de parametros
         String tiposParams = extraerTiposParametrosZet(nodo.getParametros());
 
-        // construir el prefijo con el nombre de la clase actual
+        // pegar la clase al inicio del nombre
         String prefijo = "Clase";
 
         if (ctx.getNombreClaseActual() != null) {
@@ -282,7 +281,7 @@ public class ManejadorClasesZetariano {
             tipoRetorno = "_";
         }
 
-        // construir el prefijo con el nombre de la clase actual
+        // pegar la clase al inicio del nombre
         String prefijo = "Clase";
         if (ctx.getNombreClaseActual() != null) {
             prefijo = ctx.getNombreClaseActual();

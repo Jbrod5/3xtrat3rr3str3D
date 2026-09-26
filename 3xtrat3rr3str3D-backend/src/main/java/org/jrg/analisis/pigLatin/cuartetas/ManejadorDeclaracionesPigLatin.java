@@ -25,14 +25,11 @@ import org.jrg.model.cuarteta.Cuarteta;
 // generar cuartetas de declaraciones y asignaciones en Pig Latin
 public class ManejadorDeclaracionesPigLatin {
 
-    // estado compartido de la generacion
     private final ContextoCuartetasPigLatin ctx;
-    // generador duenio para el descenso recursivo
     private final GeneradorCuartetasPigLatin generador;
 
     // crear la manejadora con contexto y generador
     public ManejadorDeclaracionesPigLatin(ContextoCuartetasPigLatin ctx, GeneradorCuartetasPigLatin generador) {
-        // asignar las dependencias recibidas
         this.ctx = ctx;
         this.generador = generador;
     }
@@ -134,7 +131,7 @@ public class ManejadorDeclaracionesPigLatin {
                 return nombre;
             }
         }
-        // inferir del respaldo cuando no hay nombre
+        // adivinar con el respaldo si no hay nombre
         String inferido = ctx.inferirTipoDe(respaldo, ctx.getTiposConocidos());
         if (inferido == null || inferido.isEmpty()) {
             return "entero";
@@ -318,7 +315,6 @@ public class ManejadorDeclaracionesPigLatin {
             if (a.getValor() != null) {
                 derArr = a.getValor().accept(generador);
             }
-            // usar valor por defecto si el resultado es nulo
             if (derArr == null) {
                 derArr = "_";
             }
@@ -329,7 +325,6 @@ public class ManejadorDeclaracionesPigLatin {
             if (acceso.getBase() != null) {
                 base = acceso.getBase().accept(generador);
             }
-            // usar valor por defecto si el resultado es nulo
             if (base == null) {
                 base = "_";
             }
@@ -338,7 +333,7 @@ public class ManejadorDeclaracionesPigLatin {
             if (acceso.getIndice() != null) {
                 indice = acceso.getIndice().accept(generador);
             }
-            // usar valor por defecto si el resultado es nulo
+            // si es nulo usar lo de respaldo
             if (indice == null) {
                 indice = "_";
             }

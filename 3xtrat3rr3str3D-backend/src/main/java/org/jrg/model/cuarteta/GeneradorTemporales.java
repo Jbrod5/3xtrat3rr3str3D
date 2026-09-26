@@ -3,9 +3,7 @@ package org.jrg.model.cuarteta;
 // generador de temporales y etiquetas para las cuartetas
 public class GeneradorTemporales {
 
-    // contador interno de temporales
     private int contadorTemporales = 0;
-    // contador interno de etiquetas
     private int contadorEtiquetas = 0;
 
     // crear el generador sin parametros

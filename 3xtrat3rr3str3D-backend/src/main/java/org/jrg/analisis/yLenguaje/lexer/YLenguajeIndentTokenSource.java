@@ -119,7 +119,7 @@ public class YLenguajeIndentTokenSource implements TokenSource {
         return nuevo;
     }
 
-    // delegar el resto de la interfaz TokenSource al lexer original
+    // pasar lo demas de TokenSource al lexer original
     @Override
     public int getLine() {
         return lexerDelegado.getLine();

@@ -84,16 +84,11 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
 
 
 
-    // almacenar el contexto semantico del analisis
     private final ContextoSemanticoPigLatin contexto;
-    // recolector de errores para pasarlo al gestor de imports
-    private final RecolectorErrores recolectorErrores;
-    // ruta base del proyecto para resolver imports
-    private String rutaBase;
-    // gestor de imports creado bajo demanda
-    private GestorImports gestorImports;
-    // cuartetas importadas desde otros lenguajes
-    private final List<Cuarteta> cuartetasImportadas;
+    private final RecolectorErrores recolectorErrores; // para pasarlo al gestor de imports
+    private String rutaBase; // base del proyecto para resolver imports
+    private GestorImports gestorImports; // creado bajo demanda
+    private final List<Cuarteta> cuartetasImportadas; // importadas desde otros lenguajes
 
 
 
@@ -104,7 +99,7 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
      */
     public AnalizadorSemanticoPigLatin(RecolectorErrores recolectorErrores) {
 
-        // guardar el recolector original o crear uno nuevo si viene nulo :D
+        // guardar el recolector o crear uno si viene nulo
         if (recolectorErrores == null) {
             this.recolectorErrores = new RecolectorErrores();
         } else {
@@ -139,7 +134,7 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
             programa.accept(this);
         }
 
-        // copiar las cuartetas acumuladas por el gestor :D
+        // copiar las cuartetas que junto el gestor
         if (this.gestorImports != null) {
             this.cuartetasImportadas.addAll(this.gestorImports.getCuartetasAcumuladas());
         }
@@ -225,7 +220,7 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
             return null;
         }
 
-        // buscar el tipo primitivo en el contexto :D
+        // buscar el primitivo en el contexto
         Tipo primitivo = this.contexto.tipoPrimitivo(nombre);
         if (primitivo != null) {
             return primitivo;
@@ -312,7 +307,7 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
 
     // ==================== DECLARACIONES SEGURAS ====================
 
-    // declarar variable buscando en TODOS los ambitos padres :D
+    // declarar variable buscando en todos los ambitos padres
     // si existe en cualquier padre se considera error de redeclaracion
     // asi no se permite lo del i declarado multiples veces en for anidados :D
     private boolean declararVariableSeguro(NodoAST nodo, String nombre, Tipo tipo, CategoriaSimbolo categoria, Integer tamano) {
@@ -336,10 +331,10 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
         return this.contexto.declarar(nodo, nombre, tipo, categoria, tamano);
     }
 
-    // ==================== ALCANZABILIDAD :D ====================
+    // ==================== ALCANZABILIDAD ====================
 
     // recorrer una lista de instrucciones combinando sus flujos
-    // reportar codigo inalcanzable una sola vez por bloque :3
+    // reportar inalcanzable una sola vez por bloque
     private FlujoControl analizarInstrucciones(List<NodoAST> instrucciones) {
 
         FlujoControl flujo = new FlujoControl();
@@ -434,17 +429,17 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
     @Override
     public Object visitPrograma(Programa programa) {
 
-        // visitar la seccion de importaciones si existe :D
+        // visitar imports si hay
         if (programa.getSeccionImportaciones() != null) {
             programa.getSeccionImportaciones().accept(this);
         }
 
-        // visitar la seccion de variables globales si existe :D
+        // visitar globales si hay
         if (programa.getSeccionGlobalVariables() != null) {
             programa.getSeccionGlobalVariables().accept(this);
         }
 
-        // visitar la seccion maior si existe :D
+        // visitar maior si hay
         if (programa.getSeccionMaior() != null) {
             programa.getSeccionMaior().accept(this);
         }
@@ -486,7 +481,7 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
             return new FlujoControl();
         }
 
-        // propagar los errores del archivo importado al recolector actual
+        // pasar los errores del import al recolector actual
         for (int i = 0; i < resultado.getErrores().size(); i++) {
             org.jrg.model.error.ErrorCompilacion e = resultado.getErrores().get(i);
             this.recolectorErrores.agregar(e.getTipo(), e.getLinea(), e.getColumna(), e.getDescripcion());
@@ -582,7 +577,7 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
         // verificar si hay expresiones
         if (lista.getExpresiones() != null) {
 
-            // recorrer cada expresion y visitarla si no es nula :D
+            // pasar por cada expresion si no es nula
             for (NodoAST expr : lista.getExpresiones()) {
 
                 if (expr != null) {
@@ -1074,7 +1069,7 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
             this.contexto.agregarError(expr.getOperandoDerecho(), "operando derecho debe ser numerico");
         }
 
-        // devolver el tipo de mayor jerarquia numerica (double sobre int :D)
+        // devolver decimalis si hay, si no numerus
         return this.contexto.tipoMayorJerarquia(tIzq, tDer);
     }
 
@@ -1573,7 +1568,7 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
                 if (definicion == null) {
 
                     // TODO: el esquema del struct no se conoce cuando el tipo viene de un import .y
-                    // mientras no se lea el archivo importado, campo() devuelve null sin reportar error :D
+                    // si no se lee el import, campo() da null sin error
                     // el esquema importado ya se marca como conocido en registrarTipoImportado
                     // campo() ya reporta miembro no declarado cuando el esquema es conocido
                     // omitir el valor porque no hay definicion contra que validar
@@ -2058,7 +2053,7 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
             // recorrer cada elemento
             for (NodoAST elem : impresion.getElementos()) {
 
-                // entrar en el elemento si no es nulo :D
+                // entrar al elemento si no es nulo
                 if (elem != null) {
                     elem.accept(this);
                 }

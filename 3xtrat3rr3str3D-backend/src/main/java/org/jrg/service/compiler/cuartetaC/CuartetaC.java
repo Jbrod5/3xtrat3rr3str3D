@@ -3,19 +3,12 @@ package org.jrg.service.compiler.cuartetaC;
 // clase base abstracta para la traduccion de cuartetas a codigo C
 public abstract class CuartetaC {
 
-    // operador de la cuarteta
     protected final String operador;
-    // primer argumento de la cuarteta
     protected final String arg1;
-    // segundo argumento de la cuarteta
     protected final String arg2;
-    // resultado de la cuarteta
     protected final String resultado;
-    // tipo del primer argumento
     protected final String tipoArg1;
-    // tipo del segundo argumento
     protected final String tipoArg2;
-    // tipo del resultado
     protected final String tipoResultado;
 
     /**

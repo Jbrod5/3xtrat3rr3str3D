@@ -11,7 +11,7 @@ public class CuartetaNew extends CuartetaC {
      */
     public CuartetaNew(String operador, String arg1, String arg2, String resultado,
                         String tipoArg1, String tipoArg2, String tipoResultado) {
-        // delegar al constructor de la clase base
+        // va al base
         super(operador, arg1, arg2, resultado, tipoArg1, tipoArg2, tipoResultado);
     }
 
@@ -20,7 +20,7 @@ public class CuartetaNew extends CuartetaC {
      */
     public CuartetaNew(String arg1, String arg2, String resultado,
                         String tipoArg1, String tipoArg2, String tipoResultado) {
-        // delegar al constructor de la clase base con operador new
+        // cae al base con operador fijo
         super("new", arg1, arg2, resultado, tipoArg1, tipoArg2, tipoResultado);
     }
 
@@ -35,7 +35,7 @@ public class CuartetaNew extends CuartetaC {
             String destinoNew = resultado;
             // reservar heap solo para tipos con struct conocido
             if (nombreClase != null && (ctx.clases.contains(nombreClase) || ctx.structs.containsKey(nombreClase))) {
-                // contar argumentos antes de limpiar para el mangling
+                // contar args antes de limpiar para el nombre con numero
                 int numeroArgs = ctx.paramsPendientes.size();
                 String argsNew = ctx.unirParams();
                 ctx.limpiarParams();

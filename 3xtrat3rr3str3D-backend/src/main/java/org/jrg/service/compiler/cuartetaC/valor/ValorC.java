@@ -5,7 +5,6 @@ import org.jrg.service.compiler.cuartetaC.ContextoTraduccion;
 // clase base abstracta para la traduccion de operandos a codigo C
 public abstract class ValorC {
 
-    // texto original del operando
     protected final String texto;
 
     /**

@@ -9,7 +9,7 @@ public class ValorNulo extends ValorC {
      * Crear un valor nulo con su texto original.
      */
     public ValorNulo(String texto) {
-        // delegar al constructor de la clase base
+        // usar el constructor base
         super(texto);
     }
 

@@ -25,14 +25,11 @@ import org.jrg.model.cuarteta.Cuarteta;
 // generar cuartetas de flujo lectura e impresion en Pig Latin
 public class ManejadorFlujoPigLatin {
 
-    // estado compartido de la generacion
     private final ContextoCuartetasPigLatin ctx;
-    // generador duenio para el descenso recursivo
     private final GeneradorCuartetasPigLatin generador;
 
     // crear la manejadora con contexto y generador
     public ManejadorFlujoPigLatin(ContextoCuartetasPigLatin ctx, GeneradorCuartetasPigLatin generador) {
-        // asignar las dependencias recibidas
         this.ctx = ctx;
         this.generador = generador;
     }
@@ -104,31 +101,96 @@ public class ManejadorFlujoPigLatin {
         return null;
     }
 
-    // generar el si con etiquetas de else y fin
+    // generar el si con ramas aliter y aliter final
+    // version anterior: solo sacaba la rama principal y el aliter final, botaba los aliter intermedios
+    // public String visitStatementSi(StatementSi stmt) {
+    //     // regla para if: evaluar cond, luego if_false, bloque, goto, label else, bloque else, label fin
+    //     String cond = null;
+    //     if (stmt.getCondicion() != null) {
+    //         cond = stmt.getCondicion().accept(generador);
+    //     }
+    //     String Lelse = ctx.getTemporales().nuevaEtiqueta();
+    //     String Lfin = ctx.getTemporales().nuevaEtiqueta();
+    //     // usar guion bajo si la condicion es nula
+    //     String textoCond = "_";
+    //     if (cond != null) {
+    //         textoCond = cond;
+    //     }
+    //     // generar salto a else si es falso
+    //     ctx.getCuartetas().add(new Cuarteta("if_false", textoCond, Lelse, "_", "booleano", "_", "_"));
+    //     // bloque principal
+    //     if (stmt.getBloque() != null) {
+    //         stmt.getBloque().accept(generador);
+    //     }
+    //     // salto al final
+    //     ctx.getCuartetas().add(new Cuarteta("goto", Lfin, "_", "_", "_", "_", "_"));
+    //     // etiqueta else
+    //     ctx.getCuartetas().add(new Cuarteta("label", Lelse, "_", "_", "_", "_", "_"));
+    //     // bloque else
+    //     if (stmt.getBloqueAliter() != null) {
+    //         stmt.getBloqueAliter().accept(generador);
+    //     }
+    //     // etiqueta final
+    //     ctx.getCuartetas().add(new Cuarteta("label", Lfin, "_", "_", "_", "_", "_"));
+    //     return null;
+    // }
+
+    // generar el si con ramas aliter y aliter final
     public String visitStatementSi(StatementSi stmt) {
-        // regla para if: evaluar cond, luego if_false, bloque, goto, label else, bloque else, label fin
+        // evaluar la condicion principal
         String cond = null;
         if (stmt.getCondicion() != null) {
             cond = stmt.getCondicion().accept(generador);
         }
-        String Lelse = ctx.getTemporales().nuevaEtiqueta();
+        // crear la etiqueta final
         String Lfin = ctx.getTemporales().nuevaEtiqueta();
+        // crear la etiqueta de la rama que sigue
+        String LSiguiente = ctx.getTemporales().nuevaEtiqueta();
         // usar guion bajo si la condicion es nula
         String textoCond = "_";
         if (cond != null) {
             textoCond = cond;
         }
-        // generar salto a else si es falso
-        ctx.getCuartetas().add(new Cuarteta("if_false", textoCond, Lelse, "_", "booleano", "_", "_"));
+        // generar salto a la rama que sigue si es falso
+        ctx.getCuartetas().add(new Cuarteta("if_false", textoCond, LSiguiente, "_", "booleano", "_", "_"));
         // bloque principal
         if (stmt.getBloque() != null) {
             stmt.getBloque().accept(generador);
         }
         // salto al final
         ctx.getCuartetas().add(new Cuarteta("goto", Lfin, "_", "_", "_", "_", "_"));
-        // etiqueta else
-        ctx.getCuartetas().add(new Cuarteta("label", Lelse, "_", "_", "_", "_", "_"));
-        // bloque else
+        // etiqueta de la rama que sigue
+        ctx.getCuartetas().add(new Cuarteta("label", LSiguiente, "_", "_", "_", "_", "_"));
+        // recorrer las ramas aliter si existen
+        if (stmt.getCondicionesAliter() != null) {
+            for (int i = 0; i < stmt.getCondicionesAliter().size(); i++) {
+                // evaluar la condicion de la rama actual
+                String condAliter = "_";
+                if (stmt.getCondicionesAliter().get(i) != null) {
+                    condAliter = stmt.getCondicionesAliter().get(i).accept(generador);
+                }
+                if (condAliter == null) {
+                    condAliter = "_";
+                }
+                // crear la etiqueta de la rama que sigue
+                String LSiguienteAliter = ctx.getTemporales().nuevaEtiqueta();
+                // generar salto si la condicion es falsa
+                ctx.getCuartetas().add(new Cuarteta("if_false", condAliter, LSiguienteAliter, "_", "booleano", "_", "_"));
+                // visitar el bloque de la rama actual si existe
+                if (stmt.getBloquesAliter() != null) {
+                    if (i < stmt.getBloquesAliter().size()) {
+                        if (stmt.getBloquesAliter().get(i) != null) {
+                            stmt.getBloquesAliter().get(i).accept(generador);
+                        }
+                    }
+                }
+                // salto al final
+                ctx.getCuartetas().add(new Cuarteta("goto", Lfin, "_", "_", "_", "_", "_"));
+                // etiqueta de la rama que sigue
+                ctx.getCuartetas().add(new Cuarteta("label", LSiguienteAliter, "_", "_", "_", "_", "_"));
+            }
+        }
+        // bloque aliter final si existe
         if (stmt.getBloqueAliter() != null) {
             stmt.getBloqueAliter().accept(generador);
         }
@@ -136,7 +198,6 @@ public class ManejadorFlujoPigLatin {
         ctx.getCuartetas().add(new Cuarteta("label", Lfin, "_", "_", "_", "_", "_"));
         return null;
     }
-
     // generar el ciclo dum con etiquetas de inicio y fin
     public String visitCicloDum(CicloDum ciclo) {
         String anteriorBreak = ctx.getEtiquetaBreakActual();
@@ -345,7 +406,7 @@ public class ManejadorFlujoPigLatin {
             for (NodoAST elem : impresion.getElementos()) {
                 if (elem != null) {
                     String val = elem.accept(generador);
-                    // inferir el tipo del valor a imprimir
+                    // adivinar el tipo de lo que se imprime
                     String tipoValor = ctx.inferirTipoDe(val, ctx.getTiposConocidos());
                     // buscar en variables si el tipo sigue desconocido
                     if (tipoValor == null || "_".equals(tipoValor)) {

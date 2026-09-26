@@ -17,14 +17,11 @@ import org.jrg.model.cuarteta.Cuarteta;
 // generar cuartetas del programa y sus secciones en Pig Latin
 public class ManejadorProgramaPigLatin {
 
-    // estado compartido de la generacion
     private final ContextoCuartetasPigLatin ctx;
-    // generador duenio para el descenso recursivo
     private final GeneradorCuartetasPigLatin generador;
 
     // crear la manejadora con contexto y generador
     public ManejadorProgramaPigLatin(ContextoCuartetasPigLatin ctx, GeneradorCuartetasPigLatin generador) {
-        // asignar las dependencias recibidas
         this.ctx = ctx;
         this.generador = generador;
     }

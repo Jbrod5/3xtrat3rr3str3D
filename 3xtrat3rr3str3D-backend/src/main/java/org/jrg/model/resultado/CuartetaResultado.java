@@ -2,23 +2,17 @@ package org.jrg.model.resultado;
 
 import org.jrg.model.cuarteta.Cuarteta;
 
-// clase para el resultado de serializacion JSON de una cuarteta
+// clase para mandar la cuarteta en JSON
 public class CuartetaResultado {
 
-    // operador
     private final String operador;
-    // primer argumento
     private final String arg1;
-    // segundo argumento
     private final String arg2;
-    // resultado
     private final String resultado;
-    // tipo del primer argumento
-    private final String tipoArg1;
-    // tipo del segundo argumento
-    private final String tipoArg2;
-    // tipo del resultado
-    private final String tipoResultado;
+
+    private final String tipoArg1;     // tipo del primer argumento
+    private final String tipoArg2;     // tipo del segundo argumento
+    private final String tipoResultado; // tipo del resultado
 
     // crear el resultado con sus cuatro campos y sus tipos
     public CuartetaResultado(String operador, String arg1, String arg2, String resultado, String tipoArg1, String tipoArg2, String tipoResultado) {
@@ -44,7 +38,7 @@ public class CuartetaResultado {
         this.tipoResultado = cuarteta.getTipoResultado();
     }
 
-    // obtener el operador para serializacion
+    // dar el operador para el JSON
     public String getOperador() {
         return operador;
     }

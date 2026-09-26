@@ -79,14 +79,13 @@ import org.jrg.model.error.TipoError;
 // definir el analizador semantico para el lenguaje Zetariano
 public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object> {
 
-    // almacenar el recolector de errores
     private final RecolectorErrores recolectorErrores;
 
     // ambitosss
     private AmbitoSemantico ambitoGlobal;
     private AmbitoSemantico ambitoActual;
     private AmbitoSemantico ambitoClase;
-    // ambito global compartido entre archivos o nulo en modo suelto
+    // ambito global entre archivos o nulo si es un solo archivo
     private AmbitoSemantico ambitoCompartido;
 
 
@@ -123,7 +122,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         this.tipoRetornoActual = null;
         this.enMetodoConstructor = false;
         this.alcanzable = true;
-        // iniciar sin ambito compartido para el modo suelto
+        // empezar sin ambito comun si es un solo archivo
         this.ambitoCompartido = null;
     }
 
@@ -131,24 +130,24 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
      * Crear el analizador con un ambito global compartido entre archivos.
      */
     public AnalizadorSemanticoZetariano(RecolectorErrores recolectorErrores, AmbitoSemantico ambitoCompartido) {
-        // delegar la creacion basica al constructor principal
+        // usar el constructor principal para lo basico
         this(recolectorErrores);
-        // guardar el ambito compartido para el modo conjunto
+        // guardar el ambito comun para varios archivos
         this.ambitoCompartido = ambitoCompartido;
-        // apuntar al ambito compartido desde el inicio si existe
+        // apuntar al ambito comun desde el inicio si hay
         if (ambitoCompartido != null) {
             this.ambitoGlobal = ambitoCompartido;
             this.ambitoActual = ambitoCompartido;
         }
     }
 
-    // registrar primitivos y builtins una sola vez en el ambito compartido
+    // registrar primitivos y builtins una vez en el ambito comun
     public void inicializarAmbitoCompartido() {
-        // operar solo en modo conjunto
+        // trabajar solo con varios archivos
         if (ambitoCompartido == null) {
             return;
         }
-        // usar el ambito compartido como global
+        // usar el ambito comun como global
         this.ambitoGlobal = this.ambitoCompartido;
         this.ambitoActual = this.ambitoCompartido;
         // registrar los tipos primitivos del lenguaje
@@ -246,7 +245,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
             columna = nodo.getColumna();
         }
 
-        // delegar el registro del errorrrr
+        // guardar el error
         recolectorErrores.agregar(TipoError.SEMANTICO, linea, columna, descripcion);
     }
 
@@ -263,7 +262,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         // crear el nuevo ambito con el padre actual
         AmbitoSemantico nuevo = new AmbitoSemantico(nombre, ambitoActual);
 
-        // el constructor de AmbitoSemantico ya registra el hijo en el padre :D
+        // el constructor ya mete el hijo en el padre
 
         // registrar el ambito en el padre si existe
         //if (ambitoActual != null) {
@@ -289,7 +288,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
     // registrar los tipos primitivos del lenguaje
     private void registrarTiposPrimitivos() {
 
-        // registrar los tipos int, double, char, boolean string y null :D
+        // registrar int, double, char, boolean, string y null
 
         Tipo tipoInt = new Tipo("int", true);
         ambitoGlobal.declararTipo(tipoInt);
@@ -434,7 +433,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
     // ==================== DECLARACION DE VARIABLES ====================
 
     // declarar variable buscando en TODOS los ambitos padres
-    // si ya existe en cualquier padre sera un error :D
+    // si ya existe en algun padre es error
     private boolean declararVariable(String nombre, Tipo tipo, NodoASTZetariano nodo) {
 
         // verificar si el nombre es valido
@@ -508,7 +507,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
 
     @Override
     public Object visitarPrograma(Programa programa) {
-        // usar el ambito compartido sin recrear nada en modo conjunto
+        // usar el ambito comun sin crear otro si hay varios archivos
         if (ambitoCompartido != null) {
             ambitoGlobal = ambitoCompartido;
             ambitoActual = ambitoCompartido;
@@ -521,7 +520,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
             registrarTiposPrimitivos();
 
             // registrar las funciones especiales del lenguaje
-            // println, print y readln son parte del sistema y no requieren declaracion :D
+            // println, print y readln ya vienen con el sistema
             registrarFuncionesBuiltIn();
         }
 
@@ -911,7 +910,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         }
 
         // verificar si ya existe un metodo con la misma firma
-        // se permite sobrecarga siempre que los tipos de parametros difieran :D
+        // se vale sobrecargar si cambian los tipos de params
         if (existeMetodoConFirma(nombre, tiposParametros)) {
             agregarError(metodo, "ya existe un metodo '" + nombre + "' con la misma firma");
 

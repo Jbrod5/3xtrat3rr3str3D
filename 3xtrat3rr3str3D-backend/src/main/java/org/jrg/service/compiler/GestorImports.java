@@ -24,7 +24,6 @@ public class GestorImports {
     private final Set<String> archivosYaProcesados;
     private final CompiladorYLenguajeService compiladorY;
     private final CompiladorZetarianoService compiladorZ;
-    // cuartetas acumuladas de todos los imports procesados
     private final List<Cuarteta> cuartetasAcumuladas;
 
     /**
@@ -78,6 +77,13 @@ public class GestorImports {
         }
         this.archivosYaProcesados.add(rutaAbsoluta);
 
+        // compilar el import Y con sus hermanos para ver structs vecinas
+        if ("y".equals(extension)) {
+            ResultadoAnalisis resultadoY = analizarConjuntoY(rutaAbsoluta, linea, columna);
+            acumularCuartetas(resultadoY);
+            return resultadoY;
+        }
+
         String contenido;
         try {
             contenido = Files.readString(Paths.get(rutaAbsoluta));
@@ -86,14 +92,15 @@ public class GestorImports {
             return null;
         }
 
-        if ("y".equals(extension)) {
-            ResultadoAnalisis resultado = this.compiladorY.analizar(contenido);
-            acumularCuartetas(resultado);
-            return resultado;
-        }
+        // if ("y".equals(extension)) {
+        //     ResultadoAnalisis resultado = this.compiladorY.analizar(contenido);
+        //     acumularCuartetas(resultado);
+        //     return resultado;
+        // }
+        // version nueva: se compila arriba con analizarConjuntoY para ver hermanos
         if ("z".equals(extension)) {
             ResultadoAnalisis resultado = analizarConjuntoZetariano(rutaAbsoluta, linea, columna);
-            // conservar solo errores del archivo pedido con su prefijo
+            // quedarse solo con errores de ese archivo :c
             filtrarErroresPedidos(resultado, rutaAbsoluta);
             acumularCuartetas(resultado);
             return resultado;
@@ -146,6 +153,89 @@ public class GestorImports {
         return resultado;
     }
 
+    // compilar el import Y con sus hermanos para ver structs y funciones vecinas
+    private ResultadoAnalisis analizarConjuntoY(String rutaAbsoluta, int linea, int columna) {
+        // conservar el error clasico si el archivo no existe
+        if (Files.isRegularFile(Paths.get(rutaAbsoluta)) == false) {
+            this.recolectorErrores.agregar(TipoError.SEMANTICO, linea, columna, "no se pudo leer el archivo importado: " + rutaAbsoluta);
+            return null;
+        }
+        // leer el archivo pedido
+        String contenidoPedido = null;
+        try {
+            contenidoPedido = Files.readString(Paths.get(rutaAbsoluta));
+        } catch (IOException e) {
+            contenidoPedido = null;
+        }
+        // analizar solo el pedido primero
+        ResultadoAnalisis soloPedido = null;
+        if (contenidoPedido != null) {
+            soloPedido = this.compiladorY.analizar(contenidoPedido);
+        }
+        // si no hay tipos sin resolver, no barrer hermanos
+        if (soloPedido != null && quedanTiposDesconocidos(soloPedido) == false) {
+            return soloPedido;
+        }
+        // juntar niveles de carpetas desde el archivo hacia arriba con tope
+        List<List<Path>> niveles = new ArrayList<>();
+        Path actual = Paths.get(rutaAbsoluta).getParent();
+        for (int i = 0; i < 3 && actual != null; i++) {
+            niveles.add(listarYes(actual));
+            actual = actual.getParent();
+        }
+        // acumular niveles con el pedido siempre incluido
+        Set<String> incluidas = new HashSet<>();
+        List<Path> conjunto = new ArrayList<>();
+        // incluir siempre el archivo importado aunque ya este marcado
+        String propia = Paths.get(rutaAbsoluta).toString().replace("\\", "/");
+        incluidas.add(propia);
+        // agregar niveles sin duplicar rutas ni reprocesar imports previos
+        for (int i = 0; i < niveles.size(); i++) {
+            for (int j = 0; j < niveles.get(i).size(); j++) {
+                String ruta = niveles.get(i).get(j).toString().replace("\\", "/");
+                if (incluidas.contains(ruta) || this.archivosYaProcesados.contains(ruta)) {
+                    continue;
+                }
+                incluidas.add(ruta);
+                this.archivosYaProcesados.add(ruta);
+                conjunto.add(niveles.get(i).get(j));
+            }
+        }
+        // ordenar hermanos primero y el pedido al final para que vea todo
+        List<Path> orden = new ArrayList<>(conjunto);
+        orden.add(Paths.get(rutaAbsoluta));
+        // compilar el conjunto con ambito compartido
+        return this.compiladorY.analizarConjunto(orden, orden.size() - 1);
+    }
+
+    // listar los archivos del lenguaje Y de una carpeta en orden
+    private List<Path> listarYes(Path carpeta) {
+        // devolver vacio si la carpeta es nula
+        List<Path> yes = new ArrayList<>();
+        if (carpeta == null) {
+            return yes;
+        }
+        // recorrer la carpeta filtrando por extension
+        try (DirectoryStream<Path> flujo = Files.newDirectoryStream(carpeta)) {
+            flujo.forEach(ruta -> {
+                // aceptar solo archivos regulares con extension del lenguaje Y
+                if (Files.isRegularFile(ruta) == false) {
+                    return;
+                }
+                String nombre = ruta.getFileName().toString().toLowerCase();
+                if (nombre.endsWith(".y") == false) {
+                    return;
+                }
+                yes.add(ruta);
+            });
+        } catch (IOException e) {
+            // omitir carpetas ilegibles
+        }
+        // ordenar para un resultado estable
+        Collections.sort(yes);
+        return yes;
+    }
+
     // listar los archivos zetariano de una carpeta en orden
     private List<Path> listarZetas(Path carpeta) {
         // devolver vacio si la carpeta es nula
@@ -193,7 +283,7 @@ public class GestorImports {
         return false;
     }
 
-    // conservar solo los errores del archivo pedido con su prefijo
+    // quedarse solo con errores de ese archivo
     private void filtrarErroresPedidos(ResultadoAnalisis resultado, String rutaAbsoluta) {
         // omitir resultados nulos o sin errores
         if (resultado == null || resultado.getErrores() == null) {
@@ -207,7 +297,7 @@ public class GestorImports {
             nombre = base.substring(0, punto);
         }
         String marca = "[" + nombre + "] ";
-        // conservar solo errores con la marca del archivo pedido
+        // quedarse solo con errores de ese archivo
         resultado.getErrores().removeIf(error -> error == null || error.getDescripcion() == null || error.getDescripcion().startsWith(marca) == false);
     }
 

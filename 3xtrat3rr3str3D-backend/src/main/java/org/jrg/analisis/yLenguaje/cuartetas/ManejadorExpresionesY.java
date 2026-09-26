@@ -25,14 +25,11 @@ import org.jrg.model.cuarteta.Cuarteta;
 // generar cuartetas de expresiones en el lenguaje Y
 public class ManejadorExpresionesY {
 
-    // estado compartido de la generacion
     private final ContextoCuartetasY ctx;
-    // generador duenio para el descenso recursivo
     private final GeneradorCuartetasY generador;
 
     // crear la manejadora con contexto y generador
     public ManejadorExpresionesY(ContextoCuartetasY ctx, GeneradorCuartetasY generador) {
-        // asignar las dependencias recibidas
         this.ctx = ctx;
         this.generador = generador;
     }
@@ -59,7 +56,6 @@ public class ManejadorExpresionesY {
                 // evaluar el argumento actual
                 String argumento = nodo.getArgumentos().get(i).accept(generador);
 
-                // usar valor por defecto si el resultado es nulo
                 if (argumento == null) {
                     argumento = "_";
                 }
@@ -90,7 +86,6 @@ public class ManejadorExpresionesY {
             objeto = nodo.getObjeto().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
         if (objeto == null) {
             objeto = "_";
         }
@@ -101,7 +96,7 @@ public class ManejadorExpresionesY {
             indice = nodo.getIndice().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
+        // si es nulo usar lo de respaldo
         if (indice == null) {
             indice = "_";
         }
@@ -121,7 +116,6 @@ public class ManejadorExpresionesY {
             objeto = nodo.getObjeto().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
         if (objeto == null) {
             objeto = "_";
         }
@@ -141,7 +135,6 @@ public class ManejadorExpresionesY {
             variable = nodo.getVariable().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
         if (variable == null) {
             variable = "_";
         }
@@ -160,7 +153,6 @@ public class ManejadorExpresionesY {
             variable = nodo.getVariable().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
         if (variable == null) {
             variable = "_";
         }
@@ -193,7 +185,7 @@ public class ManejadorExpresionesY {
         // agregar la negacion aritmetica con temporal a la lista de cuartetas :D
         String temp = ctx.getTemporales().nuevoTemporal();
 
-        // inferir el tipo desde el operando
+        // adivinar el tipo desde el operando
         String tipoNeg = ctx.inferirTipoDe(valor, ctx.getTiposConocidos());
 
         // registrar el temporal con el tipo inferido
@@ -214,7 +206,6 @@ public class ManejadorExpresionesY {
             valor = nodo.getExpresion().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
         if (valor == null) {
             valor = "_";
         }
@@ -238,7 +229,6 @@ public class ManejadorExpresionesY {
             izquierdo = nodo.getIzquierdo().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
         if (izquierdo == null) {
             izquierdo = "_";
         }
@@ -249,7 +239,7 @@ public class ManejadorExpresionesY {
             derecho = nodo.getDerecho().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
+        // si es nulo usar lo de respaldo
         if (derecho == null) {
             derecho = "_";
         }
@@ -257,7 +247,7 @@ public class ManejadorExpresionesY {
         // agregar la operacion con temporal a la lista de cuartetas
         String temp = ctx.getTemporales().nuevoTemporal();
 
-        // inferir el tipo resultado de la operacion
+        // adivinar que tipo sale de la cuenta
         String tipoResMult = ctx.tipoResultadoAritmetico(izquierdo, derecho);
 
         // registrar el temporal con el tipo inferido
@@ -275,7 +265,6 @@ public class ManejadorExpresionesY {
             izquierdo = nodo.getIzquierdo().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
         if (izquierdo == null) {
             izquierdo = "_";
         }
@@ -286,7 +275,6 @@ public class ManejadorExpresionesY {
             derecho = nodo.getDerecho().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
         if (derecho == null) {
             derecho = "_";
         }
@@ -294,11 +282,11 @@ public class ManejadorExpresionesY {
         // agregar la operacion con temporal a la lista de cuartetas
         String temp = ctx.getTemporales().nuevoTemporal();
 
-        // inferir los tipos de los operandos
+        // adivinar los tipos de los dos lados
         String tipoIzqSuma = ctx.inferirTipoDe(izquierdo, ctx.getTiposConocidos());
         String tipoDerSuma = ctx.inferirTipoDe(derecho, ctx.getTiposConocidos());
 
-        // inferir el tipo resultado de la operacion
+        // adivinar que tipo sale de la cuenta
         String tipoResSuma = ctx.tipoResultadoAritmetico(izquierdo, derecho);
 
         // usar cadena cuando se concatena texto con mas
@@ -326,7 +314,6 @@ public class ManejadorExpresionesY {
             izquierdo = nodo.getIzquierdo().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
         if (izquierdo == null) {
             izquierdo = "_";
         }
@@ -360,7 +347,6 @@ public class ManejadorExpresionesY {
             izquierdo = nodo.getIzquierdo().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
         if (izquierdo == null) {
             izquierdo = "_";
         }
@@ -371,7 +357,6 @@ public class ManejadorExpresionesY {
             derecho = nodo.getDerecho().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
         if (derecho == null) {
             derecho = "_";
         }
@@ -394,7 +379,7 @@ public class ManejadorExpresionesY {
             izquierdo = nodo.getIzquierdo().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
+        // si es nulo usar lo de respaldo
         if (izquierdo == null) {
             izquierdo = "_";
         }
@@ -405,7 +390,6 @@ public class ManejadorExpresionesY {
             derecho = nodo.getDerecho().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
         if (derecho == null) {
             derecho = "_";
         }
@@ -436,7 +420,7 @@ public class ManejadorExpresionesY {
             // guardar el literal en un temporal
             String temp = ctx.getTemporales().nuevoTemporal();
 
-            // inferir el tipo del literal
+            // adivinar el tipo del literal
             String tipoLiteral = ctx.inferirTipoLiteral(primitivo.getValor());
 
             // registrar el temporal con el tipo inferido

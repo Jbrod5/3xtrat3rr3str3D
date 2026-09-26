@@ -9,7 +9,7 @@ public class ValorVariable extends ValorC {
      * Crear un valor variable con su texto original.
      */
     public ValorVariable(String texto) {
-        // delegar al constructor de la clase base
+        // usar el constructor base
         super(texto);
     }
 

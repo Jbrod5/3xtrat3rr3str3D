@@ -87,7 +87,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
      */
     public AnalizadorSemanticoY(RecolectorErrores recolectorErrores) {
 
-        // crear el contexto semantico con el recolector de errores :D
+        // crear el contexto con el recolector
         this.contexto = new ContextoSemanticoY(recolectorErrores);
         this.enFuncionConRetorno = false;
         this.tipoRetornoActual = null;
@@ -136,7 +136,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
 
     // ==================== AUXILIARES DE TIPOS ====================
 
-    // resolver el tipo representado por un nodo TipoDato :D
+    // sacar el tipo de un nodo TipoDato
     private Tipo resolverTipoDato(NodoASTY tipoNodo) {
 
         // verificar si el nodo es nulo
@@ -156,7 +156,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
         return this.contexto.tipoPorNombre(tipoDato.getNombre());
     }
 
-    // extraer el tipo de un resultado de visita de expresion :D
+    // sacar el tipo de lo que dio la visita
     private Tipo extraerTipoDeExpresion(Object resultado) {
 
         // verificar si el resultado es un Tipo
@@ -175,7 +175,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
             return null;
         }
 
-        // caso: que sea una expresion primitiva con valor primitivo :D
+        // caso: primitiva con valor primitivo
         if (nodo instanceof ExprPrimitivo) {
 
             ExprPrimitivo expr = (ExprPrimitivo) nodo;
@@ -241,13 +241,13 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
             return false;
         }
 
-        // delegar la declaracion al contexto
+        // pasar la declaracion al contexto
         return this.contexto.declarar(nodo, nombre, tipo, categoria, tamano);
     }
 
     // ==================== BUILT-INS ====================
 
-    // registrar las funciones especiales del lenguaje en el ambito global :D
+    // meter print y read al ambito global
     private void registrarFuncionesBuiltIn() {
 
         // imprimir con multiples firmas mediante declararMetodo
@@ -265,7 +265,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
     }
 
     // declarar una funcion built-in en el ambito global usando declararMetodo
-    // declararMetodo permite multiples sobrecargas con el mismo nombre :D
+    // declararMetodo deja varias con el mismo nombre
     private void registrarFuncionBuiltIn(String nombre, List<Tipo> tiposParams, Tipo tipoRetorno) {
 
         // construir el simbolo de la funcion
@@ -685,7 +685,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
         // registrar funciones built-in en el ambito global
         registrarFuncionesBuiltIn();
 
-        // primera pasada: registrar estructuras globales :D
+        // primera pasada: registrar structs globales
         if (nodo.getSeccionEstructuras() != null && nodo.getSeccionEstructuras() instanceof SeccionEstructuras) {
             SeccionEstructuras seccion = (SeccionEstructuras) nodo.getSeccionEstructuras();
 
@@ -739,7 +739,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
 
     @Override
     public Object visitarSeccionFunciones(SeccionFunciones nodo) {
-        // las funciones ya fueron procesadas en la primera pasada :D
+        // las funciones ya se vieron en la primera pasada
         return new FlujoControl();
     }
 
@@ -1832,7 +1832,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
             tiposArgs.add(tipo);
         }
 
-        // buscar todos los candidatos con el nombre en el ambito y en los padres :D
+        // buscar candidatos con ese nombre aqui y arriba
         List<Simbolo> candidatos = this.contexto.ambitoActual().buscarMetodos(nodo.getNombre());
 
         // reportar error si no hay candidatos
@@ -2061,7 +2061,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
             return null;
         }
 
-        // devolver el tipo de mayor jerarquia :D
+        // devolver flotante si hay, si no entero
         return this.contexto.tipoMayorJerarquia(tipoIzq, tipoDer);
     }
 

@@ -19,14 +19,11 @@ import org.jrg.model.cuarteta.Cuarteta;
 // generar cuartetas de flujo y ciclos en el lenguaje Y
 public class ManejadorFlujoY {
 
-    // estado compartido de la generacion
     private final ContextoCuartetasY ctx;
-    // generador duenio para el descenso recursivo
     private final GeneradorCuartetasY generador;
 
     // crear la manejadora con contexto y generador
     public ManejadorFlujoY(ContextoCuartetasY ctx, GeneradorCuartetasY generador) {
-        // asignar las dependencias recibidas
         this.ctx = ctx;
         this.generador = generador;
     }
@@ -72,7 +69,6 @@ public class ManejadorFlujoY {
             condicion = nodo.getCondicionPrincipal().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
         if (condicion == null) {
             condicion = "_";
         }
@@ -107,7 +103,6 @@ public class ManejadorFlujoY {
                     condicionSino = nodo.getCondicionesSino().get(i).accept(generador);
                 }
 
-                // usar valor por defecto si el resultado es nulo
                 if (condicionSino == null) {
                     condicionSino = "_";
                 }
@@ -154,7 +149,7 @@ public class ManejadorFlujoY {
             selector = nodo.getExpresion().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
+        // si es nulo usar lo de respaldo
         if (selector == null) {
             selector = "_";
         }
@@ -187,7 +182,6 @@ public class ManejadorFlujoY {
                         valorCaso = casoSeleccion.getValor().accept(generador);
                     }
 
-                    // usar valor por defecto si el resultado es nulo
                     if (valorCaso == null) {
                         valorCaso = "_";
                     }
@@ -273,7 +267,6 @@ public class ManejadorFlujoY {
             // obtener el resultado de la condicion
             String condicion = nodo.getCondicion().accept(generador);
 
-            // usar valor por defecto si el resultado es nulo
             if (condicion == null) {
                 condicion = "_";
             }
@@ -328,7 +321,6 @@ public class ManejadorFlujoY {
             condicion = nodo.getCondicion().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
         if (condicion == null) {
             condicion = "_";
         }
@@ -417,7 +409,6 @@ public class ManejadorFlujoY {
             // evaluar la expresion inicial
             String valor = nodo.getExpresion().accept(generador);
 
-            // usar valor por defecto si el resultado es nulo
             if (valor == null) {
                 valor = "_";
             }
@@ -438,7 +429,6 @@ public class ManejadorFlujoY {
             variable = nodo.getVariable().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
         if (variable == null) {
             variable = "_";
         }
@@ -449,7 +439,7 @@ public class ManejadorFlujoY {
             valor = nodo.getExpresion().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
+        // si es nulo usar lo de respaldo
         if (valor == null) {
             valor = "_";
         }
@@ -479,7 +469,6 @@ public class ManejadorFlujoY {
             variable = nodo.getVariable().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
         if (variable == null) {
             variable = "_";
         }
@@ -490,7 +479,6 @@ public class ManejadorFlujoY {
             valor = nodo.getExpresion().accept(generador);
         }
 
-        // usar valor por defecto si el resultado es nulo
         if (valor == null) {
             valor = "_";
         }

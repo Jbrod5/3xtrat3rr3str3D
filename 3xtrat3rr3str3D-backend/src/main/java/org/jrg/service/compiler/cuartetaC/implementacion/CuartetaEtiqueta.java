@@ -11,7 +11,7 @@ public class CuartetaEtiqueta extends CuartetaC {
      */
     public CuartetaEtiqueta(String operador, String arg1, String arg2, String resultado,
                              String tipoArg1, String tipoArg2, String tipoResultado) {
-        // delegar al constructor de la clase base
+        // va al base
         super(operador, arg1, arg2, resultado, tipoArg1, tipoArg2, tipoResultado);
     }
 
@@ -20,7 +20,7 @@ public class CuartetaEtiqueta extends CuartetaC {
      */
     public CuartetaEtiqueta(String arg1, String arg2, String resultado,
                              String tipoArg1, String tipoArg2, String tipoResultado) {
-        // delegar al constructor de la clase base con operador label
+        // cae al base con operador fijo
         super("label", arg1, arg2, resultado, tipoArg1, tipoArg2, tipoResultado);
     }
 

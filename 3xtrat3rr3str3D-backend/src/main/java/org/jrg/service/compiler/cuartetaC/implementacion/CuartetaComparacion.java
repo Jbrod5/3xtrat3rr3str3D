@@ -11,7 +11,7 @@ public class CuartetaComparacion extends CuartetaC {
      */
     public CuartetaComparacion(String operador, String arg1, String arg2, String resultado,
                                 String tipoArg1, String tipoArg2, String tipoResultado) {
-        // delegar al constructor de la clase base
+        // usar el constructor base
         super(operador, arg1, arg2, resultado, tipoArg1, tipoArg2, tipoResultado);
     }
 
@@ -20,7 +20,6 @@ public class CuartetaComparacion extends CuartetaC {
      */
     public CuartetaComparacion(String arg1, String arg2, String resultado,
                                 String tipoArg1, String tipoArg2, String tipoResultado) {
-        // delegar al constructor de la clase base con operador igual
         super("==", arg1, arg2, resultado, tipoArg1, tipoArg2, tipoResultado);
     }
 

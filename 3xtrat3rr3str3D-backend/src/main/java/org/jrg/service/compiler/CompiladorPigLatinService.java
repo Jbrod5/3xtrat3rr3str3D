@@ -137,7 +137,7 @@ public class CompiladorPigLatinService {
                         continue;
                     }
 
-                    // recolectar los nombres de los campos
+                    // juntar los nombres de los campos
                     List<String> nombresCampos = new ArrayList<>();
                     for (int j = 0; j < campos.size(); j++) {
                         Simbolo campo = campos.get(j);
