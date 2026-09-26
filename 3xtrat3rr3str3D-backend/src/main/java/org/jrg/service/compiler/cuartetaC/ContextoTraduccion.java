@@ -602,6 +602,30 @@ public class ContextoTraduccion {
                 }
             }
         }
+        // buscar el struct por valor en lo declarado
+        // return mapearTipo(tipoRespaldo);
+        if (objeto != null && campo != null) {
+            String nombreStruct = null;
+            String tipoDecl = tiposDeclarados.get(objeto);
+            if (tipoDecl != null && tipoDecl.startsWith("struct ")) {
+                nombreStruct = tipoDecl.substring(7).trim();
+                if (nombreStruct.endsWith("*")) {
+                    nombreStruct = nombreStruct.substring(0, nombreStruct.length() - 1).trim();
+                }
+            }
+            if (nombreStruct == null) {
+                nombreStruct = structDeNombre.get(objeto);
+            }
+            if (nombreStruct != null) {
+                Map<String, String> campos = structs.get(nombreStruct);
+                if (campos != null) {
+                    String tipoFuente = campos.get(campo);
+                    if (tipoFuente != null) {
+                        return mapearTipoConClases(tipoFuente);
+                    }
+                }
+            }
+        }
         return mapearTipo(tipoRespaldo);
     }
 
@@ -698,15 +722,40 @@ public class ContextoTraduccion {
     }
 
     /**
+     * Buscar el tipo declarado en C de un valor o campo con this.
+     */
+    public String tipoDeclaradoDe(String valor) {
+        // omitir nulos y vacios
+        if (valor == null || valor.isEmpty()) {
+            return null;
+        }
+        // buscar directo en lo declarado
+        String declarado = tiposDeclarados.get(valor);
+        if (declarado != null && declarado.isEmpty() == false) {
+            return declarado;
+        }
+        // buscar el campo sin el this para los miembros
+        if (valor.startsWith("this->")) {
+            return tipoCampoClase(valor.substring(6));
+        }
+        return null;
+    }
+
+    /**
      * Preparar un operando para concatenacion convirtiendo numericos a string.
      */
     public String prepararOperandoParaConcat(String valor, String tipo, StringBuilder lineas) {
         // preferir el tipo declarado en C, que manda sobre lo inferido
         String tipoEfectivo = tipo;
-        if (valor != null) {
-            String declarado = tiposDeclarados.get(valor);
-            if (declarado != null && declarado.isEmpty() == false) {
-                tipoEfectivo = declarado;
+        String declaradoConcat = tipoDeclaradoDe(valor);
+        if (declaradoConcat != null) {
+            tipoEfectivo = declaradoConcat;
+        }
+        // poner this directo cuando el campo ya es texto
+        if (valor != null && esCampoActual(valor)) {
+            String tipoCampo = tipoCampoClase(valor);
+            if (tipoCampo == null || esTipoTexto(tipoCampo) || "char*".equals(tipoCampo) || "_".equals(tipoCampo)) {
+                return crearValor(valor).obtenerCodigoC(this);
             }
         }
         // dejar cadenas y desconocidos igual
@@ -866,6 +915,12 @@ public class ContextoTraduccion {
         // definir imprimir sin argumentos
         if ("imprimir".equals(variante)) {
             return "void imprimir(void) { printf(\"\\n\"); }\n";
+        }
+        // definir leer sin argumentos con buffer propio
+        // char* leer(void) { static char buf[256]; if (!fgets(buf, sizeof(buf), stdin)) buf[0] = '\0'; buf[strcspn(buf, "\n")] = '\0'; char* s = malloc(strlen(buf) + 1); strcpy(s, buf); return s; }
+        // saltar saltos pendientes del scanf para no leer vacio
+        if ("leer".equals(variante)) {
+            return "char* leer(void) { static char buf[256]; int c; while ((c = getchar()) == '\\n' || c == '\\r'); if (c == EOF) { buf[0] = '\\0'; } else { ungetc(c, stdin); if (!fgets(buf, sizeof(buf), stdin)) buf[0] = '\\0'; } buf[strcspn(buf, \"\\r\\n\")] = '\\0'; char* s = malloc(strlen(buf) + 1); strcpy(s, buf); return s; }\n";
         }
         // definir println sin argumentos
         if ("println".equals(variante)) {

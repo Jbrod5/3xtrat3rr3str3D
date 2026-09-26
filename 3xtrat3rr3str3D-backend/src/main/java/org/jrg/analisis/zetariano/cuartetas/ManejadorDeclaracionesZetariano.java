@@ -140,7 +140,15 @@ public class ManejadorDeclaracionesZetariano {
                 }
 
                 // agregar la asignacion a la variable a la lista de cuartetas
-                ctx.getCuartetas().add(new Cuarteta(":=", valor, "_", nodo.getIdentificador(), ctx.inferirTipoDe(valor, ctx.getTiposConocidos()), "_", "_"));
+                // ctx.getCuartetas().add(new Cuarteta(":=", valor, "_", nodo.getIdentificador(), ctx.inferirTipoDe(valor, ctx.getTiposConocidos()), "_", "_"));
+                // usar el tipo base para que no se pierda en la traduccion
+                String tipoResZ1 = "_";
+                if (tipoBase != null && tipoBase.isEmpty() == false) {
+                    tipoResZ1 = tipoBase;
+                    // registrar la variable con su tipo declarado
+                    ctx.getTiposConocidos().put(nodo.getIdentificador(), tipoBase);
+                }
+                ctx.getCuartetas().add(new Cuarteta(":=", valor, "_", nodo.getIdentificador(), ctx.inferirTipoDe(valor, ctx.getTiposConocidos()), "_", tipoResZ1));
             }
 
             return null;
@@ -158,7 +166,18 @@ public class ManejadorDeclaracionesZetariano {
             }
 
             // agregar la asignacion a la variable a la lista de cuartetas
-            ctx.getCuartetas().add(new Cuarteta(":=", valor, "_", nodo.getIdentificador(), ctx.inferirTipoDe(valor, ctx.getTiposConocidos()), "_", "_"));
+            // ctx.getCuartetas().add(new Cuarteta(":=", valor, "_", nodo.getIdentificador(), ctx.inferirTipoDe(valor, ctx.getTiposConocidos()), "_", "_"));
+            // usar el tipo declarado para que no se pierda en la traduccion
+            String tipoDeclZ = "_";
+            if (nodo.getTipo() instanceof TipoDato) {
+                String nombreDeclZ = ((TipoDato) nodo.getTipo()).getTipo();
+                if (nombreDeclZ != null && nombreDeclZ.isEmpty() == false) {
+                    tipoDeclZ = nombreDeclZ;
+                    // registrar la variable con su tipo declarado
+                    ctx.getTiposConocidos().put(nodo.getIdentificador(), nombreDeclZ);
+                }
+            }
+            ctx.getCuartetas().add(new Cuarteta(":=", valor, "_", nodo.getIdentificador(), ctx.inferirTipoDe(valor, ctx.getTiposConocidos()), "_", tipoDeclZ));
         }
 
         return null;

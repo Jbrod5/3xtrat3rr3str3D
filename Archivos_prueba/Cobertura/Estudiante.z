@@ -1,0 +1,124 @@
+public class Estudiante {
+    String nombre;
+    int carnet;
+    double beca;
+    boolean activo;
+    int[] notas;
+
+    public Estudiante(String nombre1, int carnet1) {
+        nombre = nombre1;
+        carnet = carnet1;
+        beca = 0.0;
+        activo = true;
+        notas = new int[4];
+    }
+
+    public Estudiante() {
+        nombre = "Sin nombre";
+        carnet = 0;
+        beca = 0.0;
+        activo = false;
+        notas = new int[4];
+    }
+
+    public double promedio() {
+        int suma = 0;
+        for (int i = 0; i < 4; i++) {
+            suma += notas[i];
+        }
+        return suma / 4;
+    }
+
+    public boolean aprobar() {
+        double p = promedio();
+        boolean ok = (p >= 61) ? true : false;
+        return ok;
+    }
+
+    public char clasificar() {
+        double p = promedio();
+        int tramo = 0;
+        if (p >= 90) {
+            tramo = 3;
+        } else if (p >= 70) {
+            tramo = 2;
+        } else if (p >= 61) {
+            tramo = 1;
+        } else {
+            tramo = 0;
+        }
+        char letra = 'F';
+        switch (tramo) {
+            case 3:
+                letra = 'A';
+                break;
+            case 2:
+                letra = 'B';
+                break;
+            case 1:
+                letra = 'C';
+                break;
+            default:
+                letra = 'F';
+        }
+        return letra;
+    }
+
+    public int contarAltas() {
+        int total = 0;
+        int i = 0;
+        while (i < 4) {
+            if (notas[i] < 80) {
+                i++;
+                continue;
+            }
+            total++;
+            i++;
+        }
+        return total;
+    }
+
+    public void setNota(int i, int valor) {
+        notas[i] = valor;
+    }
+
+    public int getNota(int i) {
+        return notas[i];
+    }
+
+    public int buscar(int meta) {        int i = 0;
+        int pos = -1;
+        do {
+            if (notas[i] == meta) {
+                pos = i;
+                break;
+            }
+            i++;
+        } while (i < 4);
+        return pos;
+    }
+
+    public int factorial(int n) {
+        if (n <= 1) {
+            return 1;
+        }
+        return n * factorial(n - 1);
+    }
+
+    public void ajustar(double puntos) {
+        beca += puntos;
+        beca -= 1.0;
+        beca *= 1.0;
+        carnet++;
+        carnet--;
+    }
+
+    public boolean nuloEsNulo() {
+        boolean r = (null == null);
+        return r;
+    }
+
+    public String toString() {
+        return nombre + " carnet " + carnet;
+    }
+}

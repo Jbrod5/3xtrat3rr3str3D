@@ -251,11 +251,34 @@ public class TraductorC {
                 Map<String, String> campos = ctx.structs.get(nombreStruct);
                 for (int j = 0; j < orden.size(); j++) {
                     String campo = orden.get(j);
-                    String tipoC = ctx.mapearTipo(campos.get(campo));
-                    // agregar arreglos con corchetes al final a la salida
-                    if (tipoC.endsWith("[]")) {
-                        String base = tipoC.substring(0, tipoC.length() - 2);
-                        salida.append("    ").append(base).append(" ").append(campo).append("[];\n");
+                    String tipoFuente = campos.get(campo);
+                    if (tipoFuente == null) {
+                        tipoFuente = "_";
+                    }
+                    // sacar los corchetes para ver si es arreglo
+                    String baseFuente = tipoFuente;
+                    boolean esArreglo = false;
+                    if (baseFuente.endsWith("[]")) {
+                        esArreglo = true;
+                        baseFuente = baseFuente.substring(0, baseFuente.length() - 2);
+                    }
+                    String tipoC = ctx.mapearTipoConClases(baseFuente);
+                    // los arreglos salen punteros para poder asignarlos
+                    // String tipoCViejo = ctx.mapearTipo(campos.get(campo));
+                    // if (tipoCViejo.endsWith("[]")) {
+                    //     String baseVieja = tipoCViejo.substring(0, tipoCViejo.length() - 2);
+                    //     salida.append("    ").append(baseVieja).append(" ").append(campo).append("[];\n");
+                    // } else {
+                    //     salida.append("    ").append(tipoCViejo).append(" ").append(campo).append(";\n");
+                    // }
+                    if (esArreglo) {
+                        salida.append("    ").append(tipoC).append("* ").append(campo).append(";\n");
+                    } else if (ctx.clases.contains(baseFuente)) {
+                        // las clases van puntero para vivir en heap
+                        salida.append("    ").append(tipoC).append(" ").append(campo).append(";\n");
+                    } else if (ctx.structs.containsKey(baseFuente)) {
+                        // los structs por valor con su nombre
+                        salida.append("    ").append("struct ").append(baseFuente).append(" ").append(campo).append(";\n");
                     } else {
                         salida.append("    ").append(tipoC).append(" ").append(campo).append(";\n");
                     }

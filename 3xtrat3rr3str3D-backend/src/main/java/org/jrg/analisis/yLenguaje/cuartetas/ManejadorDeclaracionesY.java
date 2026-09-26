@@ -126,7 +126,16 @@ public class ManejadorDeclaracionesY {
             }
 
             // agregar la asignacion a la variable a la lista de cuartetas
-            ctx.getCuartetas().add(new Cuarteta(":=", valor, "_", nodo.getNombre(), ctx.inferirTipoDe(valor, ctx.getTiposConocidos()), "_", "_"));
+            // ctx.getCuartetas().add(new Cuarteta(":=", valor, "_", nodo.getNombre(), ctx.inferirTipoDe(valor, ctx.getTiposConocidos()), "_", "_"));
+            // usar el tipo declarado para que no se pierda en la traduccion
+            String tipoDeclY = ctx.nombreDeTipo(nodo.getTipo());
+            String tipoResY = "_";
+            if (tipoDeclY != null && tipoDeclY.isEmpty() == false) {
+                tipoResY = tipoDeclY;
+                // registrar la variable con su tipo declarado
+                ctx.getTiposConocidos().put(nodo.getNombre(), tipoDeclY);
+            }
+            ctx.getCuartetas().add(new Cuarteta(":=", valor, "_", nodo.getNombre(), ctx.inferirTipoDe(valor, ctx.getTiposConocidos()), "_", tipoResY));
         }
         return null;
     }

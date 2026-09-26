@@ -14,6 +14,7 @@ import org.jrg.model.ast.yLenguaje.TipoDato;
 import org.jrg.model.ast.yLenguaje.ValorPrimitivo;
 import org.jrg.model.ast.yLenguaje.base.NodoASTY;
 import org.jrg.model.ast.yLenguaje.variable_asignable.VarArray;
+import org.jrg.model.base.TipoPrimitivo;
 import org.jrg.model.cuarteta.Cuarteta;
 
 // generar cuartetas del programa y sus secciones en el lenguaje Y
@@ -228,10 +229,25 @@ public class ManejadorProgramaY {
         return null;
     }
 
-    // visitar el valor primitivo sin generar cuartetas
+    // visitar el valor primitivo cargandolo en un temporal
     public String visitarValorPrimitivo(ValorPrimitivo nodo) {
-        // TODO
-        return null;
+        // version anterior: no generaba nada y los caso quedaban en 0
+        // public String visitarValorPrimitivo(ValorPrimitivo nodo) {
+        //     // TODO
+        //     return null;
+        // }
+        // devolver el identificador directo sin crear temporal
+        if (nodo.getTipo() == TipoPrimitivo.IDENTIFICADOR) {
+            return nodo.getValor();
+        }
+        // guardar el literal en un temporal
+        String temp = ctx.getTemporales().nuevoTemporal();
+        // adivinar el tipo del literal
+        String tipoLiteral = ctx.inferirTipoLiteral(nodo.getValor());
+        // registrar el temporal con el tipo inferido
+        ctx.getTiposConocidos().put(temp, tipoLiteral);
+        ctx.getCuartetas().add(new Cuarteta("=", nodo.getValor(), "_", temp, tipoLiteral, "_", tipoLiteral));
+        return temp;
     }
 
     // visitar la lista de expresiones sin generar cuartetas

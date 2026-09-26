@@ -33,11 +33,9 @@ public class CuartetaPrint extends CuartetaC {
         // return ctx.traducirPrint(arg1, tipoArg1);
         // preferir el tipo declarado en C, que manda sobre lo inferido
         String tipoEfectivo = tipoArg1;
-        if (arg1 != null) {
-            String declarado = ctx.tiposDeclarados.get(arg1);
-            if (declarado != null && declarado.isEmpty() == false) {
-                tipoEfectivo = declarado;
-            }
+        String declaradoPrint = ctx.tipoDeclaradoDe(arg1);
+        if (declaradoPrint != null) {
+            tipoEfectivo = declaradoPrint;
         }
         return ctx.traducirPrint(arg1, tipoEfectivo);
     }

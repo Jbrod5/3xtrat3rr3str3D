@@ -89,6 +89,15 @@ public class CuartetaLlamada extends CuartetaC {
             ctx.limpiarParams();
             return variante + "(" + args + ");";
         }
+        // registrar leer y readln para que salga su definicion
+        if ("leer".equals(nombre) || "readln".equals(nombre)) {
+            if (ctx.builtinsUsados.contains("leer") == false) {
+                ctx.builtinsUsados.add("leer");
+            }
+            ctx.limpiarParams();
+            // leer siempre devuelve texto
+            return ctx.ladoIzquierdo(resultado, "char*") + " = leer();";
+        }
         // contar args para el nombre con numero antes de limpiar
         int numeroArgs = ctx.paramsPendientes.size();
         ctx.limpiarParams();

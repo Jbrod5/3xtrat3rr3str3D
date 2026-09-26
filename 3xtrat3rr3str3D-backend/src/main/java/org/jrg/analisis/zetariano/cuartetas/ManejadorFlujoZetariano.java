@@ -253,14 +253,29 @@ public class ManejadorFlujoZetariano {
         // crear las etiquetas del ciclo
         String lInicio = ctx.getTemporales().nuevaEtiqueta();
         String lFin = ctx.getTemporales().nuevaEtiqueta();
+        // crear la etiqueta del paso para el continue
+        String lPaso = ctx.getTemporales().nuevaEtiqueta();
 
         // asignar las etiquetas actuales
         ctx.setEtiquetaBreakActual(lFin);
-        ctx.setEtiquetaContinueActual(lInicio);
+        // ctx.setEtiquetaContinueActual(lInicio);
+        // el continue va al paso para no saltarse el incremento
+        ctx.setEtiquetaContinueActual(lPaso);
 
         // visitar la inicializacion si existe
         if (nodo.getInicializacion() != null) {
             nodo.getInicializacion().accept(generador);
+        }
+
+        // saltar a la condicion para no correr el paso antes
+        ctx.getCuartetas().add(new Cuarteta("goto", lInicio, "_", "_", "_", "_", "_"));
+
+        // agregar la etiqueta del paso a la lista de cuartetas
+        ctx.getCuartetas().add(new Cuarteta("label", lPaso, "_", "_", "_", "_", "_"));
+
+        // visitar el paso si existe
+        if (nodo.getPaso() != null) {
+            nodo.getPaso().accept(generador);
         }
 
         // agregar la etiqueta de inicio a la lista de cuartetas
@@ -286,12 +301,13 @@ public class ManejadorFlujoZetariano {
         }
 
         // visitar el paso si existe
-        if (nodo.getPaso() != null) {
-            nodo.getPaso().accept(generador);
-        }
+        // if (nodo.getPaso() != null) {
+        //     nodo.getPaso().accept(generador);
+        // }
+        // el paso ya salio arriba junto a su etiqueta
 
-        // agregar el salto al inicio a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta("goto", lInicio, "_", "_", "_", "_", "_"));
+        // agregar el salto al paso a la lista de cuartetas
+        ctx.getCuartetas().add(new Cuarteta("goto", lPaso, "_", "_", "_", "_", "_"));
 
         // agregar la etiqueta final a la lista de cuartetas
         ctx.getCuartetas().add(new Cuarteta("label", lFin, "_", "_", "_", "_", "_"));

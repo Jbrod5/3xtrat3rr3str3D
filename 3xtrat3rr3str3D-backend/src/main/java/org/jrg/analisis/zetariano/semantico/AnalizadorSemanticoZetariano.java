@@ -1734,7 +1734,11 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
             salirAmbito();
 
             // verificar si el caso puede continuar
-            if (f.puedeContinuar()) {
+            // un break final sale del switch y el flujo sigue despues
+            // if (f.puedeContinuar()) {
+            //     todosRetornan = false;
+            // }
+            if (f.puedeContinuar() || terminaEnBreak(caso)) {
                 todosRetornan = false;
             }
         }
@@ -1746,7 +1750,11 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
             salirAmbito();
 
             // verificar si el default puede continuar
-            if (f.puedeContinuar()) {
+            // un break final sale del switch y el flujo sigue despues
+            // if (f.puedeContinuar()) {
+            //     todosRetornan = false;
+            // }
+            if (f.puedeContinuar() || terminaEnBreak(stmt.getCasoDefecto())) {
                 todosRetornan = false;
             }
 
@@ -1777,6 +1785,27 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
     public Object visitarCasoDefault(CasoDefault caso) {
         // analizar las instrucciones del caso por defecto
         return analizarInstrucciones(caso.getInstrucciones());
+    }
+
+    // verificar si un caso termina en break y el flujo sigue despues
+    private boolean terminaEnBreak(NodoASTZetariano caso) {
+        // omitir casos nulos
+        if (caso == null) {
+            return false;
+        }
+        // extraer instrucciones segun el tipo de caso
+        List<NodoASTZetariano> lista = null;
+        if (caso instanceof CasoSwitch) {
+            lista = ((CasoSwitch) caso).getInstrucciones();
+        } else if (caso instanceof CasoDefault) {
+            lista = ((CasoDefault) caso).getInstrucciones();
+        }
+        // omitir casos sin instrucciones
+        if (lista == null || lista.isEmpty()) {
+            return false;
+        }
+        // revisar la ultima instruccion del caso
+        return lista.get(lista.size() - 1) instanceof StmtBreak;
     }
 
     // ==================== CICLOS ====================

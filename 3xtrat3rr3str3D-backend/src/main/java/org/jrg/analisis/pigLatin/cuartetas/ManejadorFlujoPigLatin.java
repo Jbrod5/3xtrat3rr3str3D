@@ -279,11 +279,23 @@ public class ManejadorFlujoPigLatin {
         String anteriorContinue = ctx.getEtiquetaContinueActual();
         String Linicio = ctx.getTemporales().nuevaEtiqueta();
         String Lfin = ctx.getTemporales().nuevaEtiqueta();
+        // crear la etiqueta del paso para el perge
+        String Lpaso = ctx.getTemporales().nuevaEtiqueta();
         ctx.setEtiquetaBreakActual(Lfin);
-        ctx.setEtiquetaContinueActual(Linicio);
+        // ctx.setEtiquetaContinueActual(Linicio);
+        // el perge va al paso para no saltarse el incremento
+        ctx.setEtiquetaContinueActual(Lpaso);
         // inicializacion
         if (ciclo.getInicializacion() != null) {
             ciclo.getInicializacion().accept(generador);
+        }
+        // saltar a la condicion para no correr el paso antes
+        ctx.getCuartetas().add(new Cuarteta("goto", Linicio, "_", "_", "_", "_", "_"));
+        // etiqueta paso
+        ctx.getCuartetas().add(new Cuarteta("label", Lpaso, "_", "_", "_", "_", "_"));
+        // paso
+        if (ciclo.getPaso() != null) {
+            ciclo.getPaso().accept(generador);
         }
         // etiqueta inicio
         ctx.getCuartetas().add(new Cuarteta("label", Linicio, "_", "_", "_", "_", "_"));
@@ -304,11 +316,12 @@ public class ManejadorFlujoPigLatin {
             ciclo.getBloque().accept(generador);
         }
         // paso
-        if (ciclo.getPaso() != null) {
-            ciclo.getPaso().accept(generador);
-        }
-        // salto al inicio
-        ctx.getCuartetas().add(new Cuarteta("goto", Linicio, "_", "_", "_", "_", "_"));
+        // if (ciclo.getPaso() != null) {
+        //     ciclo.getPaso().accept(generador);
+        // }
+        // el paso ya salio arriba junto a su etiqueta
+        // salto al paso
+        ctx.getCuartetas().add(new Cuarteta("goto", Lpaso, "_", "_", "_", "_", "_"));
         // etiqueta final
         ctx.getCuartetas().add(new Cuarteta("label", Lfin, "_", "_", "_", "_", "_"));
         // restaurar etiquetas

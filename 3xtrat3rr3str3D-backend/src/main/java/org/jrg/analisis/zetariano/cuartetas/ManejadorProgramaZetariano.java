@@ -9,6 +9,8 @@ import org.jrg.model.ast.zetariano.Programa;
 import org.jrg.model.ast.zetariano.TipoDato;
 import org.jrg.model.ast.zetariano.ValorPrimitivo;
 import org.jrg.model.ast.zetariano.base.NodoASTZetariano;
+import org.jrg.model.base.TipoPrimitivo;
+import org.jrg.model.cuarteta.Cuarteta;
 
 // generar cuartetas del programa y su base en Zetariano
 public class ManejadorProgramaZetariano {
@@ -102,10 +104,31 @@ public class ManejadorProgramaZetariano {
         return null;
     }
 
-    // visitar el valor primitivo sin generar cuartetas
+    // visitar el valor primitivo cargandolo en un temporal
     public String visitarValorPrimitivo(ValorPrimitivo nodo) {
-        // TODO
-        return null;
+        // version anterior: no generaba nada y los case quedaban en 0
+        // public String visitarValorPrimitivo(ValorPrimitivo nodo) {
+        //     // TODO
+        //     return null;
+        // }
+        // devolver el identificador directo sin crear temporal
+        if (nodo.getTipoDato() == TipoPrimitivo.IDENTIFICADOR) {
+            return nodo.getValor();
+        }
+        // guardar el nulo como literal especial
+        if (nodo.getTipoDato() == TipoPrimitivo.NULO) {
+            String tempNulo = ctx.getTemporales().nuevoTemporal();
+            ctx.getCuartetas().add(new Cuarteta("=", "null", "_", tempNulo, "_", "_", "_"));
+            return tempNulo;
+        }
+        // guardar el literal en un temporal
+        String temp = ctx.getTemporales().nuevoTemporal();
+        // adivinar el tipo del literal
+        String tipoLiteral = ctx.inferirTipoLiteral(nodo.getValor());
+        // registrar el temporal con el tipo inferido
+        ctx.getTiposConocidos().put(temp, tipoLiteral);
+        ctx.getCuartetas().add(new Cuarteta("=", nodo.getValor(), "_", temp, tipoLiteral, "_", tipoLiteral));
+        return temp;
     }
 
     // visitar la lista de expresiones sin generar cuartetas
