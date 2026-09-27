@@ -1,0 +1,71 @@
+PAQUETE DE PRUEBA - Codex Latinus / Contacto 3xtrat3rr3str3D
+================================================================
+
+Archivos:
+  - Funciones.y   -> función sumar() con retorno, función saludo() sin retorno
+  - Contador.z    -> clase con atributo, constructor y dos métodos
+  - main.pig      -> programa principal que importa ambos y ejercita:
+      * arreglo de enteros (declaración, lectura por índice, escritura por índice)
+      * ciclo "per" (con iterador) recorriendo el arreglo
+      * llamada a función importada del .y, con retorno
+      * creación de un objeto (novus) importado del .z
+      * ciclo "dum" llamando métodos del objeto
+      * condicional si/aliter
+      * concatenación de texto con variables numéricas en el print (>>)
+
+CÓMO PROBARLO
+================================================================
+1. Abre la carpeta "prueba_proyecto1" completa en tu compilador
+   (los tres archivos deben quedar juntos, en la misma carpeta,
+   porque main.pig los importa con rutas relativas:
+   "import Funciones.y" e "import Contador.z").
+2. Compila el proyecto (botón Compilar Proyecto).
+3. Si compila sin errores, genera el C3D (botón Generar C3D).
+4. Compila el .c resultante:
+      gcc -std=gnu17 -o main salida/main.c && ./main
+
+SALIDA ESPERADA (aprox.)
+================================================================
+Hola desde el archivo Funciones.y
+Probando arreglos, objetos y funciones importadas
+Resultado150
+Total tras sumar 100 a la suma del arreglo: 250
+Valor final del contador (deberia ser 3): 3
+La suma del arreglo es mayor a 100
+Primer elemento del arreglo tras multiplicarlo por 2: 20
+
+(El "Resultado150" sale pegado porque el print no agrega espacio
+entre valores impresos con >>; es el comportamiento normal del
+lenguaje tal como está definido, no un bug.)
+
+QUÉ ESTABA CONFIRMADO ANTES DE ESTA PRUEBA
+================================================================
+Ya lo habíamos probado funcionando de punta a punta (con el
+ejemplo de la Pila/Nodo):
+  - objetos, atributos, constructores, métodos
+  - ciclo "dum"
+  - condicional "si/aliter"
+  - concatenación de texto con "+"
+  - funciones importadas de un .y
+
+QUÉ ES NUEVO EN ESTA PRUEBA (no lo habíamos ejecutado juntos)
+================================================================
+  - Arreglos: "series numeros[5] : numerus {...}", lectura
+    numeros[i] y escritura numeros[0] = ...
+  - El ciclo "per" con iterador
+  - Imprimir una variable numérica pegada a una de texto en el
+    mismo >> sin usar "+"
+
+Si algo de esto falla, es información valiosa: dinos exactamente
+qué mensaje de error (o qué salida incorrecta) te da, y seguimos
+depurando igual que hicimos con la Pila.
+
+QUÉ NO SE PROBÓ AÚN (fuera del alcance de este paquete)
+================================================================
+  - estructuras (%estructuras en .y / "estructura X:" ... con
+    "novus" implícito por llaves {}), ya que no llegamos a
+    revisar juntos el análisis semántico de ese tipo de dato
+  - switch/elegir - caso/siempre/romper
+  - facere...dum (do-while)
+  - arreglos de objetos o de estructuras
+  - perge / interrumpe (continue/break) dentro de ciclos
