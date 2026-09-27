@@ -20,20 +20,25 @@ public class RecolectorErrores {
      * Crear un recolector con errores iniciales.
      */
     public RecolectorErrores(List<ErrorCompilacion> errores) {
+
         this.errores = new ArrayList<>();
         if (errores != null) {
             this.errores.addAll(errores);
         }
+
     }
 
     /**
      * Agregar un error al recolector.
      */
     public boolean agregar(ErrorCompilacion error) {
+
         if (error == null) {
             return false;
         }
+
         return errores.add(error);
+
     }
 
     /**
@@ -47,10 +52,12 @@ public class RecolectorErrores {
      * Crear y agregar un error al recolector.
      */
     public ErrorCompilacion agregar(TipoError tipo, int linea, int columna, String descripcion) {
+
         ErrorCompilacion error = new ErrorCompilacion(tipo, linea, columna, descripcion);
         agregar(error);
 
         return error;
+
     }
 
     /**
@@ -92,13 +99,16 @@ public class RecolectorErrores {
      * Obtener los errores de un tipo.
      */
     public List<ErrorCompilacion> obtenerErrores(TipoError tipo) {
+
         List<ErrorCompilacion> filtrados = new ArrayList<>();
         for (ErrorCompilacion error : errores) {
             if (error != null && error.esDeTipo(tipo)) {
                 filtrados.add(error);
             }
         }
+
         return filtrados;
+
     }
 
     /**
@@ -128,4 +138,5 @@ public class RecolectorErrores {
     public void limpiar() {
         errores.clear();
     }
+
 }

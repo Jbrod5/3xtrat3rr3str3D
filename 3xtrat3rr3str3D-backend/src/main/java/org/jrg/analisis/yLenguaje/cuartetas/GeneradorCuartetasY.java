@@ -82,8 +82,10 @@ public class GeneradorCuartetasY implements YAstVisitor<String> {
      * Crear el generador de cuartetas para el lenguaje Y.
      */
     public GeneradorCuartetasY() {
+
         // inicializar el contexto compartido
         this.ctx = new ContextoCuartetasY();
+
         // crear las manejadoras con el contexto y este generador
         this.manejadorPrograma = new ManejadorProgramaY(ctx, this);
         this.manejadorEstructuras = new ManejadorEstructurasY(ctx, this);
@@ -91,6 +93,7 @@ public class GeneradorCuartetasY implements YAstVisitor<String> {
         this.manejadorDeclaraciones = new ManejadorDeclaracionesY(ctx, this);
         this.manejadorFlujo = new ManejadorFlujoY(ctx, this);
         this.manejadorExpresiones = new ManejadorExpresionesY(ctx, this);
+
     }
 
     /**
@@ -437,4 +440,5 @@ public class GeneradorCuartetasY implements YAstVisitor<String> {
     public String visitarExprPrimitivo(ExprPrimitivo nodo) {
         return manejadorExpresiones.visitarExprPrimitivo(nodo);
     }
+
 }

@@ -9,4 +9,5 @@ public enum TipoPrimitivo {
     IDENTIFICADOR,
     NULO,
     DESCONOCIDO
+
 }

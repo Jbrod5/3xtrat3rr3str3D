@@ -21,7 +21,9 @@ public class ColoresController {
      * Manejar la peticion de colores devolviendo la lista de tokens.
      */
     public void obtenerColores(Context ctx) {
+
         try {
+
             // obtener el codigo recibido en el cuerpo de la peticion
             String codigo = ctx.body();
 
@@ -30,6 +32,7 @@ public class ColoresController {
             if (lenguaje == null) {
                 lenguaje = ctx.header("X-Lenguaje");
             }
+
             if (lenguaje == null) {
                 lenguaje = "piglatin";
             }
@@ -45,6 +48,7 @@ public class ColoresController {
             ctx.status(200).json(respuesta);
 
         } catch (Exception e) {
+
             System.err.println("error al obtener colores: " + e.getMessage());
 
             // construir la respuesta de error
@@ -53,6 +57,9 @@ public class ColoresController {
             respuesta.put("mensaje", e.getMessage());
 
             ctx.status(500).json(respuesta);
+
         }
+
     }
+
 }

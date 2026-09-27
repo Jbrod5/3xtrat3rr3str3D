@@ -15,14 +15,19 @@ public class Main {
 
     // iniciar el servidor web con javalin
     public static void main(String[] args) {
+
         Javalin app = Javalin.create(config -> {
+
             config.bundledPlugins.enableCors(cors -> {
+
                 cors.addRule(rule -> {
                     rule.anyHost();
                 });
+
             });
             // servir el frontend compilado desde la raiz
             config.staticFiles.add("/public", Location.CLASSPATH);
+
         }).start(7070);
 
 
@@ -35,6 +40,7 @@ public class Main {
 
         CompiladorPigLatinService compiladorPigLatin = new CompiladorPigLatinService();
         CompiladorZetarianoService compiladorZetariano = new CompiladorZetarianoService();
+
         // instanciar el servicio del lenguaje Y
         CompiladorYLenguajeService compiladorY = new CompiladorYLenguajeService();
 
@@ -67,5 +73,7 @@ public class Main {
         // registrar ruta raiz de verificacion
         // app.get("/", ctx -> ctx.result("backend activo :D"));
         // version nueva: la raiz sirve el index del frontend compilado :D
+
     }
+
 }

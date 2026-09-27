@@ -12,9 +12,11 @@ public class CicloHacer extends NodoASTY {
      * Crear un ciclo hacer con su bloque y condicion.
      */
     public CicloHacer(NodoASTY bloque, NodoASTY condicion, int linea, int columna) {
+
         super(linea, columna);
         this.bloque = bloque;
         this.condicion = condicion;
+
     }
 
     public NodoASTY getBloque() {
@@ -29,4 +31,5 @@ public class CicloHacer extends NodoASTY {
     public <T> T accept(YAstVisitor<T> visitor) {
         return visitor.visitarCicloHacer(this);
     }
+
 }

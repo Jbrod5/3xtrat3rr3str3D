@@ -41,7 +41,9 @@ public class FuncionPendiente {
      * Crear una funcion pendiente con todos sus datos.
      */
     public FuncionPendiente(String nombre, List<Tipo> tiposParametros, Tipo tipoRetorno, Ambito ambito, int linea, int columna) {
+
         this.id = MiniUUID.generate();
+
         // normalizar nombre nulo
         if (nombre == null) {
             this.nombre = "";
@@ -50,15 +52,18 @@ public class FuncionPendiente {
         }
 
         this.tiposParametros = new ArrayList<>();
+
         // copiar parametros si existen
         if (tiposParametros != null) {
             this.tiposParametros.addAll(tiposParametros);
         }
+
         this.tipoRetorno = tipoRetorno;
         this.ambito = ambito;
         this.linea = linea;
         this.columna = columna;
         this.resuelta = false;
+
     }
 
     /**
@@ -93,10 +98,12 @@ public class FuncionPendiente {
      * Agregar el tipo de un parametro.
      */
     public void agregarParametro(Tipo tipo) {
+
         // validar duplicado antes de agregar
         if (tipo != null && !tiposParametros.contains(tipo)) {
             tiposParametros.add(tipo);
         }
+
     }
 
     /**
@@ -175,26 +182,33 @@ public class FuncionPendiente {
      * Obtener la firma de la funcion pendiente.
      */
     public String getFirma() {
+
         StringBuilder firma = new StringBuilder();
         firma.append(nombre);
         firma.append("(");
+
         // recorrer parametros para la firma
         for (int i = 0; i < tiposParametros.size(); i++) {
+
             if (i > 0) {
                 firma.append(",");
             }
 
             Tipo tipo = tiposParametros.get(i);
+
             // normalizar tipo desconocido
             if (tipo == null) {
                 firma.append("desconocido");
             } else {
                 firma.append(tipo.getNombre());
             }
+
         }
 
         firma.append(")");
 
         return firma.toString();
+
     }
+
 }

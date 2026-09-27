@@ -21,6 +21,7 @@ public class StatementIf extends NodoASTZetariano {
             NodoASTZetariano bloqueSino,
             int linea,
             int columna) {
+
         super(linea, columna);
         this.condicion = condicion;
         this.bloque = bloque;
@@ -28,11 +29,14 @@ public class StatementIf extends NodoASTZetariano {
         if (condicionesSinoSi != null) {
             this.condicionesSinoSi.addAll(condicionesSinoSi);
         }
+
         this.bloquesSinoSi = new ArrayList<>();
         if (bloquesSinoSi != null) {
             this.bloquesSinoSi.addAll(bloquesSinoSi);
         }
+
         this.bloqueSino = bloqueSino;
+
     }
 
     public NodoASTZetariano getCondicion() {
@@ -59,4 +63,5 @@ public class StatementIf extends NodoASTZetariano {
     public <T> T accept(ZetarianoAstVisitor<T> visitor) {
         return visitor.visitarStatementIf(this);
     }
+
 }

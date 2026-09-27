@@ -13,10 +13,12 @@ public class DeclConTipoYValor extends NodoASTY {
      * Crear una declaracion con tipo y valor opcional.
      */
     public DeclConTipoYValor(NodoASTY tipo, String nombre, NodoASTY valor, int linea, int columna) {
+
         super(linea, columna);
         this.tipo = tipo;
         this.nombre = nombre;
         this.valor = valor;
+
     }
 
     public NodoASTY getTipo() {
@@ -35,4 +37,5 @@ public class DeclConTipoYValor extends NodoASTY {
     public <T> T accept(YAstVisitor<T> visitor) {
         return visitor.visitarDeclConTipoYValor(this);
     }
+
 }

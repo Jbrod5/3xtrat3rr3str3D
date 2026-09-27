@@ -14,11 +14,13 @@ public class DefFuncionConRetorno extends NodoASTY {
      * Crear una definicion de funcion con retorno.
      */
     public DefFuncionConRetorno(String nombre, NodoASTY tipoRetorno, NodoASTY parametros, NodoASTY cuerpo, int linea, int columna) {
+
         super(linea, columna);
         this.nombre = nombre;
         this.tipoRetorno = tipoRetorno;
         this.parametros = parametros;
         this.cuerpo = cuerpo;
+
     }
 
     public String getNombre() {
@@ -41,4 +43,5 @@ public class DefFuncionConRetorno extends NodoASTY {
     public <T> T accept(YAstVisitor<T> visitor) {
         return visitor.visitarDefFuncionConRetorno(this);
     }
+
 }

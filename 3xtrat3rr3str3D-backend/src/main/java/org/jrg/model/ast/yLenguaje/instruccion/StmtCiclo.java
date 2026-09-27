@@ -23,4 +23,5 @@ public class StmtCiclo extends NodoASTY {
     public <T> T accept(YAstVisitor<T> visitor) {
         return visitor.visitarStmtCiclo(this);
     }
+
 }

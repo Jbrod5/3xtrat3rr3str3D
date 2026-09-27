@@ -104,10 +104,10 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
 
         // verificar si el programa no es nulo
         if (programa != null) {
-
             // entrar en el programa
             programa.accept(this);
         }
+
     }
 
     /**
@@ -154,6 +154,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
 
         // resolver el tipo por su nombre
         return this.contexto.tipoPorNombre(tipoDato.getNombre());
+
     }
 
     // sacar el tipo de lo que dio la visita
@@ -165,6 +166,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
         }
 
         return null;
+
     }
 
     // extraer el valor entero de un nodo si es una constante literal
@@ -183,6 +185,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
 
             // verificar si el valor es primitivo
             if (valor instanceof ValorPrimitivo) {
+
                 ValorPrimitivo vp = (ValorPrimitivo) valor;
 
                 // verificar si el tipo es entero
@@ -191,16 +194,19 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
                     try {
                         // convertir el valor a entero
                         return Integer.parseInt(vp.getValor());
-
                     } catch (NumberFormatException e) {
                         return null;
                     }
 
                 }
+
             }
+
         }
+
         // caso valor primitivo directo
         if (nodo instanceof ValorPrimitivo) {
+
             ValorPrimitivo vp = (ValorPrimitivo) nodo;
 
             // verificar si el tipo es entero
@@ -209,14 +215,16 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
                 try {
                     // convertir el valor a entero
                     return Integer.parseInt(vp.getValor());
-
                 } catch (NumberFormatException e) {
                     return null;
                 }
+
             }
+
         }
 
         return null;
+
     }
 
     // ==================== DECLARACION SEGURA ====================
@@ -226,6 +234,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
 
         // verificar si el nombre es valido
         if (nombre == null || nombre.isEmpty()) {
+
             this.contexto.agregarError(nodo, "declaracion sin identificador");
 
             return false;
@@ -236,6 +245,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
 
         // reportar el error si ya existe
         if (existente != null) {
+
             this.contexto.agregarError(nodo, "la variable '" + nombre + "' ya esta declarada en un ambito padre");
 
             return false;
@@ -243,6 +253,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
 
         // pasar la declaracion al contexto
         return this.contexto.declarar(nodo, nombre, tipo, categoria, tamano);
+
     }
 
     // ==================== BUILT-INS ====================
@@ -295,6 +306,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
         }
 
         return lista;
+
     }
 
     // ==================== REGISTRO DE ESTRUCTURAS ====================
@@ -307,6 +319,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
 
         // verificar si el tipo ya esta definido
         if (this.contexto.tipoPorNombre(nombre) != null) {
+
             this.contexto.agregarError(estructura, "el tipo '" + nombre + "' ya esta definido");
 
             return;
@@ -323,6 +336,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
 
             // procesar atributo simple
             if (attr instanceof AtributoSimple) {
+
                 AtributoSimple simple = (AtributoSimple) attr;
 
                 // resolver el tipo del campo
@@ -330,6 +344,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
 
                 // reportar error si el tipo no existe
                 if (tipoCampo == null) {
+
                     this.contexto.agregarError(simple, "tipo de atributo no definido");
 
                     continue;
@@ -353,6 +368,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
 
                 // reportar error si el tipo no existe
                 if (tipoBase == null) {
+
                     this.contexto.agregarError(array, "tipo de atributo no definido");
 
                     continue;
@@ -369,8 +385,11 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
                 campo.setTamano(array.getTamano());
 
                 tipo.agregarCampo(campo);
+
             }
+
         }
+
     }
 
     // ==================== REGISTRO DE FUNCIONES ====================
@@ -386,6 +405,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
 
         // verificar si ya existe una firma igual
         if (existeFuncionConFirma(nombre, tiposParametros)) {
+
             this.contexto.agregarError(funcion, "ya existe una funcion '" + nombre + "' con la misma firma");
 
             return;
@@ -401,6 +421,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
 
         // declarar la funcion como metodo en el ambito
         this.contexto.ambitoActual().declararMetodo(simbolo);
+
     }
 
     // registrar una funcion con retorno en el ambito global
@@ -414,6 +435,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
 
         // reportar error si el tipo no existe
         if (tipoRetorno == null) {
+
             this.contexto.agregarError(funcion, "tipo de retorno no definido");
 
             return;
@@ -424,6 +446,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
 
         // verificar si ya existe una firma igualllllll
         if (existeFuncionConFirma(nombre, tiposParametros)) {
+
             this.contexto.agregarError(funcion, "ya existe una funcion '" + nombre + "' con la misma firma");
 
             return;
@@ -440,6 +463,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
 
         // declarar la funcion como metodo en el ambito
         this.contexto.ambitoActual().declararMetodo(simbolo);
+
     }
 
     // verificar si ya existe una funcion con la misma firma exacta en el ambito actual
@@ -450,15 +474,18 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
 
         // comparar cada firma existente
         for (int i = 0; i < existentes.size(); i++) {
+
             Simbolo s = existentes.get(i);
 
             // comparar la firma del candidato
             if (mismaFirma(s.getTiposParametros(), tiposParametros)) {
                 return true;
             }
+
         }
 
         return false;
+
     }
 
     // verificar si dos firmas son identicas en tipos y dimensiones
@@ -481,6 +508,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
 
         // comparar cada par de tipos
         for (int i = 0; i < a.size(); i++) {
+
             Tipo ta = a.get(i);
             Tipo tb = b.get(i);
 
@@ -502,6 +530,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
         }
 
         return true;
+
     }
 
     // verificar si los tipos de los parametros son compatibles con los argumentos
@@ -524,14 +553,13 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
 
         // comparar la compatibilidad de cada par
         for (int i = 0; i < parametros.size(); i++) {
-
             if (!this.contexto.esCompatible(parametros.get(i), argumentos.get(i))) {
                 return false;
             }
-
         }
 
         return true;
+
     }
 
     // extraer los tipos de los parametros de una lista
@@ -582,10 +610,13 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
                 ParamEstructura estructura = (ParamEstructura) p;
                 Tipo tipo = this.contexto.tipoPorNombre(estructura.getTipoEstructura());
                 tipos.add(tipo);
+
             }
+
         }
 
         return tipos;
+
     }
 
     // ==================== FLUJO DE CONTROL ====================
@@ -615,6 +646,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
                 }
 
                 continue;
+
             }
 
             // omitir instrucciones nulas
@@ -633,6 +665,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
         }
 
         return flujo;
+
     }
 
     // visitar un bloque aislado y devolver su flujo
@@ -652,6 +685,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
         }
 
         return new FlujoControl();
+
     }
 
     // validar que una condicion sea booleana
@@ -667,6 +701,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
 
         // verificar si el resultado es un Tipo
         if (tipoObj instanceof Tipo) {
+
             Tipo tipoCond = (Tipo) tipoObj;
 
             // reportar error si no es booleano
@@ -675,6 +710,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
             }
 
         }
+
     }
 
     // ==================== PROGRAMA ====================
@@ -687,6 +723,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
 
         // primera pasada: registrar structs globales
         if (nodo.getSeccionEstructuras() != null && nodo.getSeccionEstructuras() instanceof SeccionEstructuras) {
+
             SeccionEstructuras seccion = (SeccionEstructuras) nodo.getSeccionEstructuras();
 
             // registrar cada estructura declarada
@@ -695,10 +732,12 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
                     registrarEstructura((DefEstructura) est);
                 }
             }
+
         }
 
         // primera pasada: registrar firmas de funcioness
         if (nodo.getSeccionFunciones() != null && nodo.getSeccionFunciones() instanceof SeccionFunciones) {
+
             SeccionFunciones seccion = (SeccionFunciones) nodo.getSeccionFunciones();
 
             // registrar la firma de cada funcion
@@ -706,11 +745,12 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
 
                 if (fun instanceof DefFuncionSinRetorno) {
                     registrarFuncionSinRetorno((DefFuncionSinRetorno) fun);
-
                 } else if (fun instanceof DefFuncionConRetorno) {
                     registrarFuncionConRetorno((DefFuncionConRetorno) fun);
                 }
+
             }
+
         }
 
 
@@ -718,6 +758,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
 
         // segunda pasada: analizar cuerpos de funciones
         if (nodo.getSeccionFunciones() != null && nodo.getSeccionFunciones() instanceof SeccionFunciones) {
+
             SeccionFunciones seccion = (SeccionFunciones) nodo.getSeccionFunciones();
 
             // visitar cada funcion
@@ -726,9 +767,11 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
                     fun.accept(this);
                 }
             }
+
         }
 
         return new FlujoControl();
+
     }
 
     @Override
@@ -777,6 +820,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
         }
 
         return null;
+
     }
 
     @Override
@@ -794,18 +838,23 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
         if (tp == TipoPrimitivo.ENTERO) {
             return this.contexto.tipoPrimitivo("entero");
         }
+
         if (tp == TipoPrimitivo.DECIMAL) {
             return this.contexto.tipoPrimitivo("flotante");
         }
+
         if (tp == TipoPrimitivo.CADENA) {
             return this.contexto.tipoPrimitivo("cadena");
         }
+
         if (tp == TipoPrimitivo.CARACTER) {
             return this.contexto.tipoPrimitivo("caracter");
         }
+
         if (tp == TipoPrimitivo.BOOLEANO) {
             return this.contexto.tipoPrimitivo("booleano");
         }
+
         if (tp == TipoPrimitivo.IDENTIFICADOR) {
 
             // resolver el simbolo del identificador
@@ -816,9 +865,11 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
             }
 
             return null;
+
         }
 
         return null;
+
     }
 
     // ==================== ESTRUCTURAS ====================
@@ -861,6 +912,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
         this.contexto.salirAmbito();
 
         return null;
+
     }
 
     @Override
@@ -891,6 +943,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
         this.contexto.salirAmbito();
 
         return null;
+
     }
 
     // extraer las instrucciones de un nodo CuerpoFuncion
@@ -902,6 +955,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
         }
 
         return new ArrayList<>();
+
     }
 
     // registrar los parametros de una funcion en el ambito actual
@@ -917,6 +971,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
 
         // recorrer cada parametro
         for (NodoASTY p : parametros.getParametros()) {
+
             if (p instanceof ParamSimple) {
 
                 // procesar parametro simple
@@ -925,6 +980,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
 
                 // reportar error si el tipo no existe
                 if (tipo == null) {
+
                     this.contexto.agregarError(simple, "tipo de parametro no definido");
 
                     continue;
@@ -941,6 +997,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
 
                 // reportar error si el tipo base no existe
                 if (base == null) {
+
                     this.contexto.agregarError(array, "tipo de parametro no definido");
 
                     continue;
@@ -958,14 +1015,18 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
 
                 // reportar error si el tipo no existe
                 if (tipo == null) {
+
                     this.contexto.agregarError(estructura, "tipo de estructura no definido");
 
                     continue;
                 }
 
                 declararVariableSeguro(estructura, estructura.getNombre(), tipo, CategoriaSimbolo.PARAMETRO, null);
+
             }
+
         }
+
     }
 
     @Override
@@ -994,6 +1055,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
         }
 
         return new FlujoControl();
+
     }
 
     @Override
@@ -1005,6 +1067,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
         }
 
         return new FlujoControl();
+
     }
 
     @Override
@@ -1016,6 +1079,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
         }
 
         return new FlujoControl();
+
     }
 
     @Override
@@ -1023,15 +1087,18 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
 
         // visitar el condicional si existe
         if (nodo.getCondicional() != null) {
+
             Object resultado = nodo.getCondicional().accept(this);
 
             // devolver el flujo si el resultado lo permite
             if (resultado instanceof FlujoControl) {
                 return resultado;
             }
+
         }
 
         return new FlujoControl();
+
     }
 
     @Override
@@ -1039,15 +1106,18 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
 
         // visitar la seleccion si existe
         if (nodo.getSeleccion() != null) {
+
             Object resultado = nodo.getSeleccion().accept(this);
 
             // devolver el flujo si el resultado lo permite
             if (resultado instanceof FlujoControl) {
                 return resultado;
             }
+
         }
 
         return new FlujoControl();
+
     }
 
     @Override
@@ -1059,6 +1129,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
         }
 
         return new FlujoControl();
+
     }
 
     @Override
@@ -1073,7 +1144,6 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
             // reportar error si la funcion no retorna
             if (!this.enFuncionConRetorno) {
                 this.contexto.agregarError(nodo, "no se puede retornar un valor desde una funcion sin retorno");
-
             } else if (tipoExp != null && this.tipoRetornoActual != null) {
 
                 // verificar la compatibilidad del tipo
@@ -1082,6 +1152,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
                 }
 
             }
+
         } else {
 
             // reportar error si falta el valor de retorno
@@ -1096,6 +1167,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
         flujo.marcarRetorno();
 
         return flujo;
+
     }
 
     @Override
@@ -1111,6 +1183,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
         flujo.marcarRetorno();
 
         return flujo;
+
     }
 
     @Override
@@ -1126,6 +1199,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
         flujo.marcarRetorno();
 
         return flujo;
+
     }
 
     @Override
@@ -1137,6 +1211,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
         }
 
         return new FlujoControl();
+
     }
 
     // ==================== DECLARACIONES DE VARIABLES ====================
@@ -1160,6 +1235,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
 
         // visitar el valor si existe
         if (nodo.getValor() != null) {
+
             Object tipoObj = nodo.getValor().accept(this);
             Tipo tipoExp = extraerTipoDeExpresion(tipoObj);
 
@@ -1167,9 +1243,11 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
             if (tipoExp != null && !this.contexto.esCompatible(tipo, tipoExp)) {
                 this.contexto.agregarError(nodo.getValor(), "tipo incompatible en inicializacion, se esperaba '" + tipo.getNombre() + "' pero se obtuvo '" + tipoExp.getNombre() + "'");
             }
+
         }
 
         return null;
+
     }
 
     @Override
@@ -1180,6 +1258,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
 
         // reportar error si el tipo no existe
         if (tipoBase == null) {
+
             this.contexto.agregarError(nodo, "tipo no definido");
 
             return null;
@@ -1201,12 +1280,14 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
             } else if (tamano <= 0) {
                 this.contexto.agregarError(nodo.getTamano(), "el tamano del arreglo debe ser positivo");
             }
+
         }
 
         // declarar la variable de forma segura
         declararVariableSeguro(nodo, nodo.getNombre(), tipoArray, CategoriaSimbolo.ARREGLO, tamano);
 
         return null;
+
     }
 
     @Override
@@ -1217,6 +1298,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
 
         // reportar error si el tipo no existe :'c
         if (tipoBase == null) {
+
             this.contexto.agregarError(nodo, "tipo no definido");
 
             return null;
@@ -1228,6 +1310,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
 
         // visitar el tamano si existe
         if (nodo.getTamano() != null) {
+
             nodo.getTamano().accept(this);
             tamano = extraerEnteroConstante(nodo.getTamano());
 
@@ -1245,10 +1328,12 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
 
         // verificar la lista de valores
         if (nodo.getListaValores() != null) {
+
             Object listaObj = nodo.getListaValores();
 
             // verificar si la lista es de expresiones
             if (listaObj instanceof ListaExpresiones) {
+
                 ListaExpresiones lista = (ListaExpresiones) listaObj;
 
                 // verificar la cantidad de valores
@@ -1271,22 +1356,27 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
                     if (tipoValor != null && !this.contexto.esCompatible(tipoBase, tipoValor)) {
                         this.contexto.agregarError(expr, "valor incompatible con el tipo del arreglo");
                     }
+
                 }
 
 
             }
+
         }
 
         return null;
+
     }
 
     @Override
     public Object visitarDeclMatriz(DeclMatriz nodo) {
+
         // resolver el tipo base
         Tipo tipoBase = resolverTipoDato(nodo.getTipo());
 
         // reportar error si el tipo no existe
         if (tipoBase == null) {
+
             this.contexto.agregarError(nodo, "tipo no definido");
 
             return null;
@@ -1310,15 +1400,18 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
         declararVariableSeguro(nodo, nodo.getNombre(), tipoMatriz, CategoriaSimbolo.ARREGLO, null);
 
         return null;
+
     }
 
     @Override
     public Object visitarDeclMatrizConValores(DeclMatrizConValores nodo) {
+
         // resolver el tipo base
         Tipo tipoBase = resolverTipoDato(nodo.getTipo());
 
         // reportar error si el tipo no existe
         if (tipoBase == null) {
+
             this.contexto.agregarError(nodo, "tipo no definido");
 
             return null;
@@ -1342,30 +1435,42 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
 
         // validar cada fila con sus valores
         if (nodo.getFilas() != null) {
+
             for (int i = 0; i < nodo.getFilas().size(); i++) {
+
                 List<NodoASTY> fila = nodo.getFilas().get(i);
+
                 // omitir filas nulas
                 if (fila == null) {
                     continue;
                 }
+
                 // validar cada valor de la fila
                 for (int j = 0; j < fila.size(); j++) {
+
                     NodoASTY expr = fila.get(j);
+
                     // omitir expresiones nulas
                     if (expr == null) {
                         continue;
                     }
+
                     Object tipoValorObj = expr.accept(this);
                     Tipo tipoValor = extraerTipoDeExpresion(tipoValorObj);
+
                     // verificar la compatibilidad del tipo
                     if (tipoValor != null && !this.contexto.esCompatible(tipoBase, tipoValor)) {
                         this.contexto.agregarError(expr, "valor incompatible con el tipo de la matriz");
                     }
+
                 }
+
             }
+
         }
 
         return null;
+
     }
 
     // ==================== ASIGNACION ====================
@@ -1379,6 +1484,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
 
         // reportar error si la variable no esta declarada
         if (tipoVar == null) {
+
             this.contexto.agregarError(nodo, "variable no declarada o no accesible");
 
             return null;
@@ -1394,6 +1500,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
         }
 
         return null;
+
     }
 
     // ==================== VARIABLES ASIGNABLES ====================
@@ -1410,6 +1517,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
         }
 
         return null;
+
     }
 
     @Override
@@ -1441,6 +1549,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
 
         // devolver el tipo elemento
         return this.contexto.tipoElemento(tipoBase);
+
     }
 
     @Override
@@ -1465,6 +1574,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
         }
 
         return campo.getTipo();
+
     }
 
     // ==================== CONDICIONAL ====================
@@ -1484,6 +1594,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
 
         // recorrer cada rama sino si
         for (int i = 0; i < nodo.getCondicionesSino().size(); i++) {
+
             NodoASTY cond = nodo.getCondicionesSino().get(i);
             NodoASTY bloque = nodo.getBloquesSino().get(i);
 
@@ -1504,6 +1615,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
 
         // visitar el bloque contrario si existe
         if (nodo.getBloqueContrario() != null) {
+
             hayContrario = true;
             this.contexto.entrarAmbito("bloque-contrario");
 
@@ -1514,6 +1626,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
             if (flujoContrario.puedeContinuar()) {
                 todasTerminan = false;
             }
+
         }
 
         // devolver el flujo correspondiente
@@ -1526,6 +1639,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
         }
 
         return resultado;
+
     }
 
     // ==================== SELECCION ====================
@@ -1549,6 +1663,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
 
         // recorrer cada caso de la seleccion
         for (NodoASTY caso : nodo.getCasos()) {
+
             this.contexto.entrarAmbito("caso-elegir");
 
             FlujoControl flujoCaso = visitarBloqueAislado(caso);
@@ -1559,10 +1674,12 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
             if (flujoCaso.puedeContinuar() || terminaEnRomper(caso)) {
                 todosTerminan = false;
             }
+
         }
 
         // visitar el caso por defecto si existe
         if (nodo.getCasoDefecto() != null) {
+
             this.contexto.entrarAmbito("caso-defecto");
 
             FlujoControl flujoDefecto = visitarBloqueAislado(nodo.getCasoDefecto());
@@ -1591,14 +1708,17 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
         }
 
         return resultado;
+
     }
 
     // verificar si un caso termina con romper y el flujo sigue despues
     private boolean terminaEnRomper(NodoASTY caso) {
+
         // omitir casos nulos
         if (caso == null) {
             return false;
         }
+
         // extraer instrucciones segun el tipo de caso
         List<NodoASTY> lista = null;
         if (caso instanceof CasoSeleccion) {
@@ -1606,12 +1726,15 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
         } else if (caso instanceof CasoDefecto) {
             lista = ((CasoDefecto) caso).getInstrucciones();
         }
+
         // omitir casos sin instrucciones
         if (lista == null || lista.isEmpty()) {
             return false;
         }
+
         // revisar la ultima instruccion del caso
         return lista.get(lista.size() - 1) instanceof StmtRomper;
+
     }
 
     @Override
@@ -1657,10 +1780,12 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
         this.contexto.salirAmbito();
         this.contexto.salirCiclo();
         return new FlujoControl();
+
     }
 
     @Override
     public Object visitarCicloMientras(CicloMientras nodo) {
+
         // entrar al ciclo y al ambito
         this.contexto.entrarCiclo();
         this.contexto.entrarAmbito("bloque-mientras");
@@ -1677,10 +1802,12 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
         this.contexto.salirAmbito();
         this.contexto.salirCiclo();
         return new FlujoControl();
+
     }
 
     @Override
     public Object visitarCicloHacer(CicloHacer nodo) {
+
         // entrar al ciclo y al ambito
         this.contexto.entrarCiclo();
         this.contexto.entrarAmbito("bloque-hacer");
@@ -1698,6 +1825,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
         this.contexto.salirCiclo();
 
         return new FlujoControl();
+
     }
 
     // ==================== INIT Y PASO DEL PARA ====================
@@ -1721,6 +1849,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
 
         // visitar la expresion de inicializacion si existe
         if (nodo.getExpresion() != null) {
+
             Object tipoExpObj = nodo.getExpresion().accept(this);
             Tipo tipoExp = extraerTipoDeExpresion(tipoExpObj);
 
@@ -1728,13 +1857,16 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
             if (tipoExp != null && !this.contexto.esCompatible(tipo, tipoExp)) {
                 this.contexto.agregarError(nodo, "tipo incompatible en inicializacion");
             }
+
         }
 
         return null;
+
     }
 
     @Override
     public Object visitarInitParaAsig(InitParaAsig nodo) {
+
         // visitar la variable destino
         Object tipoVarObj = nodo.getVariable().accept(this);
         Tipo tipoVar = extraerTipoDeExpresion(tipoVarObj);
@@ -1746,6 +1878,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
 
         // visitar la expresion de inicializacion si existe
         if (nodo.getExpresion() != null) {
+
             Object tipoExpObj = nodo.getExpresion().accept(this);
             Tipo tipoExp = extraerTipoDeExpresion(tipoExpObj);
 
@@ -1753,23 +1886,28 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
             if (tipoExp != null && !this.contexto.esCompatible(tipoVar, tipoExp)) {
                 this.contexto.agregarError(nodo, "tipo incompatible en inicializacion");
             }
+
         }
 
         return null;
+
     }
 
     @Override
     public Object visitarPasoParaExpr(PasoParaExpr nodo) {
+
         // visitar la expresion del paso si existe
         if (nodo.getExpresion() != null) {
             nodo.getExpresion().accept(this);
         }
 
         return null;
+
     }
 
     @Override
     public Object visitarPasoParaAsig(PasoParaAsig nodo) {
+
         // visitar la variable destino
         Object tipoVarObj = nodo.getVariable().accept(this);
         Tipo tipoVar = extraerTipoDeExpresion(tipoVarObj);
@@ -1781,6 +1919,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
 
         // visitar la expresion del paso si existe
         if (nodo.getExpresion() != null) {
+
             Object tipoExpObj = nodo.getExpresion().accept(this);
             Tipo tipoExp = extraerTipoDeExpresion(tipoExpObj);
 
@@ -1792,6 +1931,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
         }
 
         return null;
+
     }
 
     // ==================== EXPRESIONES ====================
@@ -1806,6 +1946,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
 
         // visitar la expresion interna
         return nodo.getExpresion().accept(this);
+
     }
 
     @Override
@@ -1818,6 +1959,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
 
         // visitar el valor interno
         return nodo.getValor().accept(this);
+
     }
 
     @Override
@@ -1827,9 +1969,11 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
         List<Tipo> tiposArgs = new ArrayList<>();
 
         for (NodoASTY arg : nodo.getArgumentos()) {
+
             Object tipoObj = arg.accept(this);
             Tipo tipo = extraerTipoDeExpresion(tipoObj);
             tiposArgs.add(tipo);
+
         }
 
         // buscar candidatos con ese nombre aqui y arriba
@@ -1837,6 +1981,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
 
         // reportar error si no hay candidatos
         if (candidatos.isEmpty()) {
+
             this.contexto.agregarError(nodo, "funcion '" + nodo.getNombre() + "' no definida");
 
             return null;
@@ -1856,6 +2001,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
         this.contexto.agregarError(nodo, "no existe una funcion '" + nodo.getNombre() + "' con argumentos compatibles");
 
         return null;
+
     }
 
     @Override
@@ -1872,6 +2018,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
 
         // verificar si el tipo no es un arreglo
         if (tipoArray.getDimension() <= 0) {
+
             this.contexto.agregarError(nodo, "se esperaba un arreglo");
 
             return null;
@@ -1888,6 +2035,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
 
         // devolver el tipo elemento
         return this.contexto.tipoElemento(tipoArray);
+
     }
 
     @Override
@@ -1907,16 +2055,19 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
 
         // reportar error si el campo no existe
         if (campo == null) {
+
             this.contexto.agregarError(nodo, "el campo '" + nodo.getMiembro() + "' no existe en '" + tipoBase.getNombre() + "'");
 
             return null;
         }
 
         return campo.getTipo();
+
     }
 
     @Override
     public Object visitarExprPostIncremento(ExprPostIncremento nodo) {
+
         // visitar la variable del incremento
         Object tipoObj = nodo.getVariable().accept(this);
         Tipo tipoVar = extraerTipoDeExpresion(tipoObj);
@@ -1927,6 +2078,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
         }
 
         return tipoVar;
+
     }
 
     @Override
@@ -1942,10 +2094,12 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
         }
 
         return tipoVar;
+
     }
 
     @Override
     public Object visitarExprListaLiteral(ExprListaLiteral nodo) {
+
         Tipo tipoPrevio = null;
 
         // recorrer cada elemento de la lista
@@ -1968,12 +2122,13 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
             // registrar el primer tipo
             if (tipoPrevio == null) {
                 tipoPrevio = tipoActual;
-
             } else if (!this.contexto.esCompatible(tipoPrevio, tipoActual)) {
                 // reportar elementos con tipos diferentes
                 this.contexto.agregarError(elem, "elementos con tipos diferentes en lista literal");
             }
+
         }
+
         // verificar si no hay tipo previo
         if (tipoPrevio == null) {
             return null;
@@ -1981,10 +2136,12 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
 
         // devolver el tipo arreglo
         return this.contexto.tipoArray(tipoPrevio);
+
     }
 
     @Override
     public Object visitarExprNegativa(ExprNegativa nodo) {
+
         // visitar la expresion interna
         Object tipoObj = nodo.getExpresion().accept(this);
         Tipo tipoExp = extraerTipoDeExpresion(tipoObj);
@@ -1995,10 +2152,12 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
         }
 
         return tipoExp;
+
     }
 
     @Override
     public Object visitarExprNegada(ExprNegada nodo) {
+
         // visitar la expresion interna
         Object tipoObj = nodo.getExpresion().accept(this);
         Tipo tipoExp = extraerTipoDeExpresion(tipoObj);
@@ -2009,6 +2168,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
         }
 
         return this.contexto.tipoPrimitivo("booleano");
+
     }
 
     @Override
@@ -2032,6 +2192,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
 
         // devolver el tipo de mayor jerarquia
         return this.contexto.tipoMayorJerarquia(tipoIzq, tipoDer);
+
     }
 
     @Override
@@ -2063,6 +2224,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
 
         // devolver flotante si hay, si no entero
         return this.contexto.tipoMayorJerarquia(tipoIzq, tipoDer);
+
     }
 
     @Override
@@ -2077,6 +2239,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
 
         // verificar la compatibilidad de los tipos
         if (tipoIzq != null && tipoDer != null) {
+
             boolean num = this.contexto.esNumerico(tipoIzq) && this.contexto.esNumerico(tipoDer);
             boolean txt = this.contexto.esCadena(tipoIzq) && this.contexto.esCadena(tipoDer);
             boolean bool = this.contexto.esBooleano(tipoIzq) && this.contexto.esBooleano(tipoDer);
@@ -2085,13 +2248,16 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
             if (!num && !txt && !bool) {
                 this.contexto.agregarError(nodo, "tipos incompatibles para comparacion");
             }
+
         }
 
         return this.contexto.tipoPrimitivo("booleano");
+
     }
 
     @Override
     public Object visitarExprAnd(ExprAnd nodo) {
+
         // visitar ambos operandos
         Object tipoIzqObj = nodo.getIzquierdo().accept(this);
         Object tipoDerObj = nodo.getDerecho().accept(this);
@@ -2110,6 +2276,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
         }
 
         return this.contexto.tipoPrimitivo("booleano");
+
     }
 
     @Override
@@ -2133,5 +2300,7 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
         }
 
         return this.contexto.tipoPrimitivo("booleano");
+
     }
+
 }

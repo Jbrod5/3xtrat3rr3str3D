@@ -3,11 +3,14 @@
    
    Formato esperado del backend (POST /colores):
    {
+
      "colores": [
        { "start": 0, "length": 5, "category": "keyword" },
        { "start": 7, "length": 7, "category": "identifier" }
      ]
+
    }
+
 */
 
 const mapaTipoAClase = {
@@ -23,6 +26,7 @@ const mapaTipoAClase = {
   delimiter: 'lc-10',
   boolean: 'lc-1',
   function: 'lc-8'
+
 };
 
 export function mapearTipoAClase(tipo) {
@@ -36,22 +40,29 @@ export function mapearTipoAClase(tipo) {
  * @returns {Array} Decoraciones para Monaco Editor
  */
 export function convertirAColorBackend(coloresBackend, monaco) {
+
   if (!coloresBackend || !Array.isArray(coloresBackend)) {
     return [];
   }
 
   return coloresBackend.map((item) => {
+
     const clase = mapearTipoAClase(item.category);
+
     // El backend devuelve start/length, necesitamos convertir a Range
     // Para esto necesitamos el modelo del editor para calcular line/column
     // Retornamos un objeto con la info necesaria para que el editor la convierta
     return {
+
       start: item.start,
       length: item.length,
       category: item.category,
       className: clase
+
     };
+
   });
+
 }
 
 /**
@@ -62,15 +73,18 @@ export function convertirAColorBackend(coloresBackend, monaco) {
  * @returns {Array} Decoraciones Monaco
  */
 export function convertirTokensADecoraciones(tokens, modelo, monaco) {
+
   if (!tokens || !Array.isArray(tokens) || !modelo) {
     return [];
   }
 
   return tokens.map((item) => {
+
     const clase = mapearTipoAClase(item.category);
     const startPos = modelo.getPositionAt(item.start);
     const endPos = modelo.getPositionAt(item.start + item.length);
     return {
+
       range: new monaco.Range(
         startPos.lineNumber,
         startPos.column,
@@ -78,6 +92,9 @@ export function convertirTokensADecoraciones(tokens, modelo, monaco) {
         endPos.column
       ),
       options: { inlineClassName: clase }
+
     };
+
   });
+
 }

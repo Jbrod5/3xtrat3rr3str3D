@@ -19,6 +19,7 @@ public class Cuarteta {
 
     // crear la cuarteta con sus cuatro campos y sus tipos
     public Cuarteta(String operador, String arg1, String arg2, String resultado, String tipoArg1, String tipoArg2, String tipoResultado) {
+
         // asignar los valores recibidos
         this.operador = operador;
         this.arg1 = arg1;
@@ -27,6 +28,7 @@ public class Cuarteta {
         this.tipoArg1 = tipoArg1;
         this.tipoArg2 = tipoArg2;
         this.tipoResultado = tipoResultado;
+
     }
 
     // obtener el operador
@@ -70,4 +72,5 @@ public class Cuarteta {
         // usar el formato solicitado
         return "(" + operador + ", " + arg1 + ", " + arg2 + ", " + resultado + ")";
     }
+
 }

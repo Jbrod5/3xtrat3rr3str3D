@@ -17,15 +17,18 @@ public class DeclConMatrizLiteral extends NodoASTZetariano {
      * Crear una declaracion de matriz con valores anidados por niveles.
      */
     public DeclConMatrizLiteral(NodoASTZetariano tipo, String identificador, int dimensiones, List<Object> valores, int linea, int columna) {
+
         super(linea, columna);
         this.tipo = tipo;
         this.identificador = identificador;
         this.dimensiones = dimensiones;
         this.valores = new ArrayList<>();
+
         // copiar valores si existen
         if (valores != null) {
             this.valores.addAll(valores);
         }
+
     }
 
     public NodoASTZetariano getTipo() {
@@ -48,4 +51,5 @@ public class DeclConMatrizLiteral extends NodoASTZetariano {
     public <T> T accept(ZetarianoAstVisitor<T> visitor) {
         return visitor.visitarDeclConMatrizLiteral(this);
     }
+
 }

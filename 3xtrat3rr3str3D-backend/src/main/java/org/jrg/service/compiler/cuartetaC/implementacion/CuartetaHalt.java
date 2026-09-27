@@ -21,6 +21,7 @@ public class CuartetaHalt extends CuartetaC {
     @Override
     public String obtenerCodigoC(ContextoTraduccion ctx) {
         // limpiar el marco y salir con cero
-        return "sptr = fp;\n    fptr = fptr - 1;\n    fp = fpstack[fptr];\n    return 0;";
+        return "stackpointer = framepointer;\n    framestackpointer = framestackpointer - 1;\n    framepointer = framestack[framestackpointer];\n    return 0;";
     }
+
 }

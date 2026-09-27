@@ -19,4 +19,5 @@ public class ValorAsignableSimple extends NodoAST {
     public <T> T accept(LatinusAstVisitor<T> visitor) {
         return visitor.visitValorAsignableSimple(this);
     }
+
 }

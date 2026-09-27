@@ -99,4 +99,5 @@ public interface ZetarianoAstVisitor<T> {
     T visitarExprOr(ExprOr nodo);
     T visitarExprTernario(ExprTernario nodo);
     T visitarExprPrimitivo(ExprPrimitivo nodo);
+
 }

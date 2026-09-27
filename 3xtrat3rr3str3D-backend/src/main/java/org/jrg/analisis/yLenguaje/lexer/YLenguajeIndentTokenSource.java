@@ -28,13 +28,17 @@ public class YLenguajeIndentTokenSource implements TokenSource {
     private boolean finDeArchivoProcesado = false;
 
     public YLenguajeIndentTokenSource(Lexer lexerDelegado) {
+
         this.lexerDelegado = lexerDelegado;
+
         // el nivel base (columna 0) siempre esta en la pila
         this.pilaIndentacion.push(0);
+
     }
 
     @Override
     public Token nextToken() {
+
         if (!tokensPendientes.isEmpty()) {
             return tokensPendientes.remove(0);
         }
@@ -64,11 +68,13 @@ public class YLenguajeIndentTokenSource implements TokenSource {
         tokensPendientes.add(token);
 
         return tokensPendientes.remove(0);
+
     }
 
     // comparar la columna del token contra el tope de la pila y encolar
     // los INDENT/DEDENT necesarios antes de ese token
     private void manejarIndentacion(Token token) {
+
         int columna = token.getCharPositionInLine();
         int nivelActual = pilaIndentacion.peek();
 
@@ -76,23 +82,29 @@ public class YLenguajeIndentTokenSource implements TokenSource {
             pilaIndentacion.push(columna);
             tokensPendientes.add(crearToken(token, YLenguajeLexer.INDENT, ""));
         } else if (columna < nivelActual) {
+
             while (pilaIndentacion.size() > 1 && pilaIndentacion.peek() > columna) {
                 pilaIndentacion.pop();
                 tokensPendientes.add(crearToken(token, YLenguajeLexer.DEDENT, ""));
             }
+
             // nota: si columna no coincide exactamente con ningun nivel de la
             // pila despues del while, es indentacion inconsistente. de momento
             // se acepta el nivel mas cercano; conviene reportarlo como error
             // lexico mas adelante conectando esta clase con RecolectorErrores.
+
         }
+
     }
 
     // al llegar EOF: sintetizar un NEWLINE final si el archivo no termino con
     // uno, y cerrar todos los niveles de indentacion abiertos con DEDENT
     private Token manejarFinDeArchivo(Token tokenEOF) {
+
         if (finDeArchivoProcesado) {
             return tokenEOF;
         }
+
         finDeArchivoProcesado = true;
 
         if (ultimoTokenReal != null && ultimoTokenReal.getType() != YLenguajeLexer.NEWLINE) {
@@ -106,17 +118,20 @@ public class YLenguajeIndentTokenSource implements TokenSource {
 
         tokensPendientes.add(tokenEOF);
         return tokensPendientes.remove(0);
+
     }
 
     // crear un token sintetico (INDENT/DEDENT/NEWLINE) copiando la posicion
     // del token de referencia, para que los mensajes de error apunten al
     // lugar correcto
     private Token crearToken(Token referencia, int tipo, String texto) {
+
         CommonToken nuevo = new CommonToken(referencia);
         nuevo.setType(tipo);
         nuevo.setText(texto);
         nuevo.setChannel(Token.DEFAULT_CHANNEL);
         return nuevo;
+
     }
 
     // pasar lo demas de TokenSource al lexer original
@@ -149,4 +164,5 @@ public class YLenguajeIndentTokenSource implements TokenSource {
     public TokenFactory<?> getTokenFactory() {
         return lexerDelegado.getTokenFactory();
     }
+
 }

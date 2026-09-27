@@ -132,4 +132,5 @@ public interface LatinusAstVisitor<T> {
     T visitLecturaConsolaAVariable(LecturaConsolaAVariable nodo);
 
     T visitImpresionEncadenada(ImpresionEncadenada nodo);
+
 }

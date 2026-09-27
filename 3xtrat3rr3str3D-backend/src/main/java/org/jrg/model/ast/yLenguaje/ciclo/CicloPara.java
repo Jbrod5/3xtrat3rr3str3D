@@ -14,11 +14,13 @@ public class CicloPara extends NodoASTY {
      * Crear un ciclo para con sus partes.
      */
     public CicloPara(NodoASTY inicializacion, NodoASTY condicion, NodoASTY paso, NodoASTY bloque, int linea, int columna) {
+
         super(linea, columna);
         this.inicializacion = inicializacion;
         this.condicion = condicion;
         this.paso = paso;
         this.bloque = bloque;
+
     }
 
     public NodoASTY getInicializacion() {
@@ -41,4 +43,5 @@ public class CicloPara extends NodoASTY {
     public <T> T accept(YAstVisitor<T> visitor) {
         return visitor.visitarCicloPara(this);
     }
+
 }

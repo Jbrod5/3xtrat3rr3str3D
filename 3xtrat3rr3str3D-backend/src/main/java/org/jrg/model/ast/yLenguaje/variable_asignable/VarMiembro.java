@@ -12,9 +12,11 @@ public class VarMiembro extends NodoASTY {
      * Crear un acceso a miembro con su base y nombre del miembro.
      */
     public VarMiembro(NodoASTY base, String miembro, int linea, int columna) {
+
         super(linea, columna);
         this.base = base;
         this.miembro = miembro;
+
     }
 
     public NodoASTY getBase() {
@@ -29,4 +31,5 @@ public class VarMiembro extends NodoASTY {
     public <T> T accept(YAstVisitor<T> visitor) {
         return visitor.visitarVarMiembro(this);
     }
+
 }

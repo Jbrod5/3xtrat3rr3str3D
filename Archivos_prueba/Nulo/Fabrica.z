@@ -1,0 +1,16 @@
+public class Fabrica {
+
+    public Fabrica() {
+    }
+
+    // devolver un objeto vacio para probar el nulo entre lenguajes
+    public Caja crearNula() {
+        return null;
+    }
+
+    // devolver un objeto real para comparar contra el nulo
+    public Caja crearReal() {
+        Caja nueva = new Caja(9);
+        return nueva;
+    }
+}

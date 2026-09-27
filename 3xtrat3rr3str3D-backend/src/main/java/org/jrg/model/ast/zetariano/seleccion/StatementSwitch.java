@@ -12,13 +12,16 @@ public class StatementSwitch extends NodoASTZetariano {
     private final NodoASTZetariano casoDefecto;
 
     public StatementSwitch(NodoASTZetariano expresion, List<NodoASTZetariano> casos, NodoASTZetariano casoDefecto, int linea, int columna) {
+
         super(linea, columna);
         this.expresion = expresion;
         this.casos = new ArrayList<>();
         if (casos != null) {
             this.casos.addAll(casos);
         }
+
         this.casoDefecto = casoDefecto;
+
     }
 
     public NodoASTZetariano getExpresion() {
@@ -37,4 +40,5 @@ public class StatementSwitch extends NodoASTZetariano {
     public <T> T accept(ZetarianoAstVisitor<T> visitor) {
         return visitor.visitarStatementSwitch(this);
     }
+
 }

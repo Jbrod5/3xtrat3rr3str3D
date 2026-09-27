@@ -15,13 +15,16 @@ public class ResultadoSemantico {
      * Crear un resultado semantico con errores simbolos y tipos.
      */
     public ResultadoSemantico(List<ErrorCompilacion> errores, List<Simbolo> simbolos, List<Tipo> tipos) {
+
         this.errores = new ArrayList<>();
+
         // copiar errores si existen
         if (errores != null) {
             this.errores.addAll(errores);
         }
 
         this.simbolos = new ArrayList<>();
+
         // convertir simbolos a DTO
         if (simbolos != null) {
             for (Simbolo simbolo : simbolos) {
@@ -30,6 +33,7 @@ public class ResultadoSemantico {
         }
 
         this.tipos = new ArrayList<>();
+
         // convertir tipos a DTO
         if (tipos != null) {
             for (Tipo tipo : tipos) {
@@ -38,6 +42,7 @@ public class ResultadoSemantico {
         }
 
         this.exito = this.errores.isEmpty();
+
     }
 
     /**
@@ -67,4 +72,5 @@ public class ResultadoSemantico {
     public List<TipoResultado> getTipos() {
         return tipos;
     }
+
 }

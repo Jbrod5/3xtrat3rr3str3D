@@ -10,25 +10,30 @@ public class ResultadoGcc {
 
     // crear el resultado normalizando nulos a vacio :D
     public ResultadoGcc(boolean compilo, String salida, String comando, String rutaBinario) {
+
         this.compilo = compilo;
+
         // normalizar salida nula
         if (salida == null) {
             this.salida = "";
         } else {
             this.salida = salida;
         }
+
         // normalizar comando nulo
         if (comando == null) {
             this.comando = "";
         } else {
             this.comando = comando;
         }
+
         // normalizar ruta nula
         if (rutaBinario == null) {
             this.rutaBinario = "";
         } else {
             this.rutaBinario = rutaBinario;
         }
+
     }
 
     /**
@@ -58,4 +63,5 @@ public class ResultadoGcc {
     public String getRutaBinario() {
         return rutaBinario;
     }
+
 }

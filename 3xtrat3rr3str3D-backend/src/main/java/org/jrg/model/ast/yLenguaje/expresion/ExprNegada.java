@@ -23,4 +23,5 @@ public class ExprNegada extends NodoASTY {
     public <T> T accept(YAstVisitor<T> visitor) {
         return visitor.visitarExprNegada(this);
     }
+
 }

@@ -9,10 +9,12 @@ public class ExprOr extends NodoAST {
     private final NodoAST operandoDerecho;
 
     public ExprOr(NodoAST operandoIzquierdo, String operador, NodoAST operandoDerecho, int linea, int columna) {
+
         super(linea, columna);
         this.operandoIzquierdo = operandoIzquierdo;
         this.operador = operador;
         this.operandoDerecho = operandoDerecho;
+
     }
 
     public NodoAST getOperandoIzquierdo() {
@@ -31,4 +33,5 @@ public class ExprOr extends NodoAST {
     public <T> T accept(LatinusAstVisitor<T> visitor) {
         return visitor.visitExprOr(this);
     }
+
 }

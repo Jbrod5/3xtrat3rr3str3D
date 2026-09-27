@@ -12,9 +12,11 @@ public class ExprAccesoMiembro extends NodoASTY {
      * Crear una expresion de acceso a miembro.
      */
     public ExprAccesoMiembro(NodoASTY objeto, String miembro, int linea, int columna) {
+
         super(linea, columna);
         this.objeto = objeto;
         this.miembro = miembro;
+
     }
 
     public NodoASTY getObjeto() {
@@ -29,4 +31,5 @@ public class ExprAccesoMiembro extends NodoASTY {
     public <T> T accept(YAstVisitor<T> visitor) {
         return visitor.visitarExprAccesoMiembro(this);
     }
+
 }

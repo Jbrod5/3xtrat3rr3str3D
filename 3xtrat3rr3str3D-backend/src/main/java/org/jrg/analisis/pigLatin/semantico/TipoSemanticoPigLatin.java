@@ -17,42 +17,51 @@ class TipoSemanticoPigLatin {
     private final boolean valido;
 
     TipoSemanticoPigLatin() {
+
         this.tipo = null;
         this.constante = null;
         this.asignable = false;
         this.simbolo = null;
         this.tiposElementos = new ArrayList<>();
         this.valido = false;
+
     }
 
     TipoSemanticoPigLatin(Tipo tipo) {
+
         this.tipo = tipo;
         this.constante = null;
         this.asignable = false;
         this.simbolo = null;
         this.tiposElementos = new ArrayList<>();
         this.valido = tipo != null;
+
     }
 
     TipoSemanticoPigLatin(Tipo tipo, Constante constante) {
+
         this.tipo = tipo;
         this.constante = constante;
         this.asignable = false;
         this.simbolo = null;
         this.tiposElementos = new ArrayList<>();
         this.valido = tipo != null;
+
     }
 
     TipoSemanticoPigLatin(Tipo tipo, Constante constante, boolean asignable, Simbolo simbolo) {
+
         this.tipo = tipo;
         this.constante = constante;
         this.asignable = asignable;
         this.simbolo = simbolo;
         this.tiposElementos = new ArrayList<>();
         this.valido = tipo != null;
+
     }
 
     TipoSemanticoPigLatin(Tipo tipo, List<Tipo> tiposElementos, boolean valido) {
+
         this.tipo = tipo;
         this.constante = null;
         this.asignable = false;
@@ -64,16 +73,20 @@ class TipoSemanticoPigLatin {
         } else {
             this.tiposElementos = new ArrayList<>(tiposElementos);
         }
+
         this.valido = valido;
+
     }
 
     TipoSemanticoPigLatin(Tipo tipo, Constante constante, boolean asignable, Simbolo simbolo, boolean valido) {
+
         this.tipo = tipo;
         this.constante = constante;
         this.asignable = asignable;
         this.simbolo = simbolo;
         this.tiposElementos = new ArrayList<>();
         this.valido = valido;
+
     }
 
     Tipo obtenerTipo() {
@@ -103,4 +116,5 @@ class TipoSemanticoPigLatin {
     boolean esValido() {
         return valido && tipo != null && !"desconocido".equals(tipo.getNombre()) && !"vacio".equals(tipo.getNombre());
     }
+
 }

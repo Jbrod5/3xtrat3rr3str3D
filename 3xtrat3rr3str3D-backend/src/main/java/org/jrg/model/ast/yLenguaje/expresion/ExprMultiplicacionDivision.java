@@ -13,10 +13,12 @@ public class ExprMultiplicacionDivision extends NodoASTY {
      * Crear una expresion de multiplicacion o division.
      */
     public ExprMultiplicacionDivision(NodoASTY izquierdo, String operador, NodoASTY derecho, int linea, int columna) {
+
         super(linea, columna);
         this.izquierdo = izquierdo;
         this.operador = operador;
         this.derecho = derecho;
+
     }
 
     public NodoASTY getIzquierdo() {
@@ -35,4 +37,5 @@ public class ExprMultiplicacionDivision extends NodoASTY {
     public <T> T accept(YAstVisitor<T> visitor) {
         return visitor.visitarExprMultiplicacionDivision(this);
     }
+
 }

@@ -85,6 +85,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
     private AmbitoSemantico ambitoGlobal;
     private AmbitoSemantico ambitoActual;
     private AmbitoSemantico ambitoClase;
+
     // ambito global entre archivos o nulo si es un solo archivo
     private AmbitoSemantico ambitoCompartido;
 
@@ -122,38 +123,49 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         this.tipoRetornoActual = null;
         this.enMetodoConstructor = false;
         this.alcanzable = true;
+
         // empezar sin ambito comun si es un solo archivo
         this.ambitoCompartido = null;
+
     }
 
     /**
      * Crear el analizador con un ambito global compartido entre archivos.
      */
     public AnalizadorSemanticoZetariano(RecolectorErrores recolectorErrores, AmbitoSemantico ambitoCompartido) {
+
         // usar el constructor principal para lo basico
         this(recolectorErrores);
+
         // guardar el ambito comun para varios archivos
         this.ambitoCompartido = ambitoCompartido;
+
         // apuntar al ambito comun desde el inicio si hay
         if (ambitoCompartido != null) {
             this.ambitoGlobal = ambitoCompartido;
             this.ambitoActual = ambitoCompartido;
         }
+
     }
 
     // registrar primitivos y builtins una vez en el ambito comun
     public void inicializarAmbitoCompartido() {
+
         // trabajar solo con varios archivos
         if (ambitoCompartido == null) {
             return;
         }
+
         // usar el ambito comun como global
         this.ambitoGlobal = this.ambitoCompartido;
         this.ambitoActual = this.ambitoCompartido;
+
         // registrar los tipos primitivos del lenguaje
         registrarTiposPrimitivos();
+
         // registrar las funciones especiales del lenguaje
         registrarFuncionesBuiltIn();
+
     }
 
     /**
@@ -181,6 +193,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
      * Obtener todos los simbolos registrados durante el analisis.
      */
     public List<Simbolo> obtenerSimbolos() {
+
         List<Simbolo> resultado = new ArrayList<>();
 
         if (this.ambitoGlobal != null) {
@@ -188,12 +201,14 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         }
 
         return resultado;
+
     }
 
     /**
      * Obtener todos los tipos registrados durante el analisis.
      */
     public List<Tipo> obtenerTipos() {
+
         List<Tipo> resultado = new ArrayList<>();
 
         if (this.ambitoGlobal != null) {
@@ -201,10 +216,12 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         }
 
         return resultado;
+
     }
 
     // recorrer el ambito acumulando simbolos
     private void recolectarSimbolos(AmbitoSemantico ambito, List<Simbolo> resultado) {
+
         if (ambito == null) {
             return;
         }
@@ -230,12 +247,14 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         for (int i = 0; i < ambito.obtenerHijos().size(); i++) {
             recolectarTipos(ambito.obtenerHijos().get(i), resultado);
         }
+
     }
 
     // ==================== MANEJO DE ERRORES ====================
 
     // agregar un error semantico tomando linea y columna del nodo
     private void agregarError(NodoASTZetariano nodo, String descripcion) {
+
         int linea = 0;
         int columna = 0;
 
@@ -247,6 +266,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
 
         // guardar el error
         recolectorErrores.agregar(TipoError.SEMANTICO, linea, columna, descripcion);
+
     }
 
     // agregar un error semantico con linea y columna explicitas
@@ -271,6 +291,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
 
         // actualizar el ambito actual
         ambitoActual = nuevo;
+
     }
 
     // salir del ambito actual
@@ -307,6 +328,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
 
         Tipo tipoNull = new Tipo("null", true);
         ambitoGlobal.declararTipo(tipoNull);
+
     }
 
     // ==================== FUNCIONES BUILT-IN ====================
@@ -333,6 +355,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         // readln sin argumentos devuelve String
         Tipo tipoString = ambitoGlobal.buscarTipo("String");
         registrarMetodoBuiltIn("readln", new ArrayList<Tipo>(), tipoString);
+
     }
 
     // declarar un metodo built-in en el ambito global
@@ -347,6 +370,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
 
         // declarar el metodo en el ambito global
         ambitoGlobal.declararMetodo(metodo);
+
     }
 
     // construir una lista de tipos con un unico elemento por nombre
@@ -364,6 +388,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         }
 
         return lista;
+
     }
 
     // ==================== BUSQUEDA DE TIPOS ====================
@@ -384,6 +409,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
 
         // buscar en el ambito global
         return ambitoGlobal.buscarTipo(nombre);
+
     }
 
     // sobrecarga para nodos tipo_dato que vienen como NodoASTZetariano
@@ -400,6 +426,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         }
 
         return null;
+
     }
 
     // resolver el tipo de un nodo TipoDato
@@ -412,6 +439,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
 
         // resolver el tipo por su nombre
         return obtenerTipo(tipoDato.getTipo());
+
     }
 
     // extraer el nombre del tipo para mensajes de error
@@ -428,6 +456,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         }
 
         return "desconocido";
+
     }
 
     // ==================== DECLARACION DE VARIABLES ====================
@@ -438,6 +467,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
 
         // verificar si el nombre es valido
         if (nombre == null || nombre.isEmpty()) {
+
             agregarError(nodo, "declaracion sin identificador");
 
             return false;
@@ -446,6 +476,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         // buscar en todos los ambitos padres incluido el actual
         Simbolo existente = ambitoActual.buscarSimbolo(nombre);
         if (existente != null) {
+
             agregarError(nodo, "la variable '" + nombre + "' ya esta declarada en un ambito padre");
 
             return false;
@@ -460,12 +491,14 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
 
         // declarar el simbolo en el ambito actual
         if (!ambitoActual.declararSimbolo(simbolo, true)) {
+
             agregarError(nodo, "la variable '" + nombre + "' ya esta declarada");
 
             return false;
         }
 
         return true;
+
     }
 
     // declarar parametro buscando en todos los ambitos padres
@@ -473,6 +506,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
 
         // verificar si el nombre es valido
         if (nombre == null || nombre.isEmpty()) {
+
             agregarError(nodo, "parametro sin identificador");
 
             return false;
@@ -481,6 +515,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         // buscar en todos los ambitos padres incluido el actual
         Simbolo existente = ambitoActual.buscarSimbolo(nombre);
         if (existente != null) {
+
             agregarError(nodo, "el parametro '" + nombre + "' ya esta declarado en un ambito padre");
 
             return false;
@@ -495,23 +530,27 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
 
         // declarar el simbolo en el ambito actual
         if (!ambitoActual.declararSimbolo(simbolo, true)) {
+
             agregarError(nodo, "el parametro '" + nombre + "' ya esta declarado");
 
             return false;
         }
 
         return true;
+
     }
 
     // ==================== PROGRAMA ====================
 
     @Override
     public Object visitarPrograma(Programa programa) {
+
         // usar el ambito comun sin crear otro si hay varios archivos
         if (ambitoCompartido != null) {
             ambitoGlobal = ambitoCompartido;
             ambitoActual = ambitoCompartido;
         } else {
+
             // crear el ambito global
             ambitoGlobal = new AmbitoSemantico("global", null);
             ambitoActual = ambitoGlobal;
@@ -522,6 +561,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
             // registrar las funciones especiales del lenguaje
             // println, print y readln ya vienen con el sistema
             registrarFuncionesBuiltIn();
+
         }
 
         // analizar la clase
@@ -532,6 +572,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         }
 
         return null;
+
     }
 
     // ==================== CLASE ====================
@@ -541,14 +582,17 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
 
         // registrar el cascaron en la primera pasada
         boolean registrado = registrarCascaronClase(clase);
+
         // omitir cuerpos si la clase esta duplicada
         if (registrado == false) {
             return null;
         }
+
         // analizar los cuerpos en la segunda pasada
         analizarCuerposClase(clase);
 
         return null;
+
     }
 
     // registrar el tipo y las firmas de la clase sin validar cuerpos
@@ -556,15 +600,18 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
 
         // declarar el tipo en la primera pasada
         boolean declarado = declararTipoClase(clase);
+
         // omitir miembros si el tipo esta duplicado
         if (declarado == false) {
             return false;
         }
+
         // registrar los miembros en la segunda pasada
         registrarMiembrosClase(clase);
 
         // informar que el cascaron quedo registrado
         return true;
+
     }
 
     // declarar el tipo de la clase sin registrar miembros
@@ -575,6 +622,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
 
         // verificar que el tipo no exista previamente
         if (ambitoGlobal.buscarTipo(nombreClase) != null) {
+
             agregarError(clase, "el tipo '" + nombreClase + "' ya esta definido");
 
             return false;
@@ -586,6 +634,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
 
         // informar que el tipo quedo declarado
         return true;
+
     }
 
     // registrar atributos, constructores y metodos de la clase
@@ -607,8 +656,8 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
 
             if (miembro instanceof MiembroAtributo) {
                 registrarAtributo(((MiembroAtributo) miembro).getAtributo());
-
             } else if (miembro instanceof MiembroConstructor) {
+
                 NodoASTZetariano constructorNodo = ((MiembroConstructor) miembro).getConstructor();
 
                 if (constructorNodo instanceof DefConstructor) {
@@ -625,6 +674,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         // registrar un constructor por defecto cuando la clase no declara ninguno
         // igual que en Java, permite new MiClase() sin argumentos :D
         if (contadorConstructores == 0) {
+
             List<Tipo> tiposVacios = new ArrayList<>();
 
             Simbolo constructorPorDefecto = new Simbolo(nombreClase, CategoriaSimbolo.CONSTRUCTOR, null);
@@ -635,43 +685,55 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
             constructorPorDefecto.setAmbito(ambitoClase.obtenerAmbito());
 
             ambitoClase.declararConstructor(constructorPorDefecto);
+
         }
 
         // salir del ambito de la clase para no anidar la siguiente
         salirAmbito();
         ambitoClase = null;
+
     }
 
     /**
      * Buscar el ambito de una clase entre los hijos del global.
      */
     public AmbitoSemantico buscarAmbitoClase(String nombreClase) {
+
         // omitir nombres nulos o vacios
         if (nombreClase == null || nombreClase.isEmpty()) {
             return null;
         }
+
         // omitir globales sin hijos
         if (ambitoGlobal == null || ambitoGlobal.obtenerHijos() == null) {
             return null;
         }
+
         // recorrer los hijos buscando el de la clase
         for (int i = 0; i < ambitoGlobal.obtenerHijos().size(); i++) {
+
             AmbitoSemantico hijo = ambitoGlobal.obtenerHijos().get(i);
             if (hijo != null && ("clase:" + nombreClase).equals(hijo.obtenerNombre())) {
                 return hijo;
             }
+
         }
+
         return null;
+
     }
 
     // analizar los cuerpos de constructores y metodos con el ambito ya registrado
     public Object analizarCuerposClase(DefClase clase) {
+
         // ubicar el ambito de la clase registrado en la primera pasada
         AmbitoSemantico ambito = buscarAmbitoClase(clase.getNombre());
+
         // omitir clases sin ambito registrado
         if (ambito == null) {
             return null;
         }
+
         // fijar el ambito actual y la clase en analisis
         this.ambitoActual = ambito;
         this.ambitoClase = ambito;
@@ -685,6 +747,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
             } else if (miembro instanceof MiembroMetodo) {
                 miembro.accept(this);
             }
+
         }
 
         // salir del ambito de la clase
@@ -692,6 +755,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         ambitoClase = null;
 
         return null;
+
     }
 
     // ==================== ATRIBUTOS ====================
@@ -707,6 +771,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
 
             // reportar error si el tipo no existe
             if (tipo == null) {
+
                 agregarError(simple, "tipo de atributo no definido: '" + extraerNombreTipo(simple.getTipo()) + "'");
 
                 return;
@@ -722,6 +787,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
 
             // reportar error si el tipo no existe
             if (tipoBase == null) {
+
                 agregarError(array, "tipo de atributo no definido: '" + extraerNombreTipo(array.getTipo()) + "'");
 
                 return;
@@ -730,7 +796,9 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
             // construir el tipo array con sus dimensiones
             Tipo tipoArray = crearTipoArray(tipoBase, array.getDimensiones());
             registrarCampo(array.getIdentificador(), tipoArray, array);
+
         }
+
     }
 
     // registrar un campo en el ambito de la clase
@@ -755,6 +823,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
 
         // agregar el campo al tipo de la clase para consultas posteriores
         tipoClaseActual.agregarCampo(campo);
+
     }
 
     @Override
@@ -783,6 +852,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
 
         // el constructor debe llamarse igual que la clase
         if (!nombre.equals(tipoClaseActual.getNombre())) {
+
             agregarError(constructor, "el constructor debe tener el mismo nombre que la clase");
 
             return;
@@ -804,6 +874,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
 
         // verificar si ya existe un constructor con la misma firma
         if (existeConstructorConFirma(nombre, tiposParametros)) {
+
             agregarError(constructor, "ya existe un constructor con la misma firma");
 
             return;
@@ -819,6 +890,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
 
         // declarar el constructor en el ambito de la clase
         ambitoClase.declararConstructor(simboloConstructor);
+
     }
 
     @Override
@@ -852,6 +924,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         salirAmbito();
 
         return null;
+
     }
 
     @Override
@@ -863,6 +936,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
 
     // registrar un metodo en el ambito de la clase
     private void registrarMetodo(NodoASTZetariano metodo) {
+
         String nombre = null;
         Tipo tipoRetorno = null;
 
@@ -874,6 +948,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
             tipoRetorno = null;
 
         } else if (metodo instanceof MetodoConRetorno) {
+
             // procesar metodo con retorno
             MetodoConRetorno m = (MetodoConRetorno) metodo;
             nombre = m.getNombre();
@@ -881,6 +956,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
 
             // reportar error si el tipo no existe
             if (tipoRetorno == null) {
+
                 agregarError(metodo, "tipo de retorno no definido: '" + extraerNombreTipo(m.getTipo()) + "'");
 
                 return;
@@ -901,17 +977,20 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         }
 
         if (paramsNodo != null) {
+
             Parametros params = (Parametros) paramsNodo;
 
             for (NodoASTZetariano p : params.getParametros()) {
                 Tipo tipoParam = extraerTipoParametro(p);
                 tiposParametros.add(tipoParam);
             }
+
         }
 
         // verificar si ya existe un metodo con la misma firma
         // se vale sobrecargar si cambian los tipos de params
         if (existeMetodoConFirma(nombre, tiposParametros)) {
+
             agregarError(metodo, "ya existe un metodo '" + nombre + "' con la misma firma");
 
             return;
@@ -927,6 +1006,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
 
         // declarar el metodo en el ambito de la clase
         ambitoClase.declararMetodo(simboloMetodo);
+
     }
 
     // verificar si existe un metodo con la firma exacta
@@ -943,6 +1023,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         }
 
         return false;
+
     }
 
     // verificar si existe un constructor con la firma exacta
@@ -959,6 +1040,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         }
 
         return false;
+
     }
 
     // verificar si dos firmas son identicas en tipos y dimensiones
@@ -981,6 +1063,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
 
         // comparar cada par de tipos
         for (int i = 0; i < a.size(); i++) {
+
             Tipo ta = a.get(i);
             Tipo tb = b.get(i);
 
@@ -998,15 +1081,18 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
             if (ta.getDimension() != tb.getDimension()) {
                 return false;
             }
+
         }
 
         return true;
+
     }
 
     // extraer el tipo de un parametro simple o array
     private Tipo extraerTipoParametro(NodoASTZetariano parametro) {
 
         if (parametro instanceof ParamSimple) {
+
             // procesar parametro simple
             ParamSimple p = (ParamSimple) parametro;
             return obtenerTipo(p.getTipo());
@@ -1023,9 +1109,11 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
 
             // construir el tipo array con sus dimensiones
             return crearTipoArray(base, p.getDimensiones());
+
         }
 
         return null;
+
     }
 
     @Override
@@ -1039,6 +1127,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         List<NodoASTZetariano> instrucciones = null;
 
         if (metodo instanceof MetodoSinRetorno) {
+
             // procesar metodo sin retorno
             MetodoSinRetorno m = (MetodoSinRetorno) metodo;
             nombre = m.getNombre();
@@ -1047,6 +1136,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
             instrucciones = m.getInstrucciones();
 
         } else if (metodo instanceof MetodoConRetorno) {
+
             // procesar metodo con retorno
             MetodoConRetorno m = (MetodoConRetorno) metodo;
             nombre = m.getNombre();
@@ -1092,6 +1182,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         salirAmbito();
 
         return null;
+
     }
 
     @Override
@@ -1118,6 +1209,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         for (NodoASTZetariano p : parametros.getParametros()) {
 
             if (p instanceof ParamSimple) {
+
                 // procesar parametro simple
                 ParamSimple simple = (ParamSimple) p;
                 Tipo tipo = obtenerTipo(simple.getTipo());
@@ -1131,6 +1223,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
                 declararParametro(simple.getIdentificador(), tipo, simple);
 
             } else if (p instanceof ParamArray) {
+
                 // procesar parametro array
                 ParamArray array = (ParamArray) p;
                 Tipo base = obtenerTipo(array.getTipo());
@@ -1144,9 +1237,11 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
                 // construir el tipo array con sus dimensiones
                 Tipo tipoArray = crearTipoArray(base, array.getDimensiones());
                 declararParametro(array.getIdentificador(), tipoArray, array);
+
             }
 
         }
+
     }
 
     @Override
@@ -1183,12 +1278,14 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         Tipo tipoArray = new Tipo(base.getNombre(), base.esPrimitivo(), dimensiones, base, new ArrayList<>(), null);
 
         return tipoArray;
+
     }
 
     // ==================== ANALISIS DE INSTRUCCIONES ====================
 
     // analizar una lista de instrucciones combinando sus flujos
     private FlujoControl analizarInstrucciones(List<NodoASTZetariano> instrucciones) {
+
         FlujoControl flujo = new FlujoControl();
 
         // verificar si la lista es nula
@@ -1203,11 +1300,14 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
 
             // reportar codigo inalcanzable solo una vez
             if (!flujo.puedeContinuar()) {
+
                 if (!primeraInalcanzable) {
                     agregarError(inst, "codigo inalcanzable");
                     primeraInalcanzable = true;
                 }
+
                 continue;
+
             }
 
             // entrar en la instruccion
@@ -1217,67 +1317,81 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
             if (resultado instanceof FlujoControl) {
                 flujo = (FlujoControl) resultado;
             }
+
         }
 
         return flujo;
+
     }
 
     // ==================== INSTRUCCIONES ====================
 
     @Override
     public Object visitarStmtDeclaracion(StmtDeclaracion stmt) {
+
         // visitar la declaracion si existe
         if (stmt.getDeclaracion() != null) {
             stmt.getDeclaracion().accept(this);
         }
 
         return new FlujoControl();
+
     }
 
     @Override
     public Object visitarStmtAsignacion(StmtAsignacion stmt) {
+
         // visitar la asignacion si existe
         if (stmt.getAsignacion() != null) {
             stmt.getAsignacion().accept(this);
         }
 
         return new FlujoControl();
+
     }
 
     @Override
     public Object visitarStmtCondicional(StmtCondicional stmt) {
+
         // visitar el condicional si existe
         if (stmt.getCondicional() != null) {
             return stmt.getCondicional().accept(this);
         }
 
         return new FlujoControl();
+
     }
 
     @Override
     public Object visitarStmtSeleccion(StmtSeleccion stmt) {
+
         // visitar la seleccion si existe
         if (stmt.getSeleccion() != null) {
             return stmt.getSeleccion().accept(this);
         }
 
         return new FlujoControl();
+
     }
 
     @Override
     public Object visitarStmtCiclo(StmtCiclo stmt) {
+
         // visitar el ciclo si existe
         if (stmt.getCiclo() != null) {
             return stmt.getCiclo().accept(this);
         }
 
         return new FlujoControl();
+
     }
 
     @Override
     public Object visitarStmtReturn(StmtReturn stmt) {
+
         // validar que estemos dentro de un metodo
         if (enMetodoConstructor) {
+
             agregarError(stmt, "no se puede usar 'return' dentro de un constructor");
 
             return new FlujoControl();
@@ -1302,10 +1416,12 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
             }
 
         } else {
+
             // retorno sin valor
             if (enMetodoConRetorno) {
                 agregarError(stmt, "el metodo debe retornar un valor");
             }
+
         }
 
         // marcar flujo como no continuable
@@ -1313,6 +1429,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         flujo.marcarRetorno();
 
         return flujo;
+
     }
 
     @Override
@@ -1328,6 +1445,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         flujo.marcarRetorno();
 
         return flujo;
+
     }
 
     @Override
@@ -1343,16 +1461,19 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         flujo.marcarRetorno();
 
         return flujo;
+
     }
 
     @Override
     public Object visitarStmtExpresion(StmtExpresion stmt) {
+
         // visitar la expresion si existe
         if (stmt.getExpresion() != null) {
             stmt.getExpresion().accept(this);
         }
 
         return new FlujoControl();
+
     }
 
     @Override
@@ -1372,6 +1493,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
 
         // reportar error si el tipo no existe
         if (tipo == null) {
+
             agregarError(decl, "tipo '" + extraerNombreTipo(tipoNodo) + "' no definido");
 
             return null;
@@ -1389,6 +1511,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
 
         // analizar el valor inicial si existe
         if (decl.getValor() != null) {
+
             Tipo tipoExp = (Tipo) decl.getValor().accept(this);
 
             // verificar la compatibilidad del tipo :'c
@@ -1399,6 +1522,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         }
 
         return null;
+
     }
 
     @Override
@@ -1410,6 +1534,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
 
         // reportar error si el tipo no existe
         if (tipoBase == null) {
+
             agregarError(decl, "tipo '" + extraerNombreTipo(tipoNodo) + "' no definido");
 
             return null;
@@ -1420,36 +1545,42 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
 
         // declarar la variable
         if (!declararVariable(decl.getIdentificador(), tipoArray, decl)) {
-
             return null;
         }
 
         // analizar la lista de valores
         if (decl.getListaExpresiones() != null) {
+
             ListaExpresiones lista = (ListaExpresiones) decl.getListaExpresiones();
 
             // validar cada valor de la lista
             for (NodoASTZetariano expr : lista.getExpresiones()) {
+
                 Tipo tipoValor = (Tipo) expr.accept(this);
 
                 // verificar la compatibilidad del tipo
                 if (tipoValor != null && !esTipoCompatible(tipoValor, tipoBase)) {
                     agregarError(expr, "valor incompatible con el tipo del array, se esperaba '" + tipoBase.getNombre() + "' pero se obtuvo '" + tipoValor.getNombre() + "'");
                 }
+
             }
+
         }
 
         return null;
+
     }
 
     @Override
     public Object visitarDeclConMatrizLiteral(DeclConMatrizLiteral decl) {
+
         // obtener el nodo del tipo
         NodoASTZetariano tipoNodo = decl.getTipo();
         Tipo tipoBase = obtenerTipo(tipoNodo);
 
         // reportar error si el tipo no existe
         if (tipoBase == null) {
+
             agregarError(decl, "tipo '" + extraerNombreTipo(tipoNodo) + "' no definido");
 
             return null;
@@ -1460,7 +1591,6 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
 
         // declarar la variable
         if (!declararVariable(decl.getIdentificador(), tipoArray, decl)) {
-
             return null;
         }
 
@@ -1468,46 +1598,62 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         validarNivelMatriz(decl.getValores(), tipoBase, decl.getDimensiones(), 1);
 
         return null;
+
     }
 
     // validar un nivel con hojas escalares o subniveles anidados
     private void validarNivelMatriz(List<Object> nivel, Tipo tipoBase, int dimensiones, int nivelActual) {
+
         // omitir niveles nulos
         if (nivel == null) {
             return;
         }
+
         // recorrer cada elemento del nivel
         for (int i = 0; i < nivel.size(); i++) {
+
             Object elemento = nivel.get(i);
+
             // validar el subnivel cuando trae llaves anidadas
             if (elemento instanceof List) {
+
                 // reportar si el nivel trae mas profundidad de la declarada
                 if (nivelActual >= dimensiones) {
                     continue;
                 }
+
                 validarNivelMatriz((List<Object>) elemento, tipoBase, dimensiones, nivelActual + 1);
                 continue;
+
             }
+
             // validar la hoja escalar contra el tipo base
             if (elemento instanceof NodoASTZetariano) {
+
                 Tipo tipoValor = (Tipo) ((NodoASTZetariano) elemento).accept(this);
+
                 // verificar la compatibilidad del tipo
                 if (tipoValor != null && !esTipoCompatible(tipoValor, tipoBase)) {
                     agregarError((NodoASTZetariano) elemento, "valor incompatible con el tipo de la matriz, se esperaba '" + tipoBase.getNombre() + "' pero se obtuvo '" + tipoValor.getNombre() + "'");
                 }
+
             }
+
         }
+
     }
 
     // ==================== ASIGNACIONES ====================
 
     @Override
     public Object visitarAsignacionSimple(AsignacionSimple asignacion) {
+
         // visitar la variable destino
         Tipo tipoVar = (Tipo) asignacion.getVariable().accept(this);
 
         // reportar error si la variable no esta declarada
         if (tipoVar == null) {
+
             agregarError(asignacion, "variable no declarada o no accesible");
 
             return null;
@@ -1522,6 +1668,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         }
 
         return null;
+
     }
 
     @Override
@@ -1532,6 +1679,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
 
         // reportar error si la variable no esta declarada
         if (tipoVar == null) {
+
             agregarError(asignacion, "variable no declarada o no accesible");
 
             return null;
@@ -1551,6 +1699,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         }
 
         return null;
+
     }
 
     // ==================== VARIABLES ASIGNABLES ====================
@@ -1572,12 +1721,14 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
 
         // reportar error si el simbolo no existe
         if (simbolo == null) {
+
             agregarError(var, "variable '" + var.getIdentificador() + "' no declarada");
 
             return null;
         }
 
         return simbolo.getTipo();
+
     }
 
     @Override
@@ -1593,6 +1744,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
 
         // verificar si la variable no es un array
         if (tipoBase.getDimension() <= 0) {
+
             agregarError(var, "se esperaba un array");
 
             return null;
@@ -1607,6 +1759,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         }
 
         return tipoBase.getTipoBase();
+
     }
 
     @Override
@@ -1625,26 +1778,31 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
 
         // reportar error si el campo no existe
         if (campo == null) {
+
             agregarError(var, "el campo '" + var.getMiembro() + "' no existe en el tipo '" + tipoObjeto.getNombre() + "'");
 
             return null;
         }
 
         return campo.getTipo();
+
     }
 
     // ==================== CONDICIONALES ====================
 
     @Override
     public Object visitarStatementIf(StatementIf stmt) {
+
         // validar condicion principal
         if (stmt.getCondicion() != null) {
+
             Tipo tipoCond = (Tipo) stmt.getCondicion().accept(this);
 
             // verificar si la condicion es booleana
             if (tipoCond != null && !esTipoBooleano(tipoCond)) {
                 agregarError(stmt.getCondicion(), "la condicion debe ser booleana");
             }
+
         }
 
         // analizar el bloque principal
@@ -1658,6 +1816,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
 
         // recorrer cada rama sino si
         for (int i = 0; i < stmt.getCondicionesSinoSi().size(); i++) {
+
             NodoASTZetariano cond = stmt.getCondicionesSinoSi().get(i);
             NodoASTZetariano bloque = stmt.getBloquesSinoSi().get(i);
 
@@ -1673,15 +1832,18 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
             FlujoControl f = (FlujoControl) bloque.accept(this);
             salirAmbito();
             flujosRamas.add(f);
+
         }
 
         // analizar el else final
         if (stmt.getBloqueSino() != null) {
+
             entrarAmbito("bloque-else");
 
             FlujoControl flujoElse = (FlujoControl) stmt.getBloqueSino().accept(this);
             salirAmbito();
             flujosRamas.add(flujoElse);
+
         }
 
         // combinar los flujos
@@ -1689,16 +1851,17 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         if (stmt.getBloqueSino() == null) {
             // sin else el if siempre puede continuar
             resultado.marcarContinuacion();
-
         } else {
 
             // con else puede continuar si alguna rama continua
             boolean algunaContinua = false;
             for (FlujoControl f : flujosRamas) {
+
                 if (f.puedeContinuar()) {
                     algunaContinua = true;
                     break;
                 }
+
             }
 
             // marcar el flujo segun el resultado
@@ -1707,15 +1870,18 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
             } else {
                 resultado.marcarRetorno();
             }
+
         }
 
         return resultado;
+
     }
 
     // ==================== SWITCH ====================
 
     @Override
     public Object visitarStatementSwitch(StatementSwitch stmt) {
+
         // validar la expresion del switch
         Tipo tipoExp = (Tipo) stmt.getExpresion().accept(this);
 
@@ -1729,6 +1895,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
 
         // analizar cada caso
         for (NodoASTZetariano caso : stmt.getCasos()) {
+
             entrarAmbito("caso-switch");
             FlujoControl f = (FlujoControl) caso.accept(this);
             salirAmbito();
@@ -1741,10 +1908,12 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
             if (f.puedeContinuar() || terminaEnBreak(caso)) {
                 todosRetornan = false;
             }
+
         }
 
         // analizar el default si existe
         if (stmt.getCasoDefecto() != null) {
+
             entrarAmbito("caso-default");
             FlujoControl f = (FlujoControl) stmt.getCasoDefecto().accept(this);
             salirAmbito();
@@ -1772,7 +1941,9 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         } else {
             resultado.marcarContinuacion();
         }
+
         return resultado;
+
     }
 
     @Override
@@ -1789,10 +1960,12 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
 
     // verificar si un caso termina en break y el flujo sigue despues
     private boolean terminaEnBreak(NodoASTZetariano caso) {
+
         // omitir casos nulos
         if (caso == null) {
             return false;
         }
+
         // extraer instrucciones segun el tipo de caso
         List<NodoASTZetariano> lista = null;
         if (caso instanceof CasoSwitch) {
@@ -1800,18 +1973,22 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         } else if (caso instanceof CasoDefault) {
             lista = ((CasoDefault) caso).getInstrucciones();
         }
+
         // omitir casos sin instrucciones
         if (lista == null || lista.isEmpty()) {
             return false;
         }
+
         // revisar la ultima instruccion del caso
         return lista.get(lista.size() - 1) instanceof StmtBreak;
+
     }
 
     // ==================== CICLOS ====================
 
     @Override
     public Object visitarCicloFor(CicloFor ciclo) {
+
         // entrar al ciclo y al ambito
         nivelCiclos++;
         entrarAmbito("bloque-for");
@@ -1823,11 +2000,13 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
 
         // validar la condicion del ciclo
         if (ciclo.getCondicion() != null) {
+
             Tipo tipoCond = (Tipo) ciclo.getCondicion().accept(this);
 
             if (tipoCond != null && !esTipoBooleano(tipoCond)) {
                 agregarError(ciclo.getCondicion(), "la condicion debe ser booleana");
             }
+
         }
 
         // visitar el paso si existe
@@ -1846,21 +2025,25 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
 
         // despues de un for siempre se puede continuar
         return new FlujoControl();
+
     }
 
     @Override
     public Object visitarCicloWhile(CicloWhile ciclo) {
+
         // entrar al ciclo y al ambito
         nivelCiclos++;
         entrarAmbito("bloque-while");
 
         // validar la condicion del ciclo
         if (ciclo.getCondicion() != null) {
+
             Tipo tipoCond = (Tipo) ciclo.getCondicion().accept(this);
 
             if (tipoCond != null && !esTipoBooleano(tipoCond)) {
                 agregarError(ciclo.getCondicion(), "la condicion debe ser booleana");
             }
+
         }
 
         // visitar el cuerpo del ciclo
@@ -1873,10 +2056,12 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         nivelCiclos--;
 
         return new FlujoControl();
+
     }
 
     @Override
     public Object visitarCicloDoWhile(CicloDoWhile ciclo) {
+
         // entrar al ciclo y al ambito
         nivelCiclos++;
         entrarAmbito("bloque-do-while");
@@ -1888,11 +2073,13 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
 
         // validar la condicion del ciclo
         if (ciclo.getCondicion() != null) {
+
             Tipo tipoCond = (Tipo) ciclo.getCondicion().accept(this);
 
             if (tipoCond != null && !esTipoBooleano(tipoCond)) {
                 agregarError(ciclo.getCondicion(), "la condicion debe ser booleana");
             }
+
         }
 
         // salir del ambito y del ciclo
@@ -1900,12 +2087,14 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         nivelCiclos--;
 
         return new FlujoControl();
+
     }
 
     // ==================== INIT Y PASO DEL FOR ====================
 
     @Override
     public Object visitarInitForDecl(InitForDecl init) {
+
         // resolver el tipo de la declaracion
         Tipo tipo = obtenerTipo(init.getTipo());
 
@@ -1922,18 +2111,23 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
 
         // visitar la expresion de inicializacion si existe
         if (init.getExpresion() != null) {
+
             Tipo tipoExp = (Tipo) init.getExpresion().accept(this);
 
             // verificar la compatibilidad del tipo
             if (tipoExp != null && !esTipoCompatible(tipoExp, tipo)) {
                 agregarError(init, "tipo incompatible en inicializacion");
             }
+
         }
+
         return null;
+
     }
 
     @Override
     public Object visitarInitForAsig(InitForAsig init) {
+
         // visitar la variable destino
         Tipo tipoVar = (Tipo) init.getVariable().accept(this);
 
@@ -1944,15 +2138,18 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
 
         // visitar la expresion de inicializacion si existe
         if (init.getExpresion() != null) {
+
             Tipo tipoExp = (Tipo) init.getExpresion().accept(this);
 
             // verificar la compatibilidad del tipo
             if (tipoExp != null && !esTipoCompatible(tipoExp, tipoVar)) {
                 agregarError(init, "tipo incompatible en inicializacion");
             }
+
         }
 
         return null;
+
     }
 
     @Override
@@ -1964,10 +2161,12 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         }
 
         return null;
+
     }
 
     @Override
     public Object visitarPasoForAsig(PasoForAsig paso) {
+
         // visitar la variable destino
         Tipo tipoVar = (Tipo) paso.getVariable().accept(this);
 
@@ -1978,15 +2177,18 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
 
         // visitar la expresion del paso si existe
         if (paso.getExpresion() != null) {
+
             Tipo tipoExp = (Tipo) paso.getExpresion().accept(this);
 
             // verificar la compatibilidad del tipo
             if (tipoExp != null && !esTipoCompatible(tipoExp, tipoVar)) {
                 agregarError(paso, "tipo incompatible en paso");
             }
+
         }
 
         return null;
+
     }
 
     // ==================== EXPRESIONES ====================
@@ -2001,10 +2203,12 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
 
         // visitar la expresion interna
         return expr.getExpresion().accept(this);
+
     }
 
     @Override
     public Object visitarExprInstanciaObjeto(ExprInstanciaObjeto expr) {
+
         // resolver el tipo de la clase a instanciar
         Tipo tipo = obtenerTipo(expr.getNombreClase());
 
@@ -2017,11 +2221,13 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         // validar los argumentos contra los constructores
         List<Tipo> tiposArgs = new ArrayList<>();
         if (expr.getArgumentos() != null) {
+
             ListaExpresiones lista = (ListaExpresiones) expr.getArgumentos();
             for (NodoASTZetariano arg : lista.getExpresiones()) {
                 Tipo t = (Tipo) arg.accept(this);
                 tiposArgs.add(t);
             }
+
         }
 
         // buscar constructores en la clase del tipo instanciado
@@ -2029,19 +2235,25 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         if (tipo != null) {
             ambitoDestinoCtor = buscarAmbitoClase(tipo.getNombre());
         }
+
         // usar la clase actual cuando el tipo no tiene ambito propio
         if (ambitoDestinoCtor == null) {
             ambitoDestinoCtor = ambitoClase;
         }
+
         boolean encontrado = false;
         if (ambitoDestinoCtor != null) {
+
             List<Simbolo> constructores = ambitoDestinoCtor.buscarConstructores(tipo.getNombre());
             for (Simbolo c : constructores) {
+
                 if (firmaCompatible(c.getTiposParametros(), tiposArgs)) {
                     encontrado = true;
                     break;
                 }
+
             }
+
         }
 
         // reportar error si no hay constructor compatible
@@ -2050,10 +2262,12 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         }
 
         return tipo;
+
     }
 
     @Override
     public Object visitarExprInstanciaArreglo(ExprInstanciaArreglo expr) {
+
         // resolver el tipo base del arreglo
         Tipo tipoBase = obtenerTipo(expr.getTipo());
 
@@ -2065,25 +2279,30 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
 
         // validar que las dimensiones sean enteros
         for (NodoASTZetariano dim : expr.getDimensiones()) {
+
             Tipo tipoDim = (Tipo) dim.accept(this);
 
             // verificar si la dimension es entera
             if (tipoDim != null && !esTipoEntero(tipoDim)) {
                 agregarError(dim, "el tamano del arreglo debe ser un entero");
             }
+
         }
 
         // construir el tipo array con sus dimensiones
         Tipo tipoArray = crearTipoArray(tipoBase, expr.getDimensiones().size());
         return tipoArray;
+
     }
 
     @Override
     public Object visitarExprLlamadaFuncion(ExprLlamadaFuncion expr) {
+
         // analizar argumentos primero para tener sus tipos
         List<Tipo> tiposArgs = new ArrayList<>();
 
         if (expr.getArgumentos() != null) {
+
             ListaExpresiones lista = (ListaExpresiones) expr.getArgumentos();
 
             for (NodoASTZetariano arg : lista.getExpresiones()) {
@@ -2115,10 +2334,12 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         // reportar error si ningun candidato coincide
         agregarError(expr, "no existe un metodo '" + expr.getNombre() + "' con argumentos compatibles");
         return null;
+
     }
 
     @Override
     public Object visitarExprLlamadaMetodo(ExprLlamadaMetodo expr) {
+
         // visitar el objeto del metodo
         Tipo tipoObjeto = (Tipo) expr.getObjeto().accept(this);
 
@@ -2129,10 +2350,12 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
 
         // buscar metodos en la clase del objeto receptor
         AmbitoSemantico ambitoDestino = buscarAmbitoClase(tipoObjeto.getNombre());
+
         // usar la clase actual cuando el tipo no tiene ambito propio
         if (ambitoDestino == null) {
             ambitoDestino = ambitoClase;
         }
+
         List<Simbolo> metodos = new ArrayList<>();
         if (ambitoDestino != null) {
             metodos = ambitoDestino.buscarMetodos(expr.getNombre());
@@ -2147,11 +2370,13 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         // analizar argumentos
         List<Tipo> tiposArgs = new ArrayList<>();
         if (expr.getArgumentos() != null) {
+
             ListaExpresiones lista = (ListaExpresiones) expr.getArgumentos();
             for (NodoASTZetariano arg : lista.getExpresiones()) {
                 Tipo t = (Tipo) arg.accept(this);
                 tiposArgs.add(t);
             }
+
         }
 
         // buscar el candidato compatible
@@ -2164,10 +2389,12 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         // reportar error si ningun candidato coincide
         agregarError(expr, "no existe un metodo '" + expr.getNombre() + "' con argumentos compatibles");
         return null;
+
     }
 
     @Override
     public Object visitarExprAccesoArray(ExprAccesoArray expr) {
+
         // visitar el arreglo del acceso
         Tipo tipoArray = (Tipo) expr.getObjeto().accept(this);
 
@@ -2191,10 +2418,12 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         }
 
         return tipoArray.getTipoBase();
+
     }
 
     @Override
     public Object visitarExprAccesoMiembro(ExprAccesoMiembro expr) {
+
         // visitar el objeto del acceso
         Tipo tipoObjeto = (Tipo) expr.getObjeto().accept(this);
 
@@ -2213,10 +2442,12 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         }
 
         return campo.getTipo();
+
     }
 
     @Override
     public Object visitarExprPostIncremento(ExprPostIncremento expr) {
+
         // visitar la variable del incremento
         Tipo tipoVar = (Tipo) expr.getVariable().accept(this);
 
@@ -2226,10 +2457,12 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         }
 
         return tipoVar;
+
     }
 
     @Override
     public Object visitarExprPostDecremento(ExprPostDecremento expr) {
+
         // visitar la variable del decremento
         Tipo tipoVar = (Tipo) expr.getVariable().accept(this);
 
@@ -2239,10 +2472,12 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         }
 
         return tipoVar;
+
     }
 
     @Override
     public Object visitarExprNegativa(ExprNegativa expr) {
+
         // visitar la expresion interna
         Tipo tipoExp = (Tipo) expr.getExpresion().accept(this);
 
@@ -2252,10 +2487,12 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         }
 
         return tipoExp;
+
     }
 
     @Override
     public Object visitarExprNegada(ExprNegada expr) {
+
         // visitar la expresion interna
         Tipo tipoExp = (Tipo) expr.getExpresion().accept(this);
 
@@ -2265,10 +2502,12 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         }
 
         return ambitoGlobal.buscarTipo("boolean");
+
     }
 
     @Override
     public Object visitarExprMultiplicacionDivisionModulo(ExprMultiplicacionDivisionModulo expr) {
+
         // visitar ambos operandos
         Tipo tIzq = (Tipo) expr.getOperandoIzquierdo().accept(this);
         Tipo tDer = (Tipo) expr.getOperandoDerecho().accept(this);
@@ -2284,10 +2523,12 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         }
 
         return tipoMayorJerarquia(tIzq, tDer);
+
     }
 
     @Override
     public Object visitarExprSumaResta(ExprSumaResta expr) {
+
         // visitar ambos operandos
         Tipo tIzq = (Tipo) expr.getOperandoIzquierdo().accept(this);
         Tipo tDer = (Tipo) expr.getOperandoDerecho().accept(this);
@@ -2311,19 +2552,23 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         }
 
         return tipoMayorJerarquia(tIzq, tDer);
+
     }
 
     @Override
     public Object visitarExprRelacional(ExprRelacional expr) {
+
         // visitar ambos operandos
         Tipo tIzq = (Tipo) expr.getOperandoIzquierdo().accept(this);
         Tipo tDer = (Tipo) expr.getOperandoDerecho().accept(this);
 
         // verificar la compatibilidad de los tipos
         if (tIzq != null && tDer != null) {
+
             boolean numericos = esTipoNumerico(tIzq) && esTipoNumerico(tDer);
             boolean textos = esTipoTexto(tIzq) && esTipoTexto(tDer);
             boolean bools = esTipoBooleano(tIzq) && esTipoBooleano(tDer);
+
             // aceptar null en cualquier lado de la comparacion
             boolean nuloAlguno = "null".equals(tIzq.getNombre()) || "null".equals(tDer.getNombre());
 
@@ -2331,13 +2576,16 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
             if (!numericos && !textos && !bools && !nuloAlguno) {
                 agregarError(expr, "tipos incompatibles para comparacion");
             }
+
         }
 
         return ambitoGlobal.buscarTipo("boolean");
+
     }
 
     @Override
     public Object visitarExprAnd(ExprAnd expr) {
+
         // visitar ambos operandos
         Tipo tIzq = (Tipo) expr.getOperandoIzquierdo().accept(this);
         Tipo tDer = (Tipo) expr.getOperandoDerecho().accept(this);
@@ -2346,16 +2594,19 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         if (tIzq != null && !esTipoBooleano(tIzq)) {
             agregarError(expr.getOperandoIzquierdo(), "operando izquierdo debe ser booleano");
         }
+
         // verificar si el operando derecho es booleano
         if (tDer != null && !esTipoBooleano(tDer)) {
             agregarError(expr.getOperandoDerecho(), "operando derecho debe ser booleano");
         }
 
         return ambitoGlobal.buscarTipo("boolean");
+
     }
 
     @Override
     public Object visitarExprOr(ExprOr expr) {
+
         // visitar ambos operandos
         Tipo tIzq = (Tipo) expr.getOperandoIzquierdo().accept(this);
         Tipo tDer = (Tipo) expr.getOperandoDerecho().accept(this);
@@ -2364,16 +2615,19 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         if (tIzq != null && !esTipoBooleano(tIzq)) {
             agregarError(expr.getOperandoIzquierdo(), "operando izquierdo debe ser booleano");
         }
+
         // verificar si el operando derecho es booleano
         if (tDer != null && !esTipoBooleano(tDer)) {
             agregarError(expr.getOperandoDerecho(), "operando derecho debe ser booleano");
         }
 
         return ambitoGlobal.buscarTipo("boolean");
+
     }
 
     @Override
     public Object visitarExprTernario(ExprTernario expr) {
+
         // validar la condicion del ternario
         Tipo tipoCond = (Tipo) expr.getCondicion().accept(this);
         if (tipoCond != null && !esTipoBooleano(tipoCond)) {
@@ -2392,6 +2646,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         }
 
         return tipoMayorJerarquia(tipoVerdadero, tipoFalso);
+
     }
 
     @Override
@@ -2403,10 +2658,12 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         }
 
         return null;
+
     }
 
     @Override
     public Object visitarValorPrimitivo(ValorPrimitivo valor) {
+
         // verificar si el tipo es nulo
         if (valor.getTipoDato() == null) {
             return null;
@@ -2414,6 +2671,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
 
         // mapear cada tipo primitivo a su tipo del lenguaje
         switch (valor.getTipoDato()) {
+
             case ENTERO:
                 return ambitoGlobal.buscarTipo("int");
             case DECIMAL:
@@ -2447,23 +2705,28 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
 
             default:
                 return null;
+
         }
+
     }
 
     @Override
     public Object visitarListaExpresiones(ListaExpresiones lista) {
+
         // recorrer cada expresion de la lista
         for (NodoASTZetariano expr : lista.getExpresiones()) {
             expr.accept(this);
         }
 
         return null;
+
     }
 
     // ==================== AUXILIARES DE TIPOS ====================
 
     // verificar si un tipo es numerico
     private boolean esTipoNumerico(Tipo tipo) {
+
         // verificar si el tipo es nulo
         if (tipo == null) {
             return false;
@@ -2472,6 +2735,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         // aceptar int double y char
         String nombre = tipo.getNombre();
         return "int".equals(nombre) || "double".equals(nombre) || "char".equals(nombre);
+
     }
 
     // verificar si un tipo es entero
@@ -2516,7 +2780,9 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         if ("int".equals(a.getNombre()) && "int".equals(b.getNombre())) {
             return ambitoGlobal.buscarTipo("int");
         }
+
         return a;
+
     }
 
     // verificar si un tipo origen es compatible con un destino
@@ -2548,6 +2814,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         }
 
         return false;
+
     }
 
     // verificar si los tipos de los parametros son compatibles con los argumentos
@@ -2576,5 +2843,7 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         }
 
         return true;
+
     }
+
 }

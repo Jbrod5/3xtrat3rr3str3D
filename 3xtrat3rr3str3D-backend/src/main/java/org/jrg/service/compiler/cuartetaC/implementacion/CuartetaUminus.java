@@ -21,17 +21,23 @@ public class CuartetaUminus extends CuartetaC {
      */
     @Override
     public String obtenerCodigoC(ContextoTraduccion ctx) {
+
         // omitir destinos sin nombre valido
         if (resultado == null || resultado.isEmpty() || resultado.equals("_")) {
             return "";
         }
+
         // declarar el destino con el tipo del resultado
         SlotHS slot = ctx.declararSlot(resultado, tipoResultado);
+
         // resolver el operando a expresion
         String valor = ctx.expresionOperando(arg1);
+
         // negar con registro y guardar en su arreglo
         String reg = ctx.registroPara(slot.getArreglo());
-        String destino = slot.getArreglo() + "[fp + " + slot.getIndice() + "]";
+        String destino = slot.getArreglo() + "[framepointer + " + slot.getIndice() + "]";
         return reg + " = -" + valor + ";\n    " + destino + " = " + reg + ";";
+
     }
+
 }

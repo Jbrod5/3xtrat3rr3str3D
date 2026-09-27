@@ -35,18 +35,22 @@
   // 2. Backend la lista y devuelve [{archivo, ruta, contenido}]
   // 3. Frontend guarda rutaBaseProyecto y cada archivo con su ruta absoluta
   async function abrirProyectoCarpeta() {
+
     const base = prompt(
-      'Ruta absoluta de la carpeta raíz del proyecto:',
+      'Ruta absoluta de la carpeta raiz del proyecto:',
     );
     if (!base) return;
 
     const baseNorm = sinSlashFinal(normalizar(base.trim()));
 
     try {
+
       const res = await fetch(`${URL_BASE}/api/archivos/proyecto`, {
+
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ruta: baseNorm })
+
       });
 
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -57,29 +61,34 @@
       ideStore.setRutaBaseProyecto(baseNorm);
 
       if (!data.archivos || data.archivos.length === 0) {
-        alert('La carpeta está vacía o no se encontraron archivos.');
+        alert('La carpeta esta vacia o no se encontraron archivos.');
         return;
       }
 
       for (const item of data.archivos) {
+
         // item = { archivo, ruta, contenido }
         const id = ideStore.crearArchivo(item.archivo, normalizar(item.ruta));
         ideStore.actualizarContenido(id, item.contenido || '');
+
       }
 
       // Activar el primer archivo
       if (data.archivos.length > 0) {
-        // el store ya activó el último creado, está bien
+        // el store ya activo el ultimo creado, esta bien
       }
 
       console.log(`Proyecto cargado: ${data.archivos.length} archivos desde ${baseNorm}`);
+
     } catch (err) {
       alert('Error al cargar proyecto: ' + err.message);
     }
+
   }
 
   // ================= Abrir archivo individual =================
   async function abrirArchivoLocal() {
+
     const ruta = prompt(
       'Ruta absoluta del archivo:'
     );
@@ -88,10 +97,13 @@
     const rutaNorm = normalizar(ruta.trim());
 
     try {
+
       const res = await fetch(`${URL_BASE}/api/archivos/leer`, {
+
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ruta: rutaNorm })
+
       });
 
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -104,119 +116,166 @@
         ideStore.actualizarContenido(id, data.contenido || '');
         ideStore.activarArchivo(id);
       }, 30);
+
     } catch (err) {
       alert('Error al abrir archivo: ' + err.message);
     }
+
   }
 
   // ================= Compilar / Traducir =================
   // detectar el lenguaje segun la extension del archivo activo
 function detectarLenguajeArchivo(nombreArchivo) {
+
   if (!nombreArchivo) {
     return 'piglatin';
   }
+
   const partes = nombreArchivo.split('.');
   if (partes.length < 2) {
     return 'piglatin';
   }
+
   const ext = partes[partes.length - 1].toLowerCase();
   if (ext === 'z' || ext === 'zet') {
     return 'zetariano';
   }
+
   if (ext === 'y') {
     return 'y';
   }
+
   return 'piglatin';
+
 }
 
 async function enviarCompilacion() {
+
   if (!archivoActivo) return;
   const lenguaje = detectarLenguajeArchivo(archivoActivo.nombre);
   try {
+
     const resultado = await analizarCodigo(archivoActivo.contenido, lenguaje, archivoActivo.ruta);
     ideStore.actualizarResultado(archivoActivo.id, resultado);
     ideStore.cambiarPestanaInferior(resultado.exito ? 'resultados' : 'errores');
     if (!estado.panelInferiorAbierto) ideStore.alternarPanelInferior();
+
   } catch (err) {
+
     ideStore.actualizarResultado(archivoActivo.id, {
+
       exito: false, arbolSintactico: null, astMermaid: null, codigoPigLatin: null,
       simbolos: [], tipos: [], pasosPila: [],
       errores: [{ mensaje: 'Fallo de conexion con el servidor: ' + err.message }]
+
     });
     ideStore.cambiarPestanaInferior('errores');
     if (!estado.panelInferiorAbierto) ideStore.alternarPanelInferior();
+
   }
+
 }
 
 async function enviarTraduccion() {
+
   if (!archivoActivo) return;
   const lenguaje = detectarLenguajeArchivo(archivoActivo.nombre);
   try {
+
     const resultado = await traducirCodigo(archivoActivo.contenido, lenguaje, archivoActivo.ruta);
     ideStore.actualizarResultado(archivoActivo.id, resultado);
     ideStore.cambiarPestanaInferior('resultados');
     if (!estado.panelInferiorAbierto) ideStore.alternarPanelInferior();
+
   } catch (err) {
+
     ideStore.actualizarResultado(archivoActivo.id, {
+
       exito: false, arbolSintactico: null, astMermaid: null, codigoPigLatin: null,
       simbolos: [], tipos: [], pasosPila: [],
       errores: [{ mensaje: 'Fallo de conexion con el servidor: ' + err.message }]
+
     });
     ideStore.cambiarPestanaInferior('errores');
     if (!estado.panelInferiorAbierto) ideStore.alternarPanelInferior();
+
   }
+
 }
 
   // compilar todos los archivos .pig del proyecto y agregar resultados
   async function compilarProyecto() {
+
     if (!estado.rutaBaseProyecto) {
       alert('Primero abre una carpeta de proyecto para poder compilar.');
       return;
     }
+
     if (compilandoProyecto) return;
     compilandoProyecto = true;
+
     // recolectar los archivos piglatin del proyecto
     const archivosPig = estado.archivos.filter(a => a.nombre.endsWith('.pig'));
     if (archivosPig.length === 0) {
+
       alert('No hay archivos .pig en el proyecto.');
       compilandoProyecto = false;
       return;
+
     }
+
     // acumular errores de todos los archivos
     const erroresTotales = [];
     let exitoTotal = true;
     for (let i = 0; i < archivosPig.length; i++) {
+
       const archivo = archivosPig[i];
       const lenguaje = 'piglatin';
       try {
+
         const resultado = await analizarCodigo(archivo.contenido, lenguaje, archivo.ruta);
         if (!resultado.exito) {
+
           exitoTotal = false;
           for (let j = 0; j < resultado.errores.length; j++) {
+
             const err = resultado.errores[j];
             erroresTotales.push({
+
               archivo: archivo.nombre,
               linea: err.linea,
               columna: err.columna,
               tipo: err.tipo,
               mensaje: err.mensaje
+
             });
+
           }
+
         }
+
       } catch (err) {
+
         exitoTotal = false;
         erroresTotales.push({
+
           archivo: archivo.nombre,
           linea: 0,
           columna: 0,
           tipo: 'CONEXION',
           mensaje: err.message
+
         });
+
       }
+
     }
+
     // guardar el resultado agregado en el archivo activo
     if (archivoActivo) {
+
       ideStore.actualizarResultado(archivoActivo.id, {
+
         exito: exitoTotal,
         errores: erroresTotales,
         arbolSintactico: null,
@@ -225,32 +284,41 @@ async function enviarTraduccion() {
         simbolos: [],
         tipos: [],
         pasosPila: []
+
       });
+
     }
+
     ideStore.cambiarPestanaInferior(erroresTotales.length > 0 ? 'errores' : 'resultados');
     if (!estado.panelInferiorAbierto) ideStore.alternarPanelInferior();
     compilandoProyecto = false;
     alert('Proyecto compilado. Archivos: ' + archivosPig.length + ' Errores: ' + erroresTotales.length);
+
   }
 
   // ================= .pig =================
   function descargarPig() {
+
     if (!archivoActivo?.resultado?.codigoPigLatin) {
       alert('No hay traduccion PigLatin disponible. Traduce primero.');
       return;
     }
+
     const blob = new Blob([archivoActivo.resultado.codigoPigLatin], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
+
 //    a.download = archivoActivo.nombre.replace('.lat', '.pig');
     // usar extension .z para zetariano
     a.download = archivoActivo.nombre.replace('.z', '.pig');
     a.click();
     URL.revokeObjectURL(url);
+
   }
 
   function abrirArchivoPig(contenido) {
+
     const nombreBase = archivoActivo.nombre.replace(/\.[^.]+$/, '');
     const nombrePig = nombreBase + '.pig';
 
@@ -265,31 +333,38 @@ async function enviarTraduccion() {
       ideStore.actualizarContenido(id, contenido);
       ideStore.activarArchivo(id);
     }, 50);
+
   }
 
   async function verPig() {
+
     if (!archivoActivo) { alert('No hay archivo activo.'); return; }
     if (archivoActivo.resultado?.codigoPigLatin) {
       abrirArchivoPig(archivoActivo.resultado.codigoPigLatin);
       return;
     }
+
     if (traduciendo) return;
     try {
+
       traduciendo = true;
       const resultado = await traducirCodigo(archivoActivo.contenido);
       ideStore.actualizarResultado(archivoActivo.id, resultado);
       if (resultado.codigoPigLatin) abrirArchivoPig(resultado.codigoPigLatin);
-      else alert('La traducción no generó código PigLatin.');
+      else alert('La traduccion no genero codigo PigLatin.');
+
     } catch (err) {
       alert('Error al traducir: ' + err.message);
     } finally {
       traduciendo = false;
     }
+
   }
 
   // ================= Guardar =================
-  // Envía {archivo, ruta, contenido}. Nunca pregunta ruta.
+  // Envia {archivo, ruta, contenido}. Nunca pregunta ruta.
   async function guardarArchivo() {
+
     if (!archivoActivo) return;
 
     let contenidoActual = archivoActivo.contenido;
@@ -301,14 +376,19 @@ async function enviarTraduccion() {
     const ruta = normalizar(archivoActivo.ruta || archivoActivo.nombre);
 
     try {
+
       const res = await fetch(`${URL_BASE}/api/archivos/guardar`, {
+
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+
           archivo: archivoActivo.nombre,
           ruta,
           contenido: contenidoActual
+
         })
+
       });
 
       if (!res.ok) {
@@ -318,9 +398,11 @@ async function enviarTraduccion() {
 
       console.log('Guardado:', ruta);
       alert('Guardado en:\n' + ruta);
+
     } catch (err) {
       alert('Error al guardar: ' + err.message);
     }
+
   }
 
   // Hooks expuestos al explorador para abrir carpeta/archivo
@@ -368,7 +450,7 @@ async function enviarTraduccion() {
     <Separador direccion="vertical" valor={estado.anchoSidebar} onRedimensionar={(v) => ideStore.fijarAnchoSidebar(v)} />
 
     <main class="d-flex flex-column flex-grow-1 overflow-hidden bg-white">
-      <!-- Pestañas -->
+      <!-- Pestanas -->
       <div class="d-flex border-bottom bg-light" style="height: 36px; flex-shrink: 0; overflow-x: auto; border-color: #e9ecef !important;">
         {#each estado.archivos.filter(a => a.abierto) as archivo (archivo.id)}
           <div

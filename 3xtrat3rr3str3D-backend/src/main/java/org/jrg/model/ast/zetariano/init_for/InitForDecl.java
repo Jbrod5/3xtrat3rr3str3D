@@ -10,10 +10,12 @@ public class InitForDecl extends NodoASTZetariano {
     private final NodoASTZetariano expresion;
 
     public InitForDecl(NodoASTZetariano tipo, String identificador, NodoASTZetariano expresion, int linea, int columna) {
+
         super(linea, columna);
         this.tipo = tipo;
         this.identificador = identificador;
         this.expresion = expresion;
+
     }
 
     public NodoASTZetariano getTipo() {
@@ -32,4 +34,5 @@ public class InitForDecl extends NodoASTZetariano {
     public <T> T accept(ZetarianoAstVisitor<T> visitor) {
         return visitor.visitarInitForDecl(this);
     }
+
 }

@@ -12,9 +12,11 @@ public class ExprAnd extends NodoASTY {
      * Crear una expresion logica and.
      */
     public ExprAnd(NodoASTY izquierdo, NodoASTY derecho, int linea, int columna) {
+
         super(linea, columna);
         this.izquierdo = izquierdo;
         this.derecho = derecho;
+
     }
 
     public NodoASTY getIzquierdo() {
@@ -29,4 +31,5 @@ public class ExprAnd extends NodoASTY {
     public <T> T accept(YAstVisitor<T> visitor) {
         return visitor.visitarExprAnd(this);
     }
+
 }

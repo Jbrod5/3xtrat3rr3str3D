@@ -23,4 +23,5 @@ public class CuartetaEtiqueta extends CuartetaC {
         // marcar la etiqueta con punto y coma por si queda sola
         return arg1 + ":;";
     }
+
 }

@@ -10,10 +10,12 @@ public class ExprTernario extends NodoASTZetariano {
     private final NodoASTZetariano valorFalso;
 
     public ExprTernario(NodoASTZetariano condicion, NodoASTZetariano valorVerdadero, NodoASTZetariano valorFalso, int linea, int columna) {
+
         super(linea, columna);
         this.condicion = condicion;
         this.valorVerdadero = valorVerdadero;
         this.valorFalso = valorFalso;
+
     }
 
     public NodoASTZetariano getCondicion() {
@@ -32,4 +34,5 @@ public class ExprTernario extends NodoASTZetariano {
     public <T> T accept(ZetarianoAstVisitor<T> visitor) {
         return visitor.visitarExprTernario(this);
     }
+
 }

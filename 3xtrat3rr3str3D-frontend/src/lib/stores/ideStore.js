@@ -5,6 +5,7 @@ function generarId() {
 }
 
 function crearEstadoInicial() {
+
   //  const archivoInicial = {
 //    id: generarId(),
 //    nombre: 'principal.lat',
@@ -22,8 +23,10 @@ function crearEstadoInicial() {
     resultado: null,
     cursor: { linea: 1, columna: 1 },
     abierto: true
+
   };
   return {
+
     rutaBaseProyecto: null,
     archivos: [archivoInicial],
     archivoActivoId: archivoInicial.id,
@@ -34,21 +37,27 @@ function crearEstadoInicial() {
     alturaPanelInferior: 200,
     anchoPanelDerecho: 320,
     anchoSidebar: 220
+
   };
+
 }
 
 function crearIdeStore() {
+
   const { subscribe, set, update } = writable(crearEstadoInicial());
 
   return {
+
     subscribe,
 
     setRutaBaseProyecto: (ruta) => update(s => ({ ...s, rutaBaseProyecto: ruta })),
 
     activarArchivo: (id) => update(s => ({
+
       ...s,
       archivoActivoId: id,
       archivos: s.archivos.map(a => a.id === id ? { ...a, abierto: true } : a)
+
     })),
 
     actualizarContenido: (id, contenido) => update(s => ({
@@ -68,22 +77,29 @@ function crearIdeStore() {
 
     // crearArchivo(nombre, ruta) -> ruta puede ser absoluta o relativa
     crearArchivo: (nombre, ruta) => {
+
       const id = generarId();
       const rutaFinal = (ruta || nombre).replace(/\\/g, '/');
       let idExistente = null;
 
       update(s => {
+
         const existente = s.archivos.find(a => a.ruta === rutaFinal);
         if (existente) {
+
           idExistente = existente.id;
           return {
+
             ...s,
             archivoActivoId: existente.id,
             archivos: s.archivos.map(a =>
               a.id === existente.id ? { ...a, abierto: true } : a
             )
+
           };
+
         }
+
         const nuevo = {
           id,
           nombre,
@@ -92,16 +108,21 @@ function crearIdeStore() {
           resultado: null,
           cursor: { linea: 1, columna: 1 },
           abierto: true
+
         };
         return { ...s, archivos: [...s.archivos, nuevo], archivoActivoId: id };
+
       });
 
       return idExistente || id;
+
     },
 
     eliminarArchivo: (id) => update(s => {
+
       const filtrados = s.archivos.filter(a => a.id !== id);
       if (filtrados.length === 0) {
+
         //        const nuevo = {
 //          id: generarId(),
 //          nombre: 'sin_titulo.lat',
@@ -119,14 +140,19 @@ function crearIdeStore() {
           resultado: null,
           cursor: { linea: 1, columna: 1 },
           abierto: true
+
         };
         return { ...s, archivos: [nuevo], archivoActivoId: nuevo.id };
+
       }
+
       const nuevoActivo = s.archivoActivoId === id ? filtrados[0].id : s.archivoActivoId;
       return { ...s, archivos: filtrados, archivoActivoId: nuevoActivo };
+
     }),
 
     cerrarPestana: (id) => update(s => {
+
       const nuevosArchivos = s.archivos.map(a =>
         a.id === id ? { ...a, abierto: false } : a
       );
@@ -135,7 +161,9 @@ function crearIdeStore() {
         const abiertos = nuevosArchivos.filter(a => a.abierto);
         nuevoActivoId = abiertos.length > 0 ? abiertos[abiertos.length - 1].id : null;
       }
+
       return { ...s, archivos: nuevosArchivos, archivoActivoId: nuevoActivoId };
+
     }),
 
     alternarPanelInferior: () => update(s => ({ ...s, panelInferiorAbierto: !s.panelInferiorAbierto })),
@@ -145,7 +173,9 @@ function crearIdeStore() {
     fijarAnchoSidebar: (ancho) => update(s => ({ ...s, anchoSidebar: Math.max(150, ancho) })),
     cambiarPestanaInferior: (pestana) => update(s => ({ ...s, pestanaInferiorActiva: pestana })),
     cambiarPestanaDerecha: (pestana) => update(s => ({ ...s, pestanaDerechaActiva: pestana }))
+
   };
+
 }
 
 export const ideStore = crearIdeStore();

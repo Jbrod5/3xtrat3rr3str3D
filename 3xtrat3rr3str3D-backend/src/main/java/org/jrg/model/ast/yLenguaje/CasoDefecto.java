@@ -25,4 +25,5 @@ public class CasoDefecto extends NodoASTY {
     public <T> T accept(YAstVisitor<T> visitor) {
         return visitor.visitarCasoDefecto(this);
     }
+
 }

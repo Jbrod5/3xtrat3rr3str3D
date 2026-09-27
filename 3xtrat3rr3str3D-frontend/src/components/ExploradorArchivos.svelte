@@ -12,6 +12,7 @@
   function sinSlashFinal(p) { return p.replace(/\/+$/, ''); }
 
   function crearNuevoArchivo() {
+
     const nombre = prompt('Nombre del archivo:', 'nuevo.z');
     if (!nombre || !nombre.trim()) return;
 
@@ -32,6 +33,7 @@
 
     const id = ideStore.crearArchivo(nombre.trim(), rutaAbs);
     ideStore.activarArchivo(id);
+
   }
 
   function confirmarEliminar(id, nombre) {
@@ -43,36 +45,47 @@
   function abrirArchivoLocal() { dispatch('abrir'); }
   function abrirProyectoCarpeta() { dispatch('abrirCarpeta'); }
 
-  // ================= Árbol =================
+  // ================= Arbol =================
   // Usa rutaBaseProyecto para calcular la parte relativa de cada archivo.
   function calcularRelativa(rutaAbs, base) {
+
     const r = normalizar(rutaAbs);
     if (!base) return r;
     const b = sinSlashFinal(normalizar(base));
     if (r.startsWith(b + '/')) return r.substring(b.length + 1);
     if (r === b) return '';
     return r; // fuera de la base: se muestra tal cual
+
   }
 
   function construirArbol(archivos, base) {
+
     const raiz = { nombre: '', carpetas: {}, archivos: [] };
     if (!archivos) return raiz;
 
     for (const arch of archivos) {
+
       const rel = calcularRelativa(arch.ruta || arch.nombre, base);
       const partes = rel.split('/').filter(p => p !== '');
 
       let actual = raiz;
       for (let i = 0; i < partes.length - 1; i++) {
+
         const parte = partes[i];
         if (!actual.carpetas[parte]) {
           actual.carpetas[parte] = { nombre: parte, carpetas: {}, archivos: [] };
         }
+
         actual = actual.carpetas[parte];
+
       }
+
       actual.archivos.push(arch);
+
     }
+
     return raiz;
+
   }
 
   $: arbolArchivos = construirArbol(estado.archivos, estado.rutaBaseProyecto);

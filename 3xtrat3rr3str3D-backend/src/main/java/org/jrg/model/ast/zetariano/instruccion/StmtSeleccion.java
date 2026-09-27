@@ -20,4 +20,5 @@ public class StmtSeleccion extends NodoASTZetariano {
     public <T> T accept(ZetarianoAstVisitor<T> visitor) {
         return visitor.visitarStmtSeleccion(this);
     }
+
 }

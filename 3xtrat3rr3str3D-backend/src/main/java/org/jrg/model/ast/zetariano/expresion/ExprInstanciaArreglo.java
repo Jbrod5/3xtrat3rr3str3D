@@ -11,12 +11,14 @@ public class ExprInstanciaArreglo extends NodoASTZetariano {
     private final List<NodoASTZetariano> dimensiones;
 
     public ExprInstanciaArreglo(NodoASTZetariano tipo, List<NodoASTZetariano> dimensiones, int linea, int columna) {
+
         super(linea, columna);
         this.tipo = tipo;
         this.dimensiones = new ArrayList<>();
         if (dimensiones != null) {
             this.dimensiones.addAll(dimensiones);
         }
+
     }
 
     public NodoASTZetariano getTipo() {
@@ -31,4 +33,5 @@ public class ExprInstanciaArreglo extends NodoASTZetariano {
     public <T> T accept(ZetarianoAstVisitor<T> visitor) {
         return visitor.visitarExprInstanciaArreglo(this);
     }
+
 }

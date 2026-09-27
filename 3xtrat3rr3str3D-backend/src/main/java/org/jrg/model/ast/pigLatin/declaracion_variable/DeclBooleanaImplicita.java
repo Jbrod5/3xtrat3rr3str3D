@@ -8,9 +8,11 @@ public class DeclBooleanaImplicita extends NodoAST {
     private final String valor;
 
     public DeclBooleanaImplicita(String identificador, String valor, int linea, int columna) {
+
         super(linea, columna);
         this.identificador = identificador;
         this.valor = valor;
+
     }
 
     public String getIdentificador() {
@@ -25,4 +27,5 @@ public class DeclBooleanaImplicita extends NodoAST {
     public <T> T accept(LatinusAstVisitor<T> visitor) {
         return visitor.visitDeclBooleanaImplicita(this);
     }
+
 }

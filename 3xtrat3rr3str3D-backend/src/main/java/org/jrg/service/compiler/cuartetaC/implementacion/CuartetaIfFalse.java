@@ -20,9 +20,13 @@ public class CuartetaIfFalse extends CuartetaC {
      */
     @Override
     public String obtenerCodigoC(ContextoTraduccion ctx) {
+
         // resolver la condicion a expresion
         String cond = ctx.expresionOperando(arg1);
+
         // saltar a la etiqueta si es falsa
         return "AX_BOOLEAN = " + cond + ";\n    if (!AX_BOOLEAN) goto " + arg2 + ";";
+
     }
+
 }

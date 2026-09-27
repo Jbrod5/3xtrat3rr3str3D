@@ -9,9 +9,11 @@ public class CicloDoWhile extends NodoASTZetariano {
     private final NodoASTZetariano condicion;
 
     public CicloDoWhile(NodoASTZetariano bloque, NodoASTZetariano condicion, int linea, int columna) {
+
         super(linea, columna);
         this.bloque = bloque;
         this.condicion = condicion;
+
     }
 
     public NodoASTZetariano getBloque() {
@@ -26,4 +28,5 @@ public class CicloDoWhile extends NodoASTZetariano {
     public <T> T accept(ZetarianoAstVisitor<T> visitor) {
         return visitor.visitarCicloDoWhile(this);
     }
+
 }

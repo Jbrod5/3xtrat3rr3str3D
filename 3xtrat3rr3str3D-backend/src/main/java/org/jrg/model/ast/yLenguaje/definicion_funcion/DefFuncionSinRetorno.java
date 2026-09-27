@@ -13,10 +13,12 @@ public class DefFuncionSinRetorno extends NodoASTY {
      * Crear una definicion de funcion sin retorno.
      */
     public DefFuncionSinRetorno(String nombre, NodoASTY parametros, NodoASTY cuerpo, int linea, int columna) {
+
         super(linea, columna);
         this.nombre = nombre;
         this.parametros = parametros;
         this.cuerpo = cuerpo;
+
     }
 
     public String getNombre() {
@@ -35,4 +37,5 @@ public class DefFuncionSinRetorno extends NodoASTY {
     public <T> T accept(YAstVisitor<T> visitor) {
         return visitor.visitarDefFuncionSinRetorno(this);
     }
+
 }

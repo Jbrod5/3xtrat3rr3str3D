@@ -14,39 +14,49 @@
   let lenguajeActual = 'piglatin';
   
 function detectarLenguaje(nombreArchivo) {
+
   if (!nombreArchivo) return 'piglatin';
   const ext = nombreArchivo.split('.').pop().toLowerCase();
   if (ext === 'z' || ext === 'zet') {
     return 'zetariano';
   }
+
   if (ext === 'y') {
     return 'y';
   }
+
   return 'piglatin';
+
 }
   
 function obtenerNombreLenguajeMonaco(lenguaje) {
+
   if (lenguaje === 'zetariano') {
     return 'zetariano';
   }
+
   if (lenguaje === 'y') {
     return 'y';
   }
+
   return 'piglatin';
+
 }
   
   onMount(async () => {
+
     const monaco = await import('monaco-editor');
     monacoRef = monaco;
     
     // Registrar lenguaje PigLatin (lat)
     monaco.languages.register({ id: 'piglatin' });
     monaco.languages.setMonarchTokensProvider('piglatin', {
+
       keywords: [
         'VARIABILES','MAIOR','FINIS',
         'esto','series',
         'numerus','textum','decimalis','littera','bool',
-        'verum','falsus',
+        'verum','falsus','null',
         'si','aliter','dum','facere','per','interrumpe','perge',
         'novus','import','structura'
       ],
@@ -56,6 +66,7 @@ function obtenerNombreLenguajeMonaco(lenguaje) {
       ],
       symbols: /[=><!~?:&|+\-*\/\^%]+/,
       tokenizer: {
+
         root: [
           [/[a-zA-Z_]\w*/, { cases: { '@keywords': 'keyword', '@default': 'identifier' }}],
           [/[0-9]+\.[0-9]+/, 'number.float'],
@@ -67,12 +78,15 @@ function obtenerNombreLenguajeMonaco(lenguaje) {
           [/@symbols/, { cases: { '@operators': 'operator', '@default': '' }}],
           [/#\#.*$/, 'comment'],
         ]
+
       }
+
     });
     
     // Registrar lenguaje Zetariano
     monaco.languages.register({ id: 'zetariano' });
     monaco.languages.setMonarchTokensProvider('zetariano', {
+
       keywords: [
         'public','class','void','new','null',
         'int','double','char','boolean','String',
@@ -86,6 +100,7 @@ function obtenerNombreLenguajeMonaco(lenguaje) {
       ],
       symbols: /[=><!~?:&|+\-*\/\^%]+/,
       tokenizer: {
+
         root: [
           [/[a-zA-Z_]\w*/, { cases: { '@keywords': 'keyword', '@default': 'identifier' }}],
           [/[0-9]+\.[0-9]+/, 'number.float'],
@@ -103,12 +118,15 @@ function obtenerNombreLenguajeMonaco(lenguaje) {
           [/\*\//, 'comment', '@pop'],
           [/./, 'comment']
         ]
+
       }
+
     });
 
     // Registrar lenguaje Y
     monaco.languages.register({ id: 'y' });
     monaco.languages.setMonarchTokensProvider('y', {
+
       keywords: [
         'estructura','definir','retornar',
         'entero','cadena','flotante','caracter','booleano',
@@ -126,6 +144,7 @@ function obtenerNombreLenguajeMonaco(lenguaje) {
       ],
       symbols: /[=><!~?:&|+\-*\/\^%]+/,
       tokenizer: {
+
         root: [
           [/[a-zA-Z_]\w*/, { cases: { '@keywords': 'keyword', '@default': 'identifier' }}],
           [/[0-9]+\.[0-9]+/, 'number.float'],
@@ -137,10 +156,13 @@ function obtenerNombreLenguajeMonaco(lenguaje) {
           [/@symbols/, { cases: { '@operators': 'operator', '@default': '' }}],
           [/\/\/.*$/, 'comment'],
         ]
+
       }
+
     });
     
     editor = monaco.editor.create(contenedor, {
+
       value: '',
       language: 'piglatin',
       theme: 'vs',
@@ -153,14 +175,19 @@ function obtenerNombreLenguajeMonaco(lenguaje) {
       padding: { top: 16 },
       renderLineHighlight: 'all',
       lineNumbersMinChars: 3
+
     });
     
     editor.onDidChangeModelContent(() => {
+
       if (idArchivoActual) {
+
         const valor = editor.getValue();
         ideStore.actualizarContenido(idArchivoActual, valor);
         reiniciarDebounceColoreado(valor);
+
       }
+
     });
     
     editor.onDidChangeCursorPosition((ev) => {
@@ -170,10 +197,12 @@ function obtenerNombreLenguajeMonaco(lenguaje) {
     });
     
     desuscribir = ideStore.subscribe((estado) => {
+
       const activo = estado.archivos.find(a => a.id === estado.archivoActivoId);
       if (!activo) return;
       
       if (idArchivoActual !== activo.id) {
+
         idArchivoActual = activo.id;
         editor.setValue(activo.contenido);
         limpiarColores();
@@ -181,29 +210,39 @@ function obtenerNombreLenguajeMonaco(lenguaje) {
         // detectar lenguaje por extension del archivo
         const nuevoLenguaje = detectarLenguaje(activo.nombre);
         if (nuevoLenguaje !== lenguajeActual) {
+
           lenguajeActual = nuevoLenguaje;
           const modelo = editor.getModel();
           if (modelo) {
             monaco.editor.setModelLanguage(modelo, obtenerNombreLenguajeMonaco(lenguajeActual));
           }
+
         }
+
         // aplicar coloreado del archivo que se acaba de activar
         aplicarColoreadoDesdeBackend(activo.contenido);
+
       }
+
     });
+
   });
   
   onDestroy(() => {
+
     if (desuscribir) desuscribir();
     if (editor) editor.dispose();
     if (timeoutDebounce) clearTimeout(timeoutDebounce);
+
   });
   
   function reiniciarDebounceColoreado(codigo) {
+
     if (timeoutDebounce) clearTimeout(timeoutDebounce);
     timeoutDebounce = setTimeout(() => {
       aplicarColoreadoDesdeBackend(codigo);
     }, 500);
+
   }
   
   function limpiarColores() {
@@ -213,21 +252,27 @@ function obtenerNombreLenguajeMonaco(lenguaje) {
   }
   
   export async function aplicarColoreadoDesdeBackend(codigo) {
+
     if (!editor || !monacoRef) return;
     
     try {
+
       const respuesta = await obtenerColoresPorLenguaje(codigo || editor.getValue(), lenguajeActual);
       
       if (respuesta.colores && Array.isArray(respuesta.colores)) {
+
         const modelo = editor.getModel();
         const decoraciones = convertirTokensADecoraciones(respuesta.colores, modelo, monacoRef);
         idsDecoraciones = editor.deltaDecorations(idsDecoraciones, decoraciones);
+
       } else {
         limpiarColores();
       }
+
     } catch {
       limpiarColores();
     }
+
   }
   
   export function obtenerValor() {

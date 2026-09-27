@@ -8,9 +8,11 @@ public class ValorAsignableArray extends NodoAST {
     private final NodoAST indice;
 
     public ValorAsignableArray(NodoAST base, NodoAST indice, int linea, int columna) {
+
         super(linea, columna);
         this.base = base;
         this.indice = indice;
+
     }
 
     public NodoAST getBase() {
@@ -25,4 +27,5 @@ public class ValorAsignableArray extends NodoAST {
     public <T> T accept(LatinusAstVisitor<T> visitor) {
         return visitor.visitValorAsignableArray(this);
     }
+
 }

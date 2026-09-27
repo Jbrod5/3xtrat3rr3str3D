@@ -9,9 +9,11 @@ public class ExprAccesoArray extends NodoASTZetariano {
     private final NodoASTZetariano indice;
 
     public ExprAccesoArray(NodoASTZetariano objeto, NodoASTZetariano indice, int linea, int columna) {
+
         super(linea, columna);
         this.objeto = objeto;
         this.indice = indice;
+
     }
 
     public NodoASTZetariano getObjeto() {
@@ -26,4 +28,5 @@ public class ExprAccesoArray extends NodoASTZetariano {
     public <T> T accept(ZetarianoAstVisitor<T> visitor) {
         return visitor.visitarExprAccesoArray(this);
     }
+
 }

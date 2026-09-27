@@ -20,4 +20,5 @@ public class MiembroMetodo extends NodoASTZetariano {
     public <T> T accept(ZetarianoAstVisitor<T> visitor) {
         return visitor.visitarMiembroMetodo(this);
     }
+
 }

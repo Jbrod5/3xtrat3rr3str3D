@@ -13,9 +13,11 @@ public class ValorPrimitivo extends NodoASTY {
      * Crear un valor primitivo con su valor y tipo.
      */
     public ValorPrimitivo(String valor, TipoPrimitivo tipo, int linea, int columna) {
+
         super(linea, columna);
         this.valor = valor;
         this.tipo = tipo;
+
     }
 
     public String getValor() {
@@ -30,4 +32,5 @@ public class ValorPrimitivo extends NodoASTY {
     public <T> T accept(YAstVisitor<T> visitor) {
         return visitor.visitarValorPrimitivo(this);
     }
+
 }

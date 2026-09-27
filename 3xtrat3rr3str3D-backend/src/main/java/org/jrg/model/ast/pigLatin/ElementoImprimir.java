@@ -19,4 +19,5 @@ public class ElementoImprimir extends NodoAST {
     public <T> T accept(LatinusAstVisitor<T> visitor) {
         return visitor.visitElementoImprimir(this);
     }
+
 }

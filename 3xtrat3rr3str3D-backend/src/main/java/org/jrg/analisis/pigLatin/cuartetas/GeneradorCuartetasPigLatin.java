@@ -35,13 +35,16 @@ public class GeneradorCuartetasPigLatin implements LatinusAstVisitor<String> {
 
     // crear el generador con su contexto y sus manejadoras
     public GeneradorCuartetasPigLatin() {
+
         // inicializar el contexto compartido
         this.ctx = new ContextoCuartetasPigLatin();
+
         // crear las manejadoras con el contexto y este generador
         this.manejadorPrograma = new ManejadorProgramaPigLatin(ctx, this);
         this.manejadorExpresiones = new ManejadorExpresionesPigLatin(ctx, this);
         this.manejadorDeclaraciones = new ManejadorDeclaracionesPigLatin(ctx, this);
         this.manejadorFlujo = new ManejadorFlujoPigLatin(ctx, this);
+
     }
 
     // obtener la lista de cuartetas generadas
@@ -404,4 +407,5 @@ public class GeneradorCuartetasPigLatin implements LatinusAstVisitor<String> {
     public String visitImpresionEncadenada(ImpresionEncadenada impresion) {
         return manejadorFlujo.visitImpresionEncadenada(impresion);
     }
+
 }

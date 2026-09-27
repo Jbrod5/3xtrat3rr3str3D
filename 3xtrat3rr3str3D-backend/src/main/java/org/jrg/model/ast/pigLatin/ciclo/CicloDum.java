@@ -8,9 +8,11 @@ public class CicloDum extends NodoAST {
     private final NodoAST bloque;
 
     public CicloDum(NodoAST condicion, NodoAST bloque, int linea, int columna) {
+
         super(linea, columna);
         this.condicion = condicion;
         this.bloque = bloque;
+
     }
 
     public NodoAST getCondicion() {
@@ -25,4 +27,5 @@ public class CicloDum extends NodoAST {
     public <T> T accept(LatinusAstVisitor<T> visitor) {
         return visitor.visitCicloDum(this);
     }
+
 }

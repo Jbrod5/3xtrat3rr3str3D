@@ -20,17 +20,23 @@ public class CuartetaLogica extends CuartetaC {
      */
     @Override
     public String obtenerCodigoC(ContextoTraduccion ctx) {
+
         // omitir destinos sin nombre valido
         if (resultado == null || resultado.isEmpty() || resultado.equals("_")) {
             return "";
         }
+
         // declarar el destino siempre booleano
         SlotHS slot = ctx.declararSlot(resultado, "booleano");
+
         // resolver los operandos a expresiones
         String primero = ctx.expresionOperando(arg1);
         String segundo = ctx.expresionOperando(arg2);
+
         // operar con registros y guardar el booleano
-        String destino = slot.getArreglo() + "[fp + " + slot.getIndice() + "]";
+        String destino = slot.getArreglo() + "[framepointer + " + slot.getIndice() + "]";
         return "AX_BOOLEAN = (" + primero + " " + operador + " " + segundo + ");\n    " + destino + " = AX_BOOLEAN;";
+
     }
+
 }

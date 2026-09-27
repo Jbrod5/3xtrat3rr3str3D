@@ -15,10 +15,12 @@ public class StatementElegir extends NodoASTY {
      * Crear una seleccion elegir con sus casos.
      */
     public StatementElegir(NodoASTY expresion, List<NodoASTY> casos, NodoASTY casoDefecto, int linea, int columna) {
+
         super(linea, columna);
         this.expresion = expresion;
         this.casos = casos;
         this.casoDefecto = casoDefecto;
+
     }
 
     public NodoASTY getExpresion() {
@@ -37,4 +39,5 @@ public class StatementElegir extends NodoASTY {
     public <T> T accept(YAstVisitor<T> visitor) {
         return visitor.visitarStatementElegir(this);
     }
+
 }

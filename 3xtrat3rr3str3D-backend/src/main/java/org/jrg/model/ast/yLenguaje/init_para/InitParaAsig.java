@@ -12,9 +12,11 @@ public class InitParaAsig extends NodoASTY {
      * Crear una inicializacion de para con asignacion.
      */
     public InitParaAsig(NodoASTY variable, NodoASTY expresion, int linea, int columna) {
+
         super(linea, columna);
         this.variable = variable;
         this.expresion = expresion;
+
     }
 
     public NodoASTY getVariable() {
@@ -29,4 +31,5 @@ public class InitParaAsig extends NodoASTY {
     public <T> T accept(YAstVisitor<T> visitor) {
         return visitor.visitarInitParaAsig(this);
     }
+
 }

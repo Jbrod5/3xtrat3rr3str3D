@@ -8,9 +8,11 @@ public class ExprNegada extends NodoAST {
     private final NodoAST expresion;
 
     public ExprNegada(String operador, NodoAST expresion, int linea, int columna) {
+
         super(linea, columna);
         this.operador = operador;
         this.expresion = expresion;
+
     }
 
     public String getOperador() {
@@ -25,4 +27,5 @@ public class ExprNegada extends NodoAST {
     public <T> T accept(LatinusAstVisitor<T> visitor) {
         return visitor.visitExprNegada(this);
     }
+
 }

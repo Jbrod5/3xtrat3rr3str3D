@@ -14,11 +14,13 @@ public class DeclMatriz extends NodoASTY {
      * Crear una declaracion de matriz.
      */
     public DeclMatriz(NodoASTY tipo, String nombre, NodoASTY tamanoFilas, NodoASTY tamanoColumnas, int linea, int columna) {
+
         super(linea, columna);
         this.tipo = tipo;
         this.nombre = nombre;
         this.tamanoFilas = tamanoFilas;
         this.tamanoColumnas = tamanoColumnas;
+
     }
 
     public NodoASTY getTipo() {
@@ -41,4 +43,5 @@ public class DeclMatriz extends NodoASTY {
     public <T> T accept(YAstVisitor<T> visitor) {
         return visitor.visitarDeclMatriz(this);
     }
+
 }

@@ -22,4 +22,5 @@ public class CuartetaGoto extends CuartetaC {
         // saltar a la etiqueta del primer argumento
         return "goto " + arg1 + ";";
     }
+
 }

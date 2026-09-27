@@ -12,9 +12,11 @@ public class Asignacion extends NodoASTY {
      * Crear una asignacion con su variable y valor.
      */
     public Asignacion(NodoASTY variable, NodoASTY valor, int linea, int columna) {
+
         super(linea, columna);
         this.variable = variable;
         this.valor = valor;
+
     }
 
     public NodoASTY getVariable() {
@@ -29,4 +31,5 @@ public class Asignacion extends NodoASTY {
     public <T> T accept(YAstVisitor<T> visitor) {
         return visitor.visitarAsignacion(this);
     }
+
 }

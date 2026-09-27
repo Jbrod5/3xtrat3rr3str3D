@@ -19,10 +19,14 @@ public class CuartetaParametro extends CuartetaC {
      */
     @Override
     public String obtenerCodigoC(ContextoTraduccion ctx) {
+
         // acumular el valor con su tipo para el call
         ctx.paramsPendientes.add(arg1);
         ctx.tiposParamsPendientes.add(tipoArg1);
+
         // los params no generan linea propia
         return "";
+
     }
+
 }

@@ -53,7 +53,9 @@ public class Tipo {
      * Crear un tipo con todos sus datos semanticos.
      */
     public Tipo(String nombre, boolean esPrimitivo, int dimension, Tipo tipoBase, List<Simbolo> campos, Ambito ambito) {
+
         this.id = MiniUUID.generate();
+
         // normalizar nombre nulo
         if (nombre == null) {
             this.nombre = "";
@@ -62,6 +64,7 @@ public class Tipo {
         }
 
         this.esPrimitivo = esPrimitivo;
+
         // validar rango negativo
         if (dimension < 0) {
             this.dimension = 0;
@@ -71,12 +74,14 @@ public class Tipo {
 
         this.tipoBase = tipoBase;
         this.campos = new ArrayList<>();
+
         // copiar campos si existen
         if (campos != null) {
             this.campos.addAll(campos);
         }
 
         this.ambito = ambito;
+
     }
 
     /**
@@ -97,12 +102,14 @@ public class Tipo {
      * Asignar el nombre del tipo.
      */
     public void setNombre(String nombre) {
+
         // normalizar nombre nulo
         if (nombre == null) {
             this.nombre = "";
         } else {
             this.nombre = nombre;
         }
+
     }
 
     /**
@@ -137,12 +144,14 @@ public class Tipo {
      * Asignar la dimension del arreglo.
      */
     public void setDimension(int dimension) {
+
         // validar rango negativo
         if (dimension < 0) {
             this.dimension = 0;
         } else {
             this.dimension = dimension;
         }
+
     }
 
     /**
@@ -170,16 +179,19 @@ public class Tipo {
      * Agregar un campo al tipo.
      */
     public void agregarCampo(Simbolo campo) {
+
         // validar duplicado antes de agregar
         if (campo != null && !campos.contains(campo)) {
             campos.add(campo);
         }
+
     }
 
     /**
      * Buscar un campo por nombre.
      */
     public Simbolo buscarCampo(String nombre) {
+
         if (nombre == null) {
             return null;
         }
@@ -192,6 +204,7 @@ public class Tipo {
         }
 
         return null;
+
     }
 
     /**
@@ -219,11 +232,13 @@ public class Tipo {
      * Obtener el nombre del ambito del tipo.
      */
     public String getNombreAmbito() {
+
         if (ambito == null) {
             return null;
         }
 
         return ambito.getNombre();
+
     }
 
     /**
@@ -232,4 +247,5 @@ public class Tipo {
     public boolean esArray() {
         return dimension > 0;
     }
+
 }

@@ -23,4 +23,5 @@ public class TipoDato extends NodoASTY {
     public <T> T accept(YAstVisitor<T> visitor) {
         return visitor.visitarTipoDato(this);
     }
+
 }

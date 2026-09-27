@@ -17,12 +17,14 @@ public class StatementSi extends NodoASTY {
      * Crear una condicional si con sus partes.
      */
     public StatementSi(NodoASTY condicionPrincipal, NodoASTY bloquePrincipal, List<NodoASTY> condicionesSino, List<NodoASTY> bloquesSino, NodoASTY bloqueContrario, int linea, int columna) {
+
         super(linea, columna);
         this.condicionPrincipal = condicionPrincipal;
         this.bloquePrincipal = bloquePrincipal;
         this.condicionesSino = condicionesSino;
         this.bloquesSino = bloquesSino;
         this.bloqueContrario = bloqueContrario;
+
     }
 
     public NodoASTY getCondicionPrincipal() {
@@ -49,4 +51,5 @@ public class StatementSi extends NodoASTY {
     public <T> T accept(YAstVisitor<T> visitor) {
         return visitor.visitarStatementSi(this);
     }
+
 }

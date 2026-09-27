@@ -13,4 +13,5 @@ public class StmtPerge extends NodoAST {
     public <T> T accept(LatinusAstVisitor<T> visitor) {
         return visitor.visitStmtPerge(this);
     }
+
 }

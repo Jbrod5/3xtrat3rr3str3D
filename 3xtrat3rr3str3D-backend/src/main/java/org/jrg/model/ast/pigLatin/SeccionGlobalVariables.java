@@ -21,4 +21,5 @@ public class SeccionGlobalVariables extends NodoAST {
     public <T> T accept(LatinusAstVisitor<T> visitor) {
         return visitor.visitSeccionGlobalVariables(this);
     }
+
 }

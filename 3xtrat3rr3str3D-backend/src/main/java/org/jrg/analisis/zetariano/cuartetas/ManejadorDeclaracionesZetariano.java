@@ -26,6 +26,7 @@ public class ManejadorDeclaracionesZetariano {
 
     // estado compartido de la generacion
     private final ContextoCuartetasZetariano ctx;
+
     // generador duenio para el descenso recursivo
     private final GeneradorCuartetasZetariano generador;
 
@@ -37,22 +38,26 @@ public class ManejadorDeclaracionesZetariano {
 
     // visitar la declaracion interna de la instruccion
     public String visitarStmtDeclaracion(StmtDeclaracion nodo) {
+
         // visitar la declaracion si existe
         if (nodo.getDeclaracion() != null) {
             nodo.getDeclaracion().accept(generador);
         }
 
         return null;
+
     }
 
     // visitar la asignacion interna de la instruccion
     public String visitarStmtAsignacion(StmtAsignacion nodo) {
+
         // visitar la asignacion si existe
         if (nodo.getAsignacion() != null) {
             nodo.getAsignacion().accept(generador);
         }
 
         return null;
+
     }
 
     // generar el retorno con valor o sin valor
@@ -77,36 +82,43 @@ public class ManejadorDeclaracionesZetariano {
         }
 
         return null;
+
     }
 
     // generar salto a la etiqueta de romper si existe
     public String visitarStmtBreak(StmtBreak nodo) {
+
         // agregar salto a la etiqueta de romper si existe a la lista de cuartetas
         if (ctx.getEtiquetaBreakActual() != null) {
             ctx.getCuartetas().add(new Cuarteta("goto", ctx.getEtiquetaBreakActual(), "_", "_", "_", "_", "_"));
         }
 
         return null;
+
     }
 
     // generar salto a la etiqueta de continuar si existe
     public String visitarStmtContinue(StmtContinue nodo) {
+
         // agregar salto a la etiqueta de continuar si existe a la lista de cuartetas
         if (ctx.getEtiquetaContinueActual() != null) {
             ctx.getCuartetas().add(new Cuarteta("goto", ctx.getEtiquetaContinueActual(), "_", "_", "_", "_", "_"));
         }
 
         return null;
+
     }
 
     // visitar la expresion interna de la instruccion
     public String visitarStmtExpresion(StmtExpresion nodo) {
+
         // visitar la expresion si existe
         if (nodo.getExpresion() != null) {
             nodo.getExpresion().accept(generador);
         }
 
         return null;
+
     }
 
     // declarar variable o arreglo con valor inicial opcional
@@ -144,14 +156,20 @@ public class ManejadorDeclaracionesZetariano {
                 // usar el tipo base para que no se pierda en la traduccion
                 String tipoResZ1 = "_";
                 if (tipoBase != null && tipoBase.isEmpty() == false) {
+
                     tipoResZ1 = tipoBase;
+
                     // registrar la variable con su tipo declarado
                     ctx.getTiposConocidos().put(nodo.getIdentificador(), tipoBase);
+
                 }
+
                 ctx.getCuartetas().add(new Cuarteta(":=", valor, "_", nodo.getIdentificador(), ctx.inferirTipoDe(valor, ctx.getTiposConocidos()), "_", tipoResZ1));
+
             }
 
             return null;
+
         }
 
         // agregar la asignacion inicial si hay valor a la lista de cuartetas
@@ -170,21 +188,30 @@ public class ManejadorDeclaracionesZetariano {
             // usar el tipo declarado para que no se pierda en la traduccion
             String tipoDeclZ = "_";
             if (nodo.getTipo() instanceof TipoDato) {
+
                 String nombreDeclZ = ((TipoDato) nodo.getTipo()).getTipo();
                 if (nombreDeclZ != null && nombreDeclZ.isEmpty() == false) {
+
                     tipoDeclZ = nombreDeclZ;
+
                     // registrar la variable con su tipo declarado
                     ctx.getTiposConocidos().put(nodo.getIdentificador(), nombreDeclZ);
+
                 }
+
             }
+
             ctx.getCuartetas().add(new Cuarteta(":=", valor, "_", nodo.getIdentificador(), ctx.inferirTipoDe(valor, ctx.getTiposConocidos()), "_", tipoDeclZ));
+
         }
 
         return null;
+
     }
 
     // reservar un arreglo y llenarlo con su lista literal
     public String visitarDeclConListaLiteral(DeclConListaLiteral nodo) {
+
         // obtener la lista de valores iniciales
         NodoASTZetariano lista = nodo.getListaExpresiones();
 
@@ -205,6 +232,7 @@ public class ManejadorDeclaracionesZetariano {
 
             // recorrer cada valor de la lista
             if (listaExpresiones.getExpresiones() != null) {
+
                 for (int i = 0; i < listaExpresiones.getExpresiones().size(); i++) {
 
                     // evaluar el valor actual
@@ -216,8 +244,11 @@ public class ManejadorDeclaracionesZetariano {
 
                     // agregar la asignacion a la posicion actual a la lista de cuartetas
                     ctx.getCuartetas().add(new Cuarteta("[]=", nodo.getIdentificador(), String.valueOf(i), valor, "_", "entero", "_"));
+
                 }
+
             }
+
         } else {
 
             // visitar la lista si tiene otro formato
@@ -228,12 +259,15 @@ public class ManejadorDeclaracionesZetariano {
         }
 
         return null;
+
     }
 
     // reservar una matriz y llenarla con sus niveles de valores
     public String visitarDeclConMatrizLiteral(DeclConMatrizLiteral nodo) {
+
         // extraer el tipo base declarado
         String tipoBase = ctx.nombreDeTipo(nodo.getTipo());
+
         // contar las hojas escalares de la estructura
         int total = contarHojasMatriz(nodo.getValores());
 
@@ -244,62 +278,84 @@ public class ManejadorDeclaracionesZetariano {
         llenarNivelMatriz(nodo.getIdentificador(), nodo.getValores(), 0);
 
         return null;
+
     }
 
     // contar las hojas escalares de una estructura anidada
     private int contarHojasMatriz(List<Object> nivel) {
+
         // devolver cero si el nivel es nulo
         int total = 0;
         if (nivel == null) {
             return total;
         }
+
         // recorrer cada elemento del nivel
         for (int i = 0; i < nivel.size(); i++) {
+
             Object elemento = nivel.get(i);
+
             // contar recursivo en subniveles anidados
             if (elemento instanceof List) {
                 total = total + contarHojasMatriz((List<Object>) elemento);
                 continue;
             }
+
             // contar uno por hoja escalar
             if (elemento instanceof NodoASTZetariano) {
                 total = total + 1;
             }
+
         }
+
         return total;
+
     }
 
     // llenar posiciones con indice lineal y devolver el siguiente libre
     private int llenarNivelMatriz(String destino, List<Object> nivel, int posicion) {
+
         // devolver la posicion si el nivel es nulo
         if (nivel == null) {
             return posicion;
         }
+
         // recorrer cada elemento del nivel
         for (int i = 0; i < nivel.size(); i++) {
+
             Object elemento = nivel.get(i);
+
             // descender en subniveles anidados
             if (elemento instanceof List) {
                 posicion = llenarNivelMatriz(destino, (List<Object>) elemento, posicion);
                 continue;
             }
+
             // evaluar la hoja escalar actual
             if (elemento instanceof NodoASTZetariano) {
+
                 String val = ((NodoASTZetariano) elemento).accept(generador);
                 if (val == null) {
                     val = "_";
                 }
+
                 // agregar la asignacion a la posicion actual a la lista de cuartetas
                 ctx.getCuartetas().add(new Cuarteta("[]=", destino, String.valueOf(posicion), val, "_", "entero", "_"));
+
                 // avanzar el indice lineal
                 posicion = posicion + 1;
+
             }
+
         }
+
         return posicion;
+
     }
 
     // generar asignacion simple con caso especial a arreglo
     public String visitarAsignacionSimple(AsignacionSimple nodo) {
+
         // evaluar el valor a asignar
         String derecha = "_";
         if (nodo.getExpresion() != null) {
@@ -341,7 +397,9 @@ public class ManejadorDeclaracionesZetariano {
             ctx.getCuartetas().add(new Cuarteta("[]=", base, indice, derecha, "_", "entero", "_"));
 
             return null;
+
         }
+
         // evaluar la variable destino
         String izquierda = "_";
         if (nodo.getVariable() != null) {
@@ -356,6 +414,7 @@ public class ManejadorDeclaracionesZetariano {
         ctx.getCuartetas().add(new Cuarteta(":=", derecha, "_", izquierda, ctx.inferirTipoDe(derecha, ctx.getTiposConocidos()), "_", "_"));
 
         return null;
+
     }
 
     // generar asignacion compuesta con operacion y temporal
@@ -364,6 +423,7 @@ public class ManejadorDeclaracionesZetariano {
         // extraer el operador aritmetico quitando el igual final
         String aritmetico = "_";
         if (nodo.getOperador() != null) {
+
             aritmetico = nodo.getOperador();
 
             // quitar el igual final si existe
@@ -435,12 +495,14 @@ public class ManejadorDeclaracionesZetariano {
             ctx.getCuartetas().add(new Cuarteta("[]=", base, indice, temp, "_", "entero", "_"));
 
             return null;
+
         }
 
         // agregar la asignacion del temporal a la variable a la lista de cuartetas
         ctx.getCuartetas().add(new Cuarteta(":=", temp, "_", izquierda, ctx.inferirTipoDe(temp, ctx.getTiposConocidos()), "_", "_"));
 
         return null;
+
     }
 
     // devolver el identificador directamente sin cuartetas
@@ -451,6 +513,7 @@ public class ManejadorDeclaracionesZetariano {
 
     // componer la referencia de arreglo con base e indice
     public String visitarVarArray(VarArray nodo) {
+
         // evaluar la base del acceso
         String base = "_";
         if (nodo.getVariable() != null) {
@@ -474,10 +537,12 @@ public class ManejadorDeclaracionesZetariano {
 
         // devolver la referencia compuesta sin agregar cuarteta a la lista
         return base + "[" + indice + "]";
+
     }
 
     // componer la referencia de miembro con base y campo
     public String visitarVarMiembro(VarMiembro nodo) {
+
         // evaluar la base del acceso
         String base = "_";
         if (nodo.getVariable() != null) {
@@ -490,5 +555,7 @@ public class ManejadorDeclaracionesZetariano {
 
         // devolver la referencia compuesta sin agregar cuarteta a la lista
         return base + "." + nodo.getMiembro();
+
     }
+
 }

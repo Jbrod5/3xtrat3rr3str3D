@@ -19,4 +19,5 @@ public class TipoDato extends NodoAST {
     public <T> T accept(LatinusAstVisitor<T> visitor) {
         return visitor.visitTipoDato(this);
     }
+
 }

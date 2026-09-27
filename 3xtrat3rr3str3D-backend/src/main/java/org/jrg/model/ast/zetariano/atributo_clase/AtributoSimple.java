@@ -9,9 +9,11 @@ public class AtributoSimple extends NodoASTZetariano {
     private final String identificador;
 
     public AtributoSimple(NodoASTZetariano tipo, String identificador, int linea, int columna) {
+
         super(linea, columna);
         this.tipo = tipo;
         this.identificador = identificador;
+
     }
 
     public NodoASTZetariano getTipo() {
@@ -26,4 +28,5 @@ public class AtributoSimple extends NodoASTZetariano {
     public <T> T accept(ZetarianoAstVisitor<T> visitor) {
         return visitor.visitarAtributoSimple(this);
     }
+
 }

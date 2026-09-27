@@ -13,4 +13,5 @@ public class StmtContinue extends NodoASTZetariano {
     public <T> T accept(ZetarianoAstVisitor<T> visitor) {
         return visitor.visitarStmtContinue(this);
     }
+
 }

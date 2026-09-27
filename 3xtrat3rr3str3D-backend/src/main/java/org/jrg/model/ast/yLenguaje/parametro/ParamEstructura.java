@@ -12,9 +12,11 @@ public class ParamEstructura extends NodoASTY {
      * Crear un parametro estructura con su tipo y nombre.
      */
     public ParamEstructura(String tipoEstructura, String nombre, int linea, int columna) {
+
         super(linea, columna);
         this.tipoEstructura = tipoEstructura;
         this.nombre = nombre;
+
     }
 
     public String getTipoEstructura() {
@@ -29,4 +31,5 @@ public class ParamEstructura extends NodoASTY {
     public <T> T accept(YAstVisitor<T> visitor) {
         return visitor.visitarParamEstructura(this);
     }
+
 }

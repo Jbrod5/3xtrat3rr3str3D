@@ -136,6 +136,7 @@ valor_primitivo
     | CARACTER
     | VERUM
     | FALSUS
+    | NULL
     | IDENTIFICADOR
     ;
 
@@ -337,6 +338,7 @@ BOOL      : 'bool' ;
 // ==========================================
 VERUM  : 'verum' ;
 FALSUS : 'falsus' ;
+NULL   : 'null' ;
 
 
 // ==========================================

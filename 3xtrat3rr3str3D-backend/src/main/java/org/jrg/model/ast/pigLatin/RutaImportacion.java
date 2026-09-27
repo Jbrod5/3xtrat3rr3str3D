@@ -21,4 +21,5 @@ public class RutaImportacion extends NodoAST {
     public <T> T accept(LatinusAstVisitor<T> visitor) {
         return visitor.visitRutaImportacion(this);
     }
+
 }

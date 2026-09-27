@@ -15,4 +15,5 @@ public enum CategoriaSimbolo {
     BLOQUE,
     ETIQUETA,
     DESCONOCIDO
+
 }

@@ -9,10 +9,12 @@ public class PasoPerAsig extends NodoAST {
     private final NodoAST valor;
 
     public PasoPerAsig(NodoAST variable, String operador, NodoAST valor, int linea, int columna) {
+
         super(linea, columna);
         this.variable = variable;
         this.operador = operador;
         this.valor = valor;
+
     }
 
     public NodoAST getVariable() {
@@ -31,4 +33,5 @@ public class PasoPerAsig extends NodoAST {
     public <T> T accept(LatinusAstVisitor<T> visitor) {
         return visitor.visitPasoPerAsig(this);
     }
+
 }

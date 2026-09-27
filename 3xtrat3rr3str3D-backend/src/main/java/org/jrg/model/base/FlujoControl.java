@@ -16,10 +16,12 @@ public class FlujoControl {
      * Crear una copia del flujo de control actual.
      */
     public FlujoControl copiar() {
+
         FlujoControl copia = new FlujoControl();
         copia.puedeContinuar = this.puedeContinuar;
 
         return copia;
+
     }
 
     /**
@@ -47,10 +49,12 @@ public class FlujoControl {
      * Combinar el flujo actual con otro flujo alternativo.
      */
     public void combinarCon(FlujoControl otro) {
+
         // validar flujo alternativo
         if (otro != null && otro.puedeContinuar) {
             this.puedeContinuar = true;
         }
+
     }
 
     /**
@@ -66,4 +70,5 @@ public class FlujoControl {
     public void marcarContinuacion() {
         this.puedeContinuar = true;
     }
+
 }

@@ -9,12 +9,14 @@ public class CasoSwitch extends NodoASTZetariano {
     private final java.util.List<NodoASTZetariano> instrucciones;
 
     public CasoSwitch(NodoASTZetariano valor, java.util.List<NodoASTZetariano> instrucciones, int linea, int columna) {
+
         super(linea, columna);
         this.valor = valor;
         this.instrucciones = new java.util.ArrayList<>();
         if (instrucciones != null) {
             this.instrucciones.addAll(instrucciones);
         }
+
     }
 
     public NodoASTZetariano getValor() {
@@ -29,4 +31,5 @@ public class CasoSwitch extends NodoASTZetariano {
     public <T> T accept(ZetarianoAstVisitor<T> visitor) {
         return visitor.visitarCasoSwitch(this);
     }
+
 }

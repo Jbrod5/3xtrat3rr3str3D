@@ -25,4 +25,5 @@ public class SeccionEstructuras extends NodoASTY {
     public <T> T accept(YAstVisitor<T> visitor) {
         return visitor.visitarSeccionEstructuras(this);
     }
+
 }

@@ -14,9 +14,11 @@ public class ExprLlamadaFuncion extends NodoASTY {
      * Crear una expresion de llamada a funcion.
      */
     public ExprLlamadaFuncion(String nombre, List<NodoASTY> argumentos, int linea, int columna) {
+
         super(linea, columna);
         this.nombre = nombre;
         this.argumentos = argumentos;
+
     }
 
     public String getNombre() {
@@ -31,4 +33,5 @@ public class ExprLlamadaFuncion extends NodoASTY {
     public <T> T accept(YAstVisitor<T> visitor) {
         return visitor.visitarExprLlamadaFuncion(this);
     }
+
 }

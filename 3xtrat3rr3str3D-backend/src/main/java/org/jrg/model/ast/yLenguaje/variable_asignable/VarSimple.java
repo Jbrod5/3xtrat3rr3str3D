@@ -23,4 +23,5 @@ public class VarSimple extends NodoASTY {
     public <T> T accept(YAstVisitor<T> visitor) {
         return visitor.visitarVarSimple(this);
     }
+
 }

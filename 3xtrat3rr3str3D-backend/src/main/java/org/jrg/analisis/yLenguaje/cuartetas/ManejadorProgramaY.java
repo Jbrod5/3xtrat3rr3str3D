@@ -31,6 +31,7 @@ public class ManejadorProgramaY {
 
     // visitar las secciones del programa
     public String visitarPrograma(Programa nodo) {
+
         // visitar la seccion de estructuras si existe
         if (nodo.getSeccionEstructuras() != null) {
             nodo.getSeccionEstructuras().accept(generador);
@@ -42,6 +43,7 @@ public class ManejadorProgramaY {
         }
 
         return null;
+
     }
 
     // recorrer cada estructura de la seccion
@@ -49,16 +51,20 @@ public class ManejadorProgramaY {
 
         // recorrer cada estructura de la seccion
         if (nodo.getEstructuras() != null) {
+
             for (NodoASTY estructura : nodo.getEstructuras()) {
 
                 // visitar la estructura actual si existe
                 if (estructura != null) {
                     estructura.accept(generador);
                 }
+
             }
+
         }
 
         return null;
+
     }
 
     // recorrer cada funcion de la seccion
@@ -66,6 +72,7 @@ public class ManejadorProgramaY {
 
         // recorrer cada funcion de la seccion
         if (nodo.getFunciones() != null) {
+
             for (NodoASTY funcion : nodo.getFunciones()) {
 
                 // visitar la funcion actual si existe
@@ -74,9 +81,11 @@ public class ManejadorProgramaY {
                 }
 
             }
+
         }
 
         return null;
+
     }
 
     // visitar el tipo de dato sin generar cuartetas
@@ -103,11 +112,13 @@ public class ManejadorProgramaY {
                 if (instruccion != null) {
                     instruccion.accept(generador);
                 }
+
             }
 
         }
 
         return null;
+
     }
 
     // recorrer las instrucciones del bloque
@@ -128,42 +139,53 @@ public class ManejadorProgramaY {
         }
 
         return null;
+
     }
 
     // generar la asignacion de valor a variable
     public String visitarAsignacion(Asignacion nodo) {
+
         // manejar la asignacion a posicion de arreglo con []=
         if (nodo.getVariable() instanceof VarArray) {
+
             // evaluar el valor a asignar
             String derechaArr = "_";
             if (nodo.getValor() != null) {
                 derechaArr = nodo.getValor().accept(generador);
             }
+
             if (derechaArr == null) {
                 derechaArr = "_";
             }
+
             // convertir la variable al tipo concreto
             VarArray acceso = (VarArray) nodo.getVariable();
+
             // evaluar la base del acceso
             String base = "_";
             if (acceso.getBase() != null) {
                 base = acceso.getBase().accept(generador);
             }
+
             if (base == null) {
                 base = "_";
             }
+
             // evaluar el indice del acceso
             String indice = "_";
             if (acceso.getIndice() != null) {
                 indice = acceso.getIndice().accept(generador);
             }
+
             // si es nulo usar lo de respaldo
             if (indice == null) {
                 indice = "_";
             }
+
             // agregar la asignacion a la posicion a la lista de cuartetas
             ctx.getCuartetas().add(new Cuarteta("[]=", base, indice, derechaArr, "_", "entero", "_"));
             return null;
+
         }
 
         // evaluar la variable destino
@@ -190,6 +212,7 @@ public class ManejadorProgramaY {
         ctx.getCuartetas().add(new Cuarteta(":=", derecha, "_", izquierda, ctx.inferirTipoDe(derecha, ctx.getTiposConocidos()), "_", "_"));
 
         return null;
+
     }
 
     // recorrer las instrucciones del caso de seleccion
@@ -204,11 +227,13 @@ public class ManejadorProgramaY {
                 if (instruccion != null) {
                     instruccion.accept(generador);
                 }
+
             }
 
         }
 
         return null;
+
     }
 
     // recorrer las instrucciones del caso por defecto
@@ -216,6 +241,7 @@ public class ManejadorProgramaY {
 
         // recorrer las instrucciones del caso por defecto
         if (nodo.getInstrucciones() != null) {
+
             for (NodoASTY instruccion : nodo.getInstrucciones()) {
 
                 // visitar la instruccion actual si existe
@@ -224,13 +250,16 @@ public class ManejadorProgramaY {
                 }
 
             }
+
         }
 
         return null;
+
     }
 
     // visitar el valor primitivo cargandolo en un temporal
     public String visitarValorPrimitivo(ValorPrimitivo nodo) {
+
         // version anterior: no generaba nada y los caso quedaban en 0
         // public String visitarValorPrimitivo(ValorPrimitivo nodo) {
         //     // TODO
@@ -240,14 +269,18 @@ public class ManejadorProgramaY {
         if (nodo.getTipo() == TipoPrimitivo.IDENTIFICADOR) {
             return nodo.getValor();
         }
+
         // guardar el literal en un temporal
         String temp = ctx.getTemporales().nuevoTemporal();
+
         // adivinar el tipo del literal
         String tipoLiteral = ctx.inferirTipoLiteral(nodo.getValor());
+
         // registrar el temporal con el tipo inferido
         ctx.getTiposConocidos().put(temp, tipoLiteral);
         ctx.getCuartetas().add(new Cuarteta("=", nodo.getValor(), "_", temp, tipoLiteral, "_", tipoLiteral));
         return temp;
+
     }
 
     // visitar la lista de expresiones sin generar cuartetas
@@ -255,4 +288,5 @@ public class ManejadorProgramaY {
         // TODO
         return null;
     }
+
 }

@@ -12,6 +12,7 @@ public class MetodoSinRetorno extends NodoASTZetariano {
     private final List<NodoASTZetariano> instrucciones;
 
     public MetodoSinRetorno(String nombre, NodoASTZetariano parametros, List<NodoASTZetariano> instrucciones, int linea, int columna) {
+
         super(linea, columna);
         this.nombre = nombre;
         this.parametros = parametros;
@@ -19,6 +20,7 @@ public class MetodoSinRetorno extends NodoASTZetariano {
         if (instrucciones != null) {
             this.instrucciones.addAll(instrucciones);
         }
+
     }
 
     public String getNombre() {
@@ -37,4 +39,5 @@ public class MetodoSinRetorno extends NodoASTZetariano {
     public <T> T accept(ZetarianoAstVisitor<T> visitor) {
         return visitor.visitarMetodoSinRetorno(this);
     }
+
 }

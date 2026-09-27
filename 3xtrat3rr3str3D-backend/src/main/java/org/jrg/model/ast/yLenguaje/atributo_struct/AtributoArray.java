@@ -13,10 +13,12 @@ public class AtributoArray extends NodoASTY {
      * Crear un atributo array con su tipo, nombre y tamano.
      */
     public AtributoArray(NodoASTY tipo, String nombre, int tamano, int linea, int columna) {
+
         super(linea, columna);
         this.tipo = tipo;
         this.nombre = nombre;
         this.tamano = tamano;
+
     }
 
     public NodoASTY getTipo() {
@@ -35,4 +37,5 @@ public class AtributoArray extends NodoASTY {
     public <T> T accept(YAstVisitor<T> visitor) {
         return visitor.visitarAtributoArray(this);
     }
+
 }

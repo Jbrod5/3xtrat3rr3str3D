@@ -27,11 +27,13 @@ public class AmbitoSemantico {
      * Crear un ambito con un ambito padre.
      */
     public AmbitoSemantico(String nombre, AmbitoSemantico padre) {
+
         if (padre == null) {
             this.ambito = new Ambito(nombre);
         } else {
             this.ambito = new Ambito(nombre, padre.ambito);
         }
+
         this.padre = padre;
         this.hijos = new ArrayList<>();
         this.simbolosPorNombre = new HashMap<>();
@@ -40,84 +42,104 @@ public class AmbitoSemantico {
         this.tiposPorNombre = new HashMap<>();
         this.simbolos = new ArrayList<>();
         this.tipos = new ArrayList<>();
+
         // registrar este ambito en el padre para poder recorrer el arbol
         if (padre != null) {
             padre.hijos.add(this);
         }
+
     }
 
     /**
      * Declarar un simbolo variable en este ambito.
      */
     public boolean declararSimbolo(Simbolo simbolo, boolean enAmbito) {
+
         if (simbolo == null) {
             return false;
         }
+
         String nombre = simbolo.getNombre();
         List<Simbolo> existentes = simbolosPorNombre.get(nombre);
         if (existentes == null) {
             existentes = new ArrayList<>();
             simbolosPorNombre.put(nombre, existentes);
         }
+
         if (!existentes.isEmpty()) {
             return false;
         }
+
         existentes.add(simbolo);
         simbolos.add(simbolo);
         if (enAmbito) {
             ambito.agregarSimbolo(simbolo);
         }
+
         return true;
+
     }
 
     /**
      * Declarar un metodo sobrecargado.
      */
     public void declararMetodo(Simbolo metodo) {
+
         if (metodo == null) {
             return;
         }
+
         String nombre = metodo.getNombre();
         List<Simbolo> existentes = metodosPorNombre.get(nombre);
         if (existentes == null) {
             existentes = new ArrayList<>();
             metodosPorNombre.put(nombre, existentes);
         }
+
         existentes.add(metodo);
+
     }
 
     /**
      * Declarar un constructor sobrecargado.
      */
     public void declararConstructor(Simbolo constructor) {
+
         if (constructor == null) {
             return;
         }
+
         String nombre = constructor.getNombre();
         List<Simbolo> existentes = constructoresPorNombre.get(nombre);
         if (existentes == null) {
             existentes = new ArrayList<>();
             constructoresPorNombre.put(nombre, existentes);
         }
+
         existentes.add(constructor);
+
     }
 
     /**
      * Declarar un tipo nominal en este ambito.
      */
     public void declararTipo(Tipo tipo) {
+
         if (tipo == null || tiposPorNombre.containsKey(tipo.getNombre())) {
             return;
         }
+
         tiposPorNombre.put(tipo.getNombre(), tipo);
         tipos.add(tipo);
         ambito.agregarTipo(tipo);
+
     }
 
     /**
      * Buscar un simbolo variable en este ambito y sus padres.
      */
     public Simbolo buscarSimbolo(String nombre) {
+
         // buscar simbolo en ambito local
         Simbolo local = buscarSimboloLocal(nombre);
         if (local != null) {
@@ -130,12 +152,14 @@ public class AmbitoSemantico {
 
         // buscar en el padre si aqui no esta
         return padre.buscarSimbolo(nombre);
+
     }
 
     /**
      * Buscar un simbolo variable solo en este ambito.
      */
     public Simbolo buscarSimboloLocal(String nombre) {
+
         if (nombre == null) {
             return null;
         }
@@ -147,6 +171,7 @@ public class AmbitoSemantico {
         }
 
         return candidatos.get(candidatos.size() - 1);
+
     }
 
     /**
@@ -160,10 +185,12 @@ public class AmbitoSemantico {
      * Buscar una variable en este ambito y sus padres.
      */
     public Simbolo buscarVariable(String nombre) {
+
         Simbolo simbolo = buscarSimbolo(nombre);
         if (simbolo == null) {
             return null;
         }
+
         if (simbolo.getCategoria() == org.jrg.model.semantico.CategoriaSimbolo.VARIABLE
                 || simbolo.getCategoria() == org.jrg.model.semantico.CategoriaSimbolo.PARAMETRO
                 || simbolo.getCategoria() == org.jrg.model.semantico.CategoriaSimbolo.CAMPO_ESTRUCTURA
@@ -172,50 +199,62 @@ public class AmbitoSemantico {
                 || simbolo.getCategoria() == org.jrg.model.semantico.CategoriaSimbolo.OBJETO) {
             return simbolo;
         }
+
         return null;
+
     }
 
     /**
      * Obtener los metodos locales con el nombre indicado.
      */
     public List<Simbolo> obtenerMetodosLocal(String nombre) {
+
         List<Simbolo> locales = metodosPorNombre.get(nombre);
         if (locales == null) {
             return new ArrayList<>();
         }
+
         List<Simbolo> resultado = new ArrayList<>();
         resultado.addAll(locales);
         return resultado;
+
     }
 
     /**
      * Buscar metodos en este ambito y sus padres.
      */
     public List<Simbolo> buscarMetodos(String nombre) {
+
         // obtener metodos locales como base
         List<Simbolo> resultado = obtenerMetodosLocal(nombre);
         if (padre != null) {
+
             List<Simbolo> padres = padre.buscarMetodos(nombre);
             if (padres != null) {
                 resultado.addAll(padres);
             }
+
         }
 
         // devolver lista combinada
         return resultado;
+
     }
 
     /**
      * Obtener los constructores locales con el nombre indicado.
      */
     public List<Simbolo> obtenerConstructoresLocal(String nombre) {
+
         List<Simbolo> locales = constructoresPorNombre.get(nombre);
         if (locales == null) {
             return new ArrayList<>();
         }
+
         List<Simbolo> resultado = new ArrayList<>();
         resultado.addAll(locales);
         return resultado;
+
     }
 
     /**
@@ -229,34 +268,44 @@ public class AmbitoSemantico {
      * Buscar un tipo en este ambito y sus padres.
      */
     public Tipo buscarTipo(String nombre) {
+
         Tipo local = tiposPorNombre.get(nombre);
         if (local != null) {
             return local;
         }
+
         if (padre == null) {
             return null;
         }
+
         return padre.buscarTipo(nombre);
+
     }
 
     /**
      * Verificar si un simbolo existe en los padres.
      */
     public boolean contieneEnPadres(String nombre) {
+
         if (padre == null) {
             return false;
         }
+
         return padre.buscarSimbolo(nombre) != null;
+
     }
 
     /**
      * Verificar si un tipo existe en los padres.
      */
     public boolean contieneTipoEnPadres(String nombre) {
+
         if (padre == null) {
             return false;
         }
+
         return padre.buscarTipo(nombre) != null;
+
     }
 
     /**
@@ -298,14 +347,18 @@ public class AmbitoSemantico {
      * Obtener todos los metodos y constructores declarados en este ambito.
      */
     public List<Simbolo> obtenerTodosLosMetodos() {
+
         List<Simbolo> resultado = new ArrayList<>();
         for (List<Simbolo> lista : metodosPorNombre.values()) {
             resultado.addAll(lista);
         }
+
         for (List<Simbolo> lista : constructoresPorNombre.values()) {
             resultado.addAll(lista);
         }
+
         return resultado;
+
     }
 
     /**
@@ -314,4 +367,5 @@ public class AmbitoSemantico {
     public String obtenerNombre() {
         return ambito.getNombre();
     }
+
 }

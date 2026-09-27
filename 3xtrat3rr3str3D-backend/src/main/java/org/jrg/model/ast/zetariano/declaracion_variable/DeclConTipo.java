@@ -11,11 +11,13 @@ public class DeclConTipo extends NodoASTZetariano {
     private final NodoASTZetariano valor;
 
     public DeclConTipo(NodoASTZetariano tipo, String identificador, int dimensiones, NodoASTZetariano valor, int linea, int columna) {
+
         super(linea, columna);
         this.tipo = tipo;
         this.identificador = identificador;
         this.dimensiones = dimensiones;
         this.valor = valor;
+
     }
 
     public NodoASTZetariano getTipo() {
@@ -38,4 +40,5 @@ public class DeclConTipo extends NodoASTZetariano {
     public <T> T accept(ZetarianoAstVisitor<T> visitor) {
         return visitor.visitarDeclConTipo(this);
     }
+
 }

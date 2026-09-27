@@ -9,9 +9,11 @@ public class PasoForAsig extends NodoASTZetariano {
     private final NodoASTZetariano expresion;
 
     public PasoForAsig(NodoASTZetariano variable, NodoASTZetariano expresion, int linea, int columna) {
+
         super(linea, columna);
         this.variable = variable;
         this.expresion = expresion;
+
     }
 
     public NodoASTZetariano getVariable() {
@@ -26,4 +28,5 @@ public class PasoForAsig extends NodoASTZetariano {
     public <T> T accept(ZetarianoAstVisitor<T> visitor) {
         return visitor.visitarPasoForAsig(this);
     }
+
 }

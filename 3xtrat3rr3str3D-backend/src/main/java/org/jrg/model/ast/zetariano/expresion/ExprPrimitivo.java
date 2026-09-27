@@ -10,9 +10,11 @@ public class ExprPrimitivo extends NodoASTZetariano {
     private final TipoPrimitivo tipoDato;
 
     public ExprPrimitivo(NodoASTZetariano valor, TipoPrimitivo tipoDato, int linea, int columna) {
+
         super(linea, columna);
         this.valor = valor;
         this.tipoDato = tipoDato;
+
     }
 
     public NodoASTZetariano getValor() {
@@ -27,4 +29,5 @@ public class ExprPrimitivo extends NodoASTZetariano {
     public <T> T accept(ZetarianoAstVisitor<T> visitor) {
         return visitor.visitarExprPrimitivo(this);
     }
+
 }

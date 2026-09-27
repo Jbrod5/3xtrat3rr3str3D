@@ -12,9 +12,11 @@ public class CicloMientras extends NodoASTY {
      * Crear un ciclo mientras con su condicion y bloque.
      */
     public CicloMientras(NodoASTY condicion, NodoASTY bloque, int linea, int columna) {
+
         super(linea, columna);
         this.condicion = condicion;
         this.bloque = bloque;
+
     }
 
     public NodoASTY getCondicion() {
@@ -29,4 +31,5 @@ public class CicloMientras extends NodoASTY {
     public <T> T accept(YAstVisitor<T> visitor) {
         return visitor.visitarCicloMientras(this);
     }
+
 }

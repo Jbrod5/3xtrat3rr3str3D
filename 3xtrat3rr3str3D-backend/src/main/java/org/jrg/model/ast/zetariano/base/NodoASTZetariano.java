@@ -19,4 +19,5 @@ public abstract class NodoASTZetariano {
     public int getColumna() {
         return columna;
     }
+
 }

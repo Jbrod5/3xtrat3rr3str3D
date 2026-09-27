@@ -21,4 +21,5 @@ public class Bloque extends NodoAST {
     public <T> T accept(LatinusAstVisitor<T> visitor) {
         return visitor.visitBloque(this);
     }
+
 }

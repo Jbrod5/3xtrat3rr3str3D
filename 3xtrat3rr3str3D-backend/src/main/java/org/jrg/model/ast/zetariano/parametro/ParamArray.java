@@ -10,10 +10,12 @@ public class ParamArray extends NodoASTZetariano {
     private final int dimensiones;
 
     public ParamArray(NodoASTZetariano tipo, String identificador, int dimensiones, int linea, int columna) {
+
         super(linea, columna);
         this.tipo = tipo;
         this.identificador = identificador;
         this.dimensiones = dimensiones;
+
     }
 
     public NodoASTZetariano getTipo() {
@@ -32,4 +34,5 @@ public class ParamArray extends NodoASTZetariano {
     public <T> T accept(ZetarianoAstVisitor<T> visitor) {
         return visitor.visitarParamArray(this);
     }
+
 }

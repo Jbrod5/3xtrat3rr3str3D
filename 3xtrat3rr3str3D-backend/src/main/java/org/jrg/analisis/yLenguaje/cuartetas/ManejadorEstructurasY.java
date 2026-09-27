@@ -23,6 +23,7 @@ public class ManejadorEstructurasY {
 
     // agregar la definicion del struct a la lista de cuartetas
     public String visitarDefEstructura(DefEstructura nodo) {
+
         // construir la lista de campos con sus tipos
         String campos = construirCamposStruct(nodo.getAtributos());
 
@@ -30,6 +31,7 @@ public class ManejadorEstructurasY {
         ctx.getCuartetas().add(new Cuarteta("struct_def", nodo.getNombre(), campos, "_", "_", "_", "_"));
 
         return null;
+
     }
 
     // construir el string de campos separados por coma con formato nombre:tipo
@@ -43,6 +45,7 @@ public class ManejadorEstructurasY {
         // acumular cada campo con su tipo
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < atributos.size(); i++) {
+
             NodoASTY atributo = atributos.get(i);
 
             // omitir atributos nulos
@@ -54,15 +57,11 @@ public class ManejadorEstructurasY {
 
             // extraer nombre y tipo segun la clase del atributo
             if (atributo instanceof AtributoSimple) {
-
                 AtributoSimple simple = (AtributoSimple) atributo;
                 campo = simple.getNombre() + ":" + extraerNombreTipo(simple.getTipo());
-
             } else if (atributo instanceof AtributoArray) {
-
                 AtributoArray arreglo = (AtributoArray) atributo;
                 campo = arreglo.getNombre() + ":" + extraerNombreTipo(arreglo.getTipo()) + "[]";
-
             }
 
             // omitir atributos de tipo desconocido
@@ -76,6 +75,7 @@ public class ManejadorEstructurasY {
             }
 
             sb.append(campo);
+
         }
 
         // devolver guion bajo si no se recolecto ningun campo
@@ -84,6 +84,7 @@ public class ManejadorEstructurasY {
         }
 
         return sb.toString();
+
     }
 
     // extraer el nombre del tipo desde un nodo de tipo
@@ -96,6 +97,7 @@ public class ManejadorEstructurasY {
 
         // extraer el nombre cuando es TipoDato
         if (tipoNodo instanceof TipoDato) {
+
             String nombre = ((TipoDato) tipoNodo).getNombre();
 
             // usar guion bajo si el nombre es nulo
@@ -108,6 +110,7 @@ public class ManejadorEstructurasY {
         }
 
         return "_";
+
     }
 
     // visitar el atributo simple sin generar cuartetas
@@ -121,4 +124,5 @@ public class ManejadorEstructurasY {
         // no genera cuarteta por si solo
         return null;
     }
+
 }

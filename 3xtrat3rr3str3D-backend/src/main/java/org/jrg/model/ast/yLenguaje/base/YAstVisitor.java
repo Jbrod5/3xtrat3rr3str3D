@@ -92,4 +92,5 @@ public interface YAstVisitor<T> {
     T visitarExprAnd(ExprAnd nodo);
     T visitarExprOr(ExprOr nodo);
     T visitarExprPrimitivo(ExprPrimitivo nodo);
+
 }

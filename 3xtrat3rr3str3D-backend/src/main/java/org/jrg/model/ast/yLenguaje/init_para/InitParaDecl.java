@@ -13,10 +13,12 @@ public class InitParaDecl extends NodoASTY {
      * Crear una inicializacion de para con declaracion.
      */
     public InitParaDecl(NodoASTY tipo, String nombre, NodoASTY expresion, int linea, int columna) {
+
         super(linea, columna);
         this.tipo = tipo;
         this.nombre = nombre;
         this.expresion = expresion;
+
     }
 
     public NodoASTY getTipo() {
@@ -35,4 +37,5 @@ public class InitParaDecl extends NodoASTY {
     public <T> T accept(YAstVisitor<T> visitor) {
         return visitor.visitarInitParaDecl(this);
     }
+
 }

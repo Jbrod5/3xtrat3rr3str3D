@@ -9,9 +9,11 @@ public class ValorPrimitivo extends NodoAST {
     private final TipoPrimitivo tipoDato;
 
     public ValorPrimitivo(String valor, TipoPrimitivo tipoDato, int linea, int columna) {
+
         super(linea, columna);
         this.valor = valor;
         this.tipoDato = tipoDato;
+
     }
 
     public String getValor() {
@@ -26,4 +28,5 @@ public class ValorPrimitivo extends NodoAST {
     public <T> T accept(LatinusAstVisitor<T> visitor) {
         return visitor.visitValorPrimitivo(this);
     }
+
 }

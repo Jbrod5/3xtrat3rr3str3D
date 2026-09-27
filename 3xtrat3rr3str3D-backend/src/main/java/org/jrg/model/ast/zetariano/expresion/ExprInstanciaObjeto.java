@@ -9,9 +9,11 @@ public class ExprInstanciaObjeto extends NodoASTZetariano {
     private final NodoASTZetariano argumentos;
 
     public ExprInstanciaObjeto(String nombreClase, NodoASTZetariano argumentos, int linea, int columna) {
+
         super(linea, columna);
         this.nombreClase = nombreClase;
         this.argumentos = argumentos;
+
     }
 
     public String getNombreClase() {
@@ -26,4 +28,5 @@ public class ExprInstanciaObjeto extends NodoASTZetariano {
     public <T> T accept(ZetarianoAstVisitor<T> visitor) {
         return visitor.visitarExprInstanciaObjeto(this);
     }
+
 }

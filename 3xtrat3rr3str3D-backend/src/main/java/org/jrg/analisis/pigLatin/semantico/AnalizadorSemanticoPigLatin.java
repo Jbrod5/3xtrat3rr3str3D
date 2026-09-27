@@ -105,8 +105,10 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
         } else {
             this.recolectorErrores = recolectorErrores;
         }
+
         this.contexto = new ContextoSemanticoPigLatin(this.recolectorErrores);
         this.cuartetasImportadas = new ArrayList<>();
+
     }
 
     /**
@@ -120,6 +122,7 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
      * Analizar el programa Pig Latin con contexto de proyecto para imports.
      */
     public void analizar(Programa programa, String rutaBase) {
+
         this.rutaBase = rutaBase;
         this.contexto.iniciar();
 
@@ -138,6 +141,7 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
         if (this.gestorImports != null) {
             this.cuartetasImportadas.addAll(this.gestorImports.getCuartetasAcumuladas());
         }
+
     }
 
     /**
@@ -210,6 +214,7 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
 
         // registrar el tipo no primitivo importado
         return this.contexto.registrarTipoNoPrimitivoImportado(nombre, tipoDato);
+
     }
 
     // resolver el tipo a partir de un nombre
@@ -234,6 +239,7 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
 
         // registrar el tipo no primitivo importado
         return this.contexto.registrarTipoNoPrimitivoImportado(nombre, nodo);
+
     }
 
     // extraer el tipo de un resultado de expresion
@@ -258,23 +264,26 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
 
         // caso literal directo: 5
         if (nodo instanceof ExprPrimitivo) {
+
             ExprPrimitivo expr = (ExprPrimitivo) nodo;
 
             // verificar si el valor es primitivo
             if (expr.getValor() instanceof ValorPrimitivo) {
+
                 ValorPrimitivo valor = (ValorPrimitivo) expr.getValor();
 
                 // verificar si el tipo es entero
                 if (valor.getTipoDato() == TipoPrimitivo.ENTERO) {
-                    try {
 
+                    try {
                         // convertir el valor a entero
                         return Integer.parseInt(valor.getValor());
-
                     } catch (NumberFormatException e) {
                         return null;
                     }
+
                 }
+
             }
 
             return null;
@@ -283,6 +292,7 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
 
         // caso referencia a constante conocida: tam
         if (nodo instanceof ValorAsignableSimple) {
+
             String nombre = ((ValorAsignableSimple) nodo).getIdentificador();
 
             // buscar el simbolo en el ambito actual
@@ -290,6 +300,7 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
 
             // verificar si el simbolo tiene valor
             if (simbolo != null && simbolo.getValor() != null) {
+
                 Object valor = simbolo.getValor().getValor();
 
                 // verificar si el valor es entero
@@ -298,11 +309,13 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
                 }
 
             }
+
             return null;
 
         }
 
         return null;
+
     }
 
     // ==================== DECLARACIONES SEGURAS ====================
@@ -329,6 +342,7 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
 
         // declarar la variable en el contexto
         return this.contexto.declarar(nodo, nombre, tipo, categoria, tamano);
+
     }
 
     // ==================== ALCANZABILIDAD ====================
@@ -359,6 +373,7 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
                 }
 
                 continue;
+
             }
 
             // verificar si la instruccion es nula
@@ -378,6 +393,7 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
         }
 
         return flujo;
+
     }
 
     // visitar un bloque hijo aislado y devolver su flujo
@@ -397,6 +413,7 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
         }
 
         return new FlujoControl();
+
     }
 
     // validar que una condicion sea booleana
@@ -445,6 +462,7 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
         }
 
         return new FlujoControl();
+
     }
 
     @Override
@@ -458,17 +476,21 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
 
                 // verificar si la importacion es nula
                 if (imp != null) {
-
                     // entrar en la importacion
                     imp.accept(this);
                 }
+
             }
+
         }
+
         return new FlujoControl();
+
     }
 
     @Override
     public Object visitRutaImportacion(RutaImportacion ruta) {
+
         // si no hay gestor de imports no se puede procesar
         if (this.gestorImports == null) {
             return new FlujoControl();
@@ -498,6 +520,7 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
         }
 
         return new FlujoControl();
+
     }
 
     @Override
@@ -512,9 +535,11 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
                     decl.accept(this);
                 }
             }
+
         }
 
         return new FlujoControl();
+
     }
 
     @Override
@@ -534,6 +559,7 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
 
     @Override
     public Object visitValorPrimitivo(ValorPrimitivo valor) {
+
         // obtener el tipo primitivo del valor
         TipoPrimitivo tp = valor.getTipoDato();
 
@@ -544,6 +570,7 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
 
         // seleccionar el tipo segun el valor
         switch (tp) {
+
             case ENTERO:
                 return this.contexto.tipoPrimitivo("numerus");
             case DECIMAL:
@@ -554,6 +581,10 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
                 return this.contexto.tipoPrimitivo("littera");
             case BOOLEANO:
                 return this.contexto.tipoPrimitivo("bool");
+            case NULO:
+
+                // devolver el tipo nulo para literales de objeto vacio
+                return this.contexto.tipoPrimitivo("null");
             case IDENTIFICADOR:
 
                 // resolver el simbolo del identificador
@@ -563,47 +594,54 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
                 if (simbolo != null) {
                     return simbolo.getTipo();
                 }
+
                 return null;
 
             default:
                 return null;
+
         }
+
     }
 
     // ==================== LISTAS ====================
 
     @Override
     public Object visitListaExpresiones(ListaExpresiones lista) {
+
         // verificar si hay expresiones
         if (lista.getExpresiones() != null) {
 
             // pasar por cada expresion si no es nula
             for (NodoAST expr : lista.getExpresiones()) {
-
                 if (expr != null) {
                     expr.accept(this);
                 }
             }
+
         }
 
         return null;
+
     }
 
     @Override
     public Object visitListaAtributosInstancia(ListaAtributosInstancia lista) {
+
         // verificar si hay atributos
         if (lista.getAtributos() != null) {
 
             // recorrer cada atributo y visitarlos si no son nulos
             for (NodoAST attr : lista.getAtributos()) {
-
                 if (attr != null) {
                     attr.accept(this);
                 }
-
             }
+
         }
+
         return null;
+
     }
 
     @Override
@@ -615,6 +653,7 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
         }
 
         return null;
+
     }
 
     @Override
@@ -626,16 +665,15 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
         }
 
         return null;
+
     }
 
     // ==================== BLOQUES E IMPRESION ====================
 
     @Override
     public Object visitBloque(Bloque bloque) {
-
         // analizar las instrucciones del bloque
         return analizarInstrucciones(bloque.getInstrucciones());
-
     }
 
     @Override
@@ -664,10 +702,12 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
         }
 
         return null;
+
     }
 
     @Override
     public Object visitValorAsignableArray(ValorAsignableArray valor) {
+
         Tipo tipoBase = null;
 
         // visitar la base del arreglo si existe (o sea, el nombre xd)
@@ -689,6 +729,7 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
 
         // visitar el indice si existe
         if (valor.getIndice() != null) {
+
             Object tipoIndiceObj = valor.getIndice().accept(this);
             Tipo tipoIndice = extraerTipoDeExpresion(tipoIndiceObj);
 
@@ -701,10 +742,12 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
 
         // devolver el tipo del elemento
         return this.contexto.tipoElemento(tipoBase);
+
     }
 
     @Override
     public Object visitValorAsignableMiembroEstructura(ValorAsignableMiembroEstructura valor) {
+
         Tipo tipoBase = null;
 
         // visitar el nombre del objeto o del struct si existe (o sea, en persona.nombre, visitar persona xd)
@@ -727,6 +770,7 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
         }
 
         return null;
+
     }
 
     // ==================== EXPRESIONES ====================
@@ -741,6 +785,7 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
 
         // entrar en la expresion
         return expr.getExpresion().accept(this);
+
     }
 
     @Override
@@ -753,10 +798,12 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
 
         // entrar en el valor
         return expr.getValor().accept(this);
+
     }
 
     @Override
     public Object visitExprInstanciaObjeto(ExprInstanciaObjeto expr) {
+
         // obtener el nombre del tipo
         String nombreTipo = expr.getTipo();
 
@@ -769,12 +816,15 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
         }
 
         return tipo;
+
     }
 
     @Override
     public Object visitExprLlamadaFuncion(ExprLlamadaFuncion expr) {
+
         // analizar los argumentos primero
         List<Tipo> tiposArgs = new ArrayList<>();
+
         // los argumentos vienen envueltos en un ListaExpresiones
         List<NodoAST> argumentos = new ArrayList<>();
 
@@ -802,19 +852,25 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
 
             // validar la compatibilidad de cada argumento
             for (int i = 0; i < tiposArgs.size(); i++) {
+
                 Tipo esperado = funcion.getTiposParametros().get(i);
                 Tipo real = tiposArgs.get(i);
 
                 if (esperado != null && real != null && !this.contexto.esCompatible(esperado, real)) {
                     this.contexto.agregarError(argumentos.get(i), "tipo de argumento incompatible, se esperaba '" + esperado.getNombre() + "' pero se obtuvo '" + real.getNombre() + "'");
                 }
+
             }
+
         }
+
         return funcion.getTipo();
+
     }
 
     @Override
     public Object visitExprLlamadaMetodo(ExprLlamadaMetodo expr) {
+
         // visitar el objeto si existe
         if (expr.getObjeto() != null) {
             expr.getObjeto().accept(this);
@@ -826,10 +882,12 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
         }
 
         return null;
+
     }
 
     @Override
     public Object visitExprAccesoPosicionArray(ExprAccesoPosicionArray expr) {
+
         Tipo tipoArray = null;
 
         // visitar el arreglo si existe
@@ -851,6 +909,7 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
 
         // visitar el indice si existe
         if (expr.getIndice() != null) {
+
             Object tipoIndiceObj = expr.getIndice().accept(this);
             Tipo tipoIndice = extraerTipoDeExpresion(tipoIndiceObj);
 
@@ -863,10 +922,12 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
 
         // devolver el tipo del elemento
         return this.contexto.tipoElemento(tipoArray);
+
     }
 
     @Override
     public Object visitExprAccesoMiembroEstructura(ExprAccesoMiembroEstructura expr) {
+
         Tipo tipoObjeto = null;
 
         // visitar el objeto si existe
@@ -889,10 +950,12 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
         }
 
         return null;
+
     }
 
     @Override
     public Object visitExprPostIncremento(ExprPostIncremento expr) {
+
         Tipo tipoVar = null;
 
         // visitar la variable si existe
@@ -907,10 +970,12 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
         }
 
         return tipoVar;
+
     }
 
     @Override
     public Object visitExprPostDecremento(ExprPostDecremento expr) {
+
         Tipo tipoVar = null;
 
         // visitar la variable si existe
@@ -925,10 +990,12 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
         }
 
         return tipoVar;
+
     }
 
     @Override
     public Object visitExprPreIncremento(ExprPreIncremento expr) {
+
         Tipo tipoVar = null;
 
         // visitar la variable si existe
@@ -943,10 +1010,12 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
         }
 
         return tipoVar;
+
     }
 
     @Override
     public Object visitExprPreDecremento(ExprPreDecremento expr) {
+
         Tipo tipoVar = null;
 
         // visitar la variable si existe
@@ -961,10 +1030,12 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
         }
 
         return tipoVar;
+
     }
 
     @Override
     public Object visitExprListaLiteral(ExprListaLiteral expr) {
+
         Tipo tipoPrevio = null;
 
         // verificar si hay elementos
@@ -990,12 +1061,13 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
                 // asignar el primer tipo
                 if (tipoPrevio == null) {
                     tipoPrevio = tipoActual;
-
                 } else if (!this.contexto.esCompatible(tipoPrevio, tipoActual)) {
                     // reportar elementos que no son del mismo tipo
                     this.contexto.agregarError(elem, "elementos que no son del mismo tipo en lista literal");
                 }
+
             }
+
         }
 
         // verificar si no hay tipo previo
@@ -1005,10 +1077,12 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
 
         // devolver el tipo arreglo
         return this.contexto.tipoArray(tipoPrevio);
+
     }
 
     @Override
     public Object visitExprNegativa(ExprNegativa expr) {
+
         Tipo tipoExp = null;
 
         // visitar la expresion si existe
@@ -1023,10 +1097,12 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
         }
 
         return tipoExp;
+
     }
 
     @Override
     public Object visitExprNegada(ExprNegada expr) {
+
         Tipo tipoExp = null;
 
         // visitar la expresion si existe
@@ -1039,11 +1115,14 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
         if (tipoExp != null && !this.contexto.esBooleano(tipoExp)) {
             this.contexto.agregarError(expr, "negacion logica solo permitida sobre booleanos");
         }
+
         return this.contexto.tipoPrimitivo("bool");
+
     }
 
     @Override
     public Object visitExprMultiplicacionDivision(ExprMultiplicacionDivision expr) {
+
         Tipo tIzq = null;
         Tipo tDer = null;
 
@@ -1071,10 +1150,12 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
 
         // devolver decimalis si hay, si no numerus
         return this.contexto.tipoMayorJerarquia(tIzq, tDer);
+
     }
 
     @Override
     public Object visitExprSumaResta(ExprSumaResta expr) {
+
         Tipo tIzq = null;
         Tipo tDer = null;
 
@@ -1096,6 +1177,7 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
         }
 
         String op = expr.getOperador();
+
         // concatenacion de texto
         if ("+".equals(op) && (this.contexto.esTexto(tIzq) || this.contexto.esTexto(tDer))) {
             return this.contexto.tipoPrimitivo("textum");
@@ -1109,10 +1191,12 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
 
         // devolver el tipo de mayor jerarquia
         return this.contexto.tipoMayorJerarquia(tIzq, tDer);
+
     }
 
     @Override
     public Object visitExprRelacional(ExprRelacional expr) {
+
         Tipo tIzq = null;
         Tipo tDer = null;
 
@@ -1130,22 +1214,29 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
 
         // verificar si ambos tipos existen
         if (tIzq != null && tDer != null) {
+
             boolean num = this.contexto.esNumerico(tIzq) && this.contexto.esNumerico(tDer);
             boolean txt = this.contexto.esTexto(tIzq) && this.contexto.esTexto(tDer);
             boolean bool = this.contexto.esBooleano(tIzq) && this.contexto.esBooleano(tDer);
 
+            // aceptar el nulo en cualquier lado de la comparacion de objetos
+            boolean nuloAlguno = "null".equals(tIzq.getNombre()) || "null".equals(tDer.getNombre());
+
             // verificar si los tipos son incompatibles
-            if (!num && !txt && !bool) {
+            // if (!num && !txt && !bool) {
+            if (!num && !txt && !bool && !nuloAlguno) {
                 this.contexto.agregarError(expr, "tipos incompatibles para comparacion");
             }
 
         }
 
         return this.contexto.tipoPrimitivo("bool");
+
     }
 
     @Override
     public Object visitExprAnd(ExprAnd expr) {
+
         Tipo tIzq = null;
         Tipo tDer = null;
 
@@ -1172,10 +1263,12 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
         }
 
         return this.contexto.tipoPrimitivo("bool");
+
     }
 
     @Override
     public Object visitExprOr(ExprOr expr) {
+
         Tipo tIzq = null;
         Tipo tDer = null;
 
@@ -1202,6 +1295,7 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
         }
 
         return this.contexto.tipoPrimitivo("bool");
+
     }
 
     // ==================== DECLARACIONES ====================
@@ -1225,6 +1319,7 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
 
         // visitar el valor si existe
         if (decl.getValor() != null) {
+
             Object resultado = decl.getValor().accept(this);
             Tipo tipoExp = extraerTipoDeExpresion(resultado);
 
@@ -1234,7 +1329,9 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
             }
 
         }
+
         return null;
+
     }
 
     @Override
@@ -1247,10 +1344,12 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
         declararVariableSeguro(decl, decl.getIdentificador(), tipoBool, CategoriaSimbolo.VARIABLE, null);
 
         return null;
+
     }
 
     @Override
     public Object visitDeclArraySinDatos(DeclArraySinDatos decl) {
+
         // resolver el tipo base
         Tipo tipoBase = resolverTipoTipoDato(decl.getTipo());
 
@@ -1266,24 +1365,24 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
 
         // visitar el tamano si existe
         if (decl.getTamano() != null) {
+
             decl.getTamano().accept(this);
             tamano = extraerEnteroConstante(decl.getTamano());
 
             // verificar si el tamano no es constante
             if (tamano == null) {
                 this.contexto.agregarError(decl.getTamano(), "el tamano del arreglo debe ser una constante entera");
-
             } else if (tamano <= 0) {
-
                 this.contexto.agregarError(decl.getTamano(), "el tamano del arreglo debe ser positivo");
-
             }
+
         }
 
         // declarar la variable de forma segura
         declararVariableSeguro(decl, decl.getIdentificador(), tipoArray, CategoriaSimbolo.ARREGLO, tamano);
 
         return null;
+
     }
 
     @Override
@@ -1294,6 +1393,7 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
 
         // verificar si el tipo base es nulo
         if (tipoBase == null) {
+
             this.contexto.agregarError(decl, "tipo no definido");
 
             return null;
@@ -1305,19 +1405,17 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
 
         // visitar el tamano si existe
         if (decl.getTamano() != null) {
+
             decl.getTamano().accept(this);
             tamano = extraerEnteroConstante(decl.getTamano());
 
             // verificar si el tamano no es constante
             if (tamano == null) {
-
                 this.contexto.agregarError(decl.getTamano(), "el tamano del arreglo debe ser una constante entera");
-
             } else if (tamano <= 0) {
-
                 this.contexto.agregarError(decl.getTamano(), "el tamano del arreglo debe ser positivo");
-
             }
+
         }
 
         // declarar la variable de forma segura
@@ -1350,9 +1448,11 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
                 }
 
             }
+
         }
 
         return null;
+
     }
 
     @Override
@@ -1378,13 +1478,16 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
         declararVariableSeguro(decl, decl.getIdentificador(), tipoArray, CategoriaSimbolo.ARREGLO, null);
 
         return null;
+
     }
 
     // extraer un tamano de matriz validando constante positiva
     private Integer extraerTamanoMatriz(NodoAST tamano) {
+
         // visitar el tamano si existe
         Integer valor = null;
         if (tamano != null) {
+
             tamano.accept(this);
             valor = extraerEnteroConstante(tamano);
 
@@ -1394,8 +1497,11 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
             } else if (valor <= 0) {
                 this.contexto.agregarError(tamano, "el tamano de la matriz debe ser positivo");
             }
+
         }
+
         return valor;
+
     }
 
     @Override
@@ -1422,38 +1528,50 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
 
         // validar cada fila con sus valores
         if (decl.getFilas() != null) {
+
             // verificar la cantidad de filas
             if (filas != null && decl.getFilas().size() != filas) {
                 this.contexto.agregarError(decl, "la cantidad de filas (" + decl.getFilas().size() + ") no coincide con el tamano declarado (" + filas + ")");
             }
+
             // recorrer cada fila
             for (List<NodoAST> fila : decl.getFilas()) {
+
                 // omitir filas nulas
                 if (fila == null) {
                     continue;
                 }
+
                 // verificar la cantidad de columnas
                 if (columnas != null && fila.size() != columnas) {
                     this.contexto.agregarError(decl, "la cantidad de columnas (" + fila.size() + ") no coincide con el tamano declarado (" + columnas + ")");
                 }
+
                 // recorrer cada valor
                 for (NodoAST expr : fila) {
+
                     // verificar si el valor es nulo
                     if (expr == null) {
                         continue;
                     }
+
                     // entrar en el valor
                     Object resultado = expr.accept(this);
                     Tipo tipoValor = extraerTipoDeExpresion(resultado);
+
                     // verificar si el tipo es compatible
                     if (tipoValor != null && !this.contexto.esCompatible(tipoBase, tipoValor)) {
                         this.contexto.agregarError(expr, "valor incompatible con el tipo de la matriz, se esperaba '" + tipoBase.getNombre() + "' pero se obtuvo '" + tipoValor.getNombre() + "'");
                     }
+
                 }
+
             }
+
         }
 
         return null;
+
     }
 
     @Override
@@ -1474,6 +1592,7 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
 
         // visitar el tamano si existe
         if (decl.getTamano() != null) {
+
             decl.getTamano().accept(this);
             tamano = extraerEnteroConstante(decl.getTamano());
 
@@ -1490,10 +1609,12 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
         declararVariableSeguro(decl, decl.getIdentificador(), tipoArray, CategoriaSimbolo.ARREGLO, tamano);
 
         return null;
+
     }
 
     @Override
     public Object visitDeclEstructuraConValores(DeclEstructuraConValores decl) {
+
         // resolver el tipo por nombre
         Tipo tipo = resolverTipoPorNombre(decl.getTipo(), decl);
 
@@ -1512,10 +1633,12 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
         }
 
         return null;
+
     }
 
     @Override
     public Object visitDeclObjetoNovus(DeclObjetoNovus decl) {
+
         // resolver el tipo por nombre
         Tipo tipo = resolverTipoPorNombre(decl.getTipo(), decl);
 
@@ -1534,6 +1657,7 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
         }
 
         return null;
+
     }
 
     // validar los atributos de una instancia
@@ -1559,6 +1683,7 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
 
             // verificar si es campo con nombre
             if (attr instanceof CampoConNombre) {
+
                 CampoConNombre campo = (CampoConNombre) attr;
 
                 // buscar la definicion del campo
@@ -1579,6 +1704,7 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
 
                 // visitar el valor si existe
                 if (campo.getValor() != null) {
+
                     Object resultado = campo.getValor().accept(this);
                     Tipo tipoValor = extraerTipoDeExpresion(resultado);
 
@@ -1601,14 +1727,15 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
 
                     if (posicion < tipo.getCampos().size()) {
                         definicion = tipo.getCampos().get(posicion);
-
                     } else {
                         this.contexto.agregarError(campo, "demasiados valores posicionales para el tipo '" + tipo.getNombre() + "'");
                     }
 
                 }
+
                 // visitar el valor si existe
                 if (campo.getValor() != null) {
+
                     Object resultado = campo.getValor().accept(this);
                     Tipo tipoValor = extraerTipoDeExpresion(resultado);
 
@@ -1621,18 +1748,22 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
                         }
 
                     }
+
                 }
 
                 posicion++;
 
             }
+
         }
+
     }
 
     // ==================== ASIGNACIONES ====================
 
     @Override
     public Object visitAsignacionGeneral(AsignacionGeneral asignacion) {
+
         Tipo tipoVar = null;
 
         // visitar la variable si existe
@@ -1649,6 +1780,7 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
 
         // visitar el valor si existe
         if (asignacion.getValor() != null) {
+
             Object resultado = asignacion.getValor().accept(this);
             Tipo tipoExp = extraerTipoDeExpresion(resultado);
 
@@ -1660,33 +1792,40 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
         }
 
         return null;
+
     }
 
     // ==================== INSTRUCCIONES DE FLUJO ====================
 
     @Override
     public Object visitStmtAsignacion(StmtAsignacion stmt) {
+
         // visitar la asignacion si existe
         if (stmt.getAsignacion() != null) {
             stmt.getAsignacion().accept(this);
         }
 
         return new FlujoControl();
+
     }
 
     @Override
     public Object visitStmtCondicional(StmtCondicional stmt) {
+
         // visitar el condicional si existe
         if (stmt.getCondicional() != null) {
+
             Object resultado = stmt.getCondicional().accept(this);
 
             // devolver el flujo si el resultado es FlujoControl
             if (resultado instanceof FlujoControl) {
                 return resultado;
             }
+
         }
 
         return new FlujoControl();
+
     }
 
     @Override
@@ -1698,30 +1837,36 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
         }
 
         return new FlujoControl();
+
     }
 
     @Override
     public Object visitStmtLectura(StmtLectura stmt) {
+
         // visitar la lectura si existe
         if (stmt.getLectura() != null) {
             stmt.getLectura().accept(this);
         }
 
         return new FlujoControl();
+
     }
 
     @Override
     public Object visitStmtImpresion(StmtImpresion stmt) {
+
         // visitar la impresion si existe
         if (stmt.getImpresion() != null) {
             stmt.getImpresion().accept(this);
         }
 
         return new FlujoControl();
+
     }
 
     @Override
     public Object visitStmtInterrumpe(StmtInterrumpe stmt) {
+
         // verificar si esta dentro de un ciclo
         if (!this.contexto.estaDentroDeCiclo()) {
             this.contexto.agregarError(stmt, "'interrumpe' solo puede usarse dentro de un ciclo");
@@ -1732,6 +1877,7 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
         flujo.marcarRetorno();
 
         return flujo;
+
     }
 
     @Override
@@ -1747,6 +1893,7 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
         flujo.marcarRetorno();
 
         return flujo;
+
     }
 
     @Override
@@ -1758,12 +1905,14 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
         }
 
         return new FlujoControl();
+
     }
 
     // ==================== CONDICIONALES ====================
 
     @Override
     public Object visitStatementSi(StatementSi stmt) {
+
         // validar la condicion principal
         validarCondicionBooleana(stmt.getCondicion());
 
@@ -1798,10 +1947,13 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
                 }
 
                 i++;
+
             }
+
         }
 
         boolean hayElse = false;
+
         // visitar el bloque else final si existe
         if (stmt.getBloqueAliter() != null) {
 
@@ -1819,23 +1971,20 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
             }
 
         } else {
-
             // sin else siempre hay una ruta que no termina
             todasTerminan = false;
-
         }
 
         // devolver el flujo correspondiente
         FlujoControl resultado = new FlujoControl();
         if (hayElse && todasTerminan) {
             resultado.marcarRetorno();
-
         } else {
             resultado.marcarContinuacion();
-
         }
 
         return resultado;
+
     }
 
     // ==================== CICLOS ====================
@@ -1859,6 +2008,7 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
 
         // despues de un ciclo siempre se puede continuar
         return new FlujoControl();
+
     }
 
     @Override
@@ -1880,6 +2030,7 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
 
         // despues de un ciclo siempre se puede continuar
         return new FlujoControl();
+
     }
 
     @Override
@@ -1911,12 +2062,14 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
 
         // despues de un ciclo siempre se puede continuar
         return new FlujoControl();
+
     }
 
     // ==================== INIT Y PASO DEL FOR ====================
 
     @Override
     public Object visitInitPerDecl(InitPerDecl init) {
+
         // resolver el tipo
         Tipo tipo = resolverTipoTipoDato(init.getTipo());
 
@@ -1933,6 +2086,7 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
 
         // visitar el valor si existe
         if (init.getValor() != null) {
+
             Object resultado = init.getValor().accept(this);
             Tipo tipoExp = extraerTipoDeExpresion(resultado);
 
@@ -1944,10 +2098,12 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
         }
 
         return null;
+
     }
 
     @Override
     public Object visitInitPerAsig(InitPerAsig init) {
+
         Tipo tipoVar = null;
 
         // visitar la variable si existe
@@ -1963,6 +2119,7 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
 
         // visitar el valor si existe
         if (init.getValor() != null) {
+
             Object resultado = init.getValor().accept(this);
             Tipo tipoExp = extraerTipoDeExpresion(resultado);
 
@@ -1972,7 +2129,9 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
             }
 
         }
+
         return null;
+
     }
 
     @Override
@@ -1984,6 +2143,7 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
         }
 
         return null;
+
     }
 
     @Override
@@ -2004,6 +2164,7 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
 
         // visitar el valor si existe
         if (paso.getValor() != null) {
+
             Object resultado = paso.getValor().accept(this);
             Tipo tipoExp = extraerTipoDeExpresion(resultado);
 
@@ -2015,6 +2176,7 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
         }
 
         return null;
+
     }
 
     // ==================== LECTURA ====================
@@ -2029,6 +2191,7 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
 
         // visitar la variable si existe
         if (lectura.getVariable() != null) {
+
             Object resultado = lectura.getVariable().accept(this);
 
             Tipo tipoVar = extraerTipoDeExpresion(resultado);
@@ -2039,7 +2202,9 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
             }
 
         }
+
         return null;
+
     }
 
     // ==================== IMPRESION ====================
@@ -2059,8 +2224,11 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
                 }
 
             }
+
         }
 
         return null;
+
     }
+
 }

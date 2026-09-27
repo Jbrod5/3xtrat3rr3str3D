@@ -24,6 +24,7 @@ public class ManejadorFuncionesY {
 
     // agregar los marcadores de inicio y fin de funcion sin retorno
     public String visitarDefFuncionSinRetorno(DefFuncionSinRetorno nodo) {
+
         // construir el string de tipos de parametros
         String tiposParams = extraerTiposParametros(nodo.getParametros());
 
@@ -39,6 +40,7 @@ public class ManejadorFuncionesY {
         ctx.getCuartetas().add(new Cuarteta("func_end", nodo.getNombre(), "_", "_", "_", "_", "_"));
 
         return null;
+
     }
 
     // agregar los marcadores de inicio y fin de funcion con retorno
@@ -70,6 +72,7 @@ public class ManejadorFuncionesY {
         ctx.getCuartetas().add(new Cuarteta("func_end", nodo.getNombre(), "_", "_", "_", "_", "_"));
 
         return null;
+
     }
 
     // construir el string de params con formato nombre tipo separados por coma
@@ -96,38 +99,49 @@ public class ManejadorFuncionesY {
         // acumular los params separados por coma
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < parametros.getParametros().size(); i++) {
+
             NodoASTY p = parametros.getParametros().get(i);
             String nombre = "_";
             String tipo = "_";
             if (p instanceof ParamSimple) {
+
                 nombre = ((ParamSimple) p).getNombre();
                 NodoASTY tipoNodo = ((ParamSimple) p).getTipo();
                 if (tipoNodo instanceof TipoDato) {
                     tipo = ((TipoDato) tipoNodo).getNombre();
                 }
+
             } else if (p instanceof ParamArray) {
+
                 nombre = ((ParamArray) p).getNombre();
                 NodoASTY tipoNodo = ((ParamArray) p).getTipo();
                 if (tipoNodo instanceof TipoDato) {
                     tipo = ((TipoDato) tipoNodo).getNombre() + "[]";
                 }
+
             } else if (p instanceof ParamEstructura) {
                 nombre = ((ParamEstructura) p).getNombre();
                 tipo = ((ParamEstructura) p).getTipoEstructura();
             }
+
             if (nombre == null) {
                 nombre = "_";
             }
+
             if (tipo == null) {
                 tipo = "_";
             }
+
             if (i > 0) {
                 sb.append(",");
             }
+
             sb.append(nombre).append(":").append(tipo);
+
         }
 
         return sb.toString();
+
     }
 
     // visitar el parametro simple sin generar cuartetas
@@ -147,4 +161,5 @@ public class ManejadorFuncionesY {
         // TODO
         return null;
     }
+
 }

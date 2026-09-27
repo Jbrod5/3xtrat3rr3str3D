@@ -8,9 +8,11 @@ public class CampoConNombre extends NodoAST {
     private final NodoAST valor;
 
     public CampoConNombre(String nombre, NodoAST valor, int linea, int columna) {
+
         super(linea, columna);
         this.nombre = nombre;
         this.valor = valor;
+
     }
 
     public String getNombre() {
@@ -25,4 +27,5 @@ public class CampoConNombre extends NodoAST {
     public <T> T accept(LatinusAstVisitor<T> visitor) {
         return visitor.visitCampoConNombre(this);
     }
+
 }

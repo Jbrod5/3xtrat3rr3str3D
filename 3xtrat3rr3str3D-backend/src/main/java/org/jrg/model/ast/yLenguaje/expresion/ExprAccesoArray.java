@@ -12,9 +12,11 @@ public class ExprAccesoArray extends NodoASTY {
      * Crear una expresion de acceso a array.
      */
     public ExprAccesoArray(NodoASTY objeto, NodoASTY indice, int linea, int columna) {
+
         super(linea, columna);
         this.objeto = objeto;
         this.indice = indice;
+
     }
 
     public NodoASTY getObjeto() {
@@ -29,4 +31,5 @@ public class ExprAccesoArray extends NodoASTY {
     public <T> T accept(YAstVisitor<T> visitor) {
         return visitor.visitarExprAccesoArray(this);
     }
+
 }

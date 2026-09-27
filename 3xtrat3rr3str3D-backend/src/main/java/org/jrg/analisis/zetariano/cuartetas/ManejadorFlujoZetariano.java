@@ -21,6 +21,7 @@ public class ManejadorFlujoZetariano {
 
     // estado compartido de la generacion
     private final ContextoCuartetasZetariano ctx;
+
     // generador duenio para el descenso recursivo
     private final GeneradorCuartetasZetariano generador;
 
@@ -32,35 +33,43 @@ public class ManejadorFlujoZetariano {
 
     // visitar el condicional interno de la instruccion
     public String visitarStmtCondicional(StmtCondicional nodo) {
+
         // visitar el condicional si existe
         if (nodo.getCondicional() != null) {
             nodo.getCondicional().accept(generador);
         }
 
         return null;
+
     }
 
     // visitar la seleccion interna de la instruccion
     public String visitarStmtSeleccion(StmtSeleccion nodo) {
+
         // visitar la seleccion si existe
         if (nodo.getSeleccion() != null) {
             nodo.getSeleccion().accept(generador);
         }
+
         return null;
+
     }
 
     // visitar el ciclo interno de la instruccion
     public String visitarStmtCiclo(StmtCiclo nodo) {
+
         // visitar el ciclo si existe
         if (nodo.getCiclo() != null) {
             nodo.getCiclo().accept(generador);
         }
 
         return null;
+
     }
 
     // generar el if con ramas sino si y sino
     public String visitarStatementIf(StatementIf nodo) {
+
         // evaluar la condicion principal
         String condicion = "_";
         if (nodo.getCondicion() != null) {
@@ -114,11 +123,13 @@ public class ManejadorFlujoZetariano {
 
                 // visitar el bloque de la rama actual si existe
                 if (nodo.getBloquesSinoSi() != null) {
+
                     if (i < nodo.getBloquesSinoSi().size()) {
                         if (nodo.getBloquesSinoSi().get(i) != null) {
                             nodo.getBloquesSinoSi().get(i).accept(generador);
                         }
                     }
+
                 }
 
                 // agregar el salto al final a la lista de cuartetas
@@ -126,6 +137,7 @@ public class ManejadorFlujoZetariano {
 
                 // agregar la etiqueta de la rama que sigue a la lista de cuartetas
                 ctx.getCuartetas().add(new Cuarteta("label", lSiguienteSino, "_", "_", "_", "_", "_"));
+
             }
 
         }
@@ -138,10 +150,12 @@ public class ManejadorFlujoZetariano {
         // agregar la etiqueta final a la lista de cuartetas
         ctx.getCuartetas().add(new Cuarteta("label", lFin, "_", "_", "_", "_", "_"));
         return null;
+
     }
 
     // generar el switch con comparaciones por caso
     public String visitarStatementSwitch(StatementSwitch nodo) {
+
         // evaluar la expresion de seleccion
         String selector = "_";
         if (nodo.getExpresion() != null) {
@@ -210,14 +224,16 @@ public class ManejadorFlujoZetariano {
 
                     // visitar las instrucciones del caso
                     if (casoSwitch.getInstrucciones() != null) {
+
                         for (NodoASTZetariano instruccion : casoSwitch.getInstrucciones()) {
 
                             // visitar la instruccion actual si existe
                             if (instruccion != null) {
                                 instruccion.accept(generador);
-
                             }
+
                         }
+
                     }
 
                     // agregar el salto al final a la lista de cuartetas
@@ -230,7 +246,9 @@ public class ManejadorFlujoZetariano {
                     // visitar el caso directamente
                     caso.accept(generador);
                 }
+
             }
+
         }
 
         // visitar el caso por defecto si existe
@@ -242,10 +260,12 @@ public class ManejadorFlujoZetariano {
         ctx.getCuartetas().add(new Cuarteta("label", lFin, "_", "_", "_", "_", "_"));
 
         return null;
+
     }
 
     // generar el ciclo for con etiquetas de inicio y fin
     public String visitarCicloFor(CicloFor nodo) {
+
         // guardar las etiquetas anteriores
         String anteriorBreak = ctx.getEtiquetaBreakActual();
         String anteriorContinue = ctx.getEtiquetaContinueActual();
@@ -253,11 +273,13 @@ public class ManejadorFlujoZetariano {
         // crear las etiquetas del ciclo
         String lInicio = ctx.getTemporales().nuevaEtiqueta();
         String lFin = ctx.getTemporales().nuevaEtiqueta();
+
         // crear la etiqueta del paso para el continue
         String lPaso = ctx.getTemporales().nuevaEtiqueta();
 
         // asignar las etiquetas actuales
         ctx.setEtiquetaBreakActual(lFin);
+
         // ctx.setEtiquetaContinueActual(lInicio);
         // el continue va al paso para no saltarse el incremento
         ctx.setEtiquetaContinueActual(lPaso);
@@ -293,6 +315,7 @@ public class ManejadorFlujoZetariano {
 
             // agregar el salto al final si la condicion es falsa a la lista de cuartetas
             ctx.getCuartetas().add(new Cuarteta("if_false", condicion, lFin, "_", "booleano", "_", "_"));
+
         }
 
         // visitar el bloque si existe
@@ -317,10 +340,12 @@ public class ManejadorFlujoZetariano {
         ctx.setEtiquetaContinueActual(anteriorContinue);
 
         return null;
+
     }
 
     // generar el ciclo while con etiquetas de inicio y fin
     public String visitarCicloWhile(CicloWhile nodo) {
+
         // guardar las etiquetas anteriores
         String anteriorBreak = ctx.getEtiquetaBreakActual();
         String anteriorContinue = ctx.getEtiquetaContinueActual();
@@ -365,10 +390,12 @@ public class ManejadorFlujoZetariano {
         ctx.setEtiquetaContinueActual(anteriorContinue);
 
         return null;
+
     }
 
     // generar el ciclo do while que ejecuta el bloque al menos una vez
     public String visitarCicloDoWhile(CicloDoWhile nodo) {
+
         // guardar las etiquetas anteriores
         String anteriorBreak = ctx.getEtiquetaBreakActual();
         String anteriorContinue = ctx.getEtiquetaContinueActual();
@@ -418,10 +445,12 @@ public class ManejadorFlujoZetariano {
         ctx.setEtiquetaContinueActual(anteriorContinue);
 
         return null;
+
     }
 
     // generar la inicializacion con declaracion del for
     public String visitarInitForDecl(InitForDecl nodo) {
+
         // agregar la asignacion inicial si hay expresion a la lista de cuartetas
         if (nodo.getExpresion() != null) {
 
@@ -434,13 +463,16 @@ public class ManejadorFlujoZetariano {
 
             // agregar la asignacion a la variable a la lista de cuartetas
             ctx.getCuartetas().add(new Cuarteta(":=", valor, "_", nodo.getIdentificador(), ctx.inferirTipoDe(valor, ctx.getTiposConocidos()), "_", "_"));
+
         }
 
         return null;
+
     }
 
     // generar la inicializacion con asignacion del for
     public String visitarInitForAsig(InitForAsig nodo) {
+
         // evaluar la variable destino
         String variable = "_";
         if (nodo.getVariable() != null) {
@@ -466,20 +498,24 @@ public class ManejadorFlujoZetariano {
         ctx.getCuartetas().add(new Cuarteta(":=", valor, "_", variable, ctx.inferirTipoDe(valor, ctx.getTiposConocidos()), "_", "_"));
 
         return null;
+
     }
 
     // visitar la expresion del paso del for
     public String visitarPasoForExpr(PasoForExpr nodo) {
+
         // visitar la expresion del paso si existe
         if (nodo.getExpresion() != null) {
             nodo.getExpresion().accept(generador);
         }
 
         return null;
+
     }
 
     // generar la asignacion del paso del for
     public String visitarPasoForAsig(PasoForAsig nodo) {
+
         // evaluar la variable destino
         String variable = "_";
         if (nodo.getVariable() != null) {
@@ -503,5 +539,7 @@ public class ManejadorFlujoZetariano {
         // agregar la asignacion a la lista de cuartetas
         ctx.getCuartetas().add(new Cuarteta(":=", valor, "_", variable, ctx.inferirTipoDe(valor, ctx.getTiposConocidos()), "_", "_"));
         return null;
+
     }
+
 }

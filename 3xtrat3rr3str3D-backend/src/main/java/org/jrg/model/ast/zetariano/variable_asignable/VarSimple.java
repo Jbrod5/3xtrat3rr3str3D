@@ -20,4 +20,5 @@ public class VarSimple extends NodoASTZetariano {
     public <T> T accept(ZetarianoAstVisitor<T> visitor) {
         return visitor.visitarVarSimple(this);
     }
+
 }

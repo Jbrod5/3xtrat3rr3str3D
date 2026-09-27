@@ -9,9 +9,11 @@ public class ParamSimple extends NodoASTZetariano {
     private final String identificador;
 
     public ParamSimple(NodoASTZetariano tipo, String identificador, int linea, int columna) {
+
         super(linea, columna);
         this.tipo = tipo;
         this.identificador = identificador;
+
     }
 
     public NodoASTZetariano getTipo() {
@@ -26,4 +28,5 @@ public class ParamSimple extends NodoASTZetariano {
     public <T> T accept(ZetarianoAstVisitor<T> visitor) {
         return visitor.visitarParamSimple(this);
     }
+
 }

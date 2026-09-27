@@ -9,10 +9,12 @@ public class ExprLlamadaMetodo extends NodoAST {
     private final NodoAST argumentos;
 
     public ExprLlamadaMetodo(NodoAST objeto, String nombre, NodoAST argumentos, int linea, int columna) {
+
         super(linea, columna);
         this.objeto = objeto;
         this.nombre = nombre;
         this.argumentos = argumentos;
+
     }
 
     public NodoAST getObjeto() {
@@ -31,4 +33,5 @@ public class ExprLlamadaMetodo extends NodoAST {
     public <T> T accept(LatinusAstVisitor<T> visitor) {
         return visitor.visitExprLlamadaMetodo(this);
     }
+
 }

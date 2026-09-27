@@ -13,10 +13,12 @@ public class DeclArraySinValores extends NodoASTY {
      * Crear una declaracion de array sin valores iniciales.
      */
     public DeclArraySinValores(NodoASTY tipo, String nombre, NodoASTY tamano, int linea, int columna) {
+
         super(linea, columna);
         this.tipo = tipo;
         this.nombre = nombre;
         this.tamano = tamano;
+
     }
 
     public NodoASTY getTipo() {
@@ -35,4 +37,5 @@ public class DeclArraySinValores extends NodoASTY {
     public <T> T accept(YAstVisitor<T> visitor) {
         return visitor.visitarDeclArraySinValores(this);
     }
+
 }

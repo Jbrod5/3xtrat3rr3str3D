@@ -19,4 +19,5 @@ public class StmtAsignacion extends NodoAST {
     public <T> T accept(LatinusAstVisitor<T> visitor) {
         return visitor.visitStmtAsignacion(this);
     }
+
 }

@@ -11,6 +11,7 @@ public class ErrorCompilacion {
      * Crear un error con tipo posicion y descripcion.
      */
     public ErrorCompilacion(TipoError tipo, int linea, int columna, String descripcion) {
+
         this.tipo = tipo;
         this.linea = linea;
         this.columna = columna;
@@ -21,6 +22,7 @@ public class ErrorCompilacion {
         } else {
             this.descripcion = descripcion;
         }
+
     }
 
     /**
@@ -78,4 +80,5 @@ public class ErrorCompilacion {
     public boolean esDeTipo(TipoError tipoError) {
         return tipo == tipoError;
     }
+
 }

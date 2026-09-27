@@ -12,9 +12,11 @@ public class ExprOr extends NodoASTY {
      * Crear una expresion logica or.
      */
     public ExprOr(NodoASTY izquierdo, NodoASTY derecho, int linea, int columna) {
+
         super(linea, columna);
         this.izquierdo = izquierdo;
         this.derecho = derecho;
+
     }
 
     public NodoASTY getIzquierdo() {
@@ -29,4 +31,5 @@ public class ExprOr extends NodoASTY {
     public <T> T accept(YAstVisitor<T> visitor) {
         return visitor.visitarExprOr(this);
     }
+
 }

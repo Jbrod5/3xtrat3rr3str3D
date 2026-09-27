@@ -24,6 +24,7 @@ public class ContextoCuartetasY {
      * Crear el contexto con estructuras vacias.
      */
     public ContextoCuartetasY() {
+
         // inicializar la lista y el generador
         this.cuartetas = new ArrayList<>();
         this.temporales = new GeneradorTemporales();
@@ -31,6 +32,7 @@ public class ContextoCuartetasY {
         this.etiquetaContinueActual = null;
         this.tiposConocidos = new HashMap<>();
         this.tiposDeVariables = new HashMap<>();
+
     }
 
     /**
@@ -91,6 +93,7 @@ public class ContextoCuartetasY {
 
     // registrar el tipo de una variable declarada
     public void registrarTipoVariable(String nombre, String tipo) {
+
         // omitir nombres o tipos nulos
         if (nombre == null || tipo == null) {
             return;
@@ -98,54 +101,71 @@ public class ContextoCuartetasY {
 
         // guardar el tipo para usos posteriores
         this.tiposDeVariables.put(nombre, tipo);
+
     }
 
     // extraer el nombre del tipo desde un nodo de tipo
     public String nombreDeTipo(NodoASTY tipoNodo) {
+
         // devolver guion bajo si el nodo es nulo
         if (tipoNodo == null) {
             return "_";
         }
+
         // extraer el nombre cuando es TipoDato
         if (tipoNodo instanceof TipoDato) {
+
             String nombre = ((TipoDato) tipoNodo).getNombre();
+
             // usar guion bajo si el nombre es nulo
             if (nombre == null) {
                 return "_";
             }
+
             return nombre;
+
         }
+
         return "_";
+
     }
 
     // adivinar el tipo del literal por como se ve
     public String inferirTipoLiteral(String valor) {
+
         // devolver guion bajo si el valor es nulo o vacio de tipo
         if (valor == null || valor.equals("_")) {
             return "_";
         }
+
         // detectar cadena por comilla doble inicial
         if (valor.startsWith("\"")) {
             return "cadena";
         }
+
         // detectar caracter por comilla simple inicial
         if (valor.startsWith("'")) {
             return "caracter";
         }
+
         // detectar booleanos de los tres lenguajes
         if (valor.equals("verum") || valor.equals("verdadero") || valor.equals("true") || valor.equals("falsus") || valor.equals("falso") || valor.equals("false")) {
             return "booleano";
         }
+
         // detectar flotante por punto decimal
         if (valor.contains(".")) {
             return "flotante";
         }
+
         // detectar entero si empieza con digito
         if (valor.length() > 0 && Character.isDigit(valor.charAt(0))) {
             return "entero";
         }
+
         // cualquier otra cosa es de tipo desconocido
         return "_";
+
     }
 
     // adivinar el tipo con el mapa o por como se ve
@@ -170,6 +190,7 @@ public class ContextoCuartetasY {
 
         // adivinar por como se ve el literal
         return inferirTipoLiteral(nombre);
+
     }
 
     // verificar si un tipo corresponde a cadena de texto
@@ -179,7 +200,9 @@ public class ContextoCuartetasY {
         if ("cadena".equals(tipo) || "textum".equals(tipo) || "String".equals(tipo)) {
             return true;
         }
+
         return false;
+
     }
 
     // adivinar el tipo del numero, int si no se sabe
@@ -194,6 +217,7 @@ public class ContextoCuartetasY {
         }
 
         return tipo;
+
     }
 
     // adivinar que tipo sale de la cuenta
@@ -205,10 +229,13 @@ public class ContextoCuartetasY {
 
         // usar el tipo comun cuando ambos coinciden y es conocido
         if (tipoA.equals(tipoB)) {
+
             if (tipoA.equals("_")) {
                 return "entero";
             }
+
             return tipoA;
+
         }
 
 
@@ -224,6 +251,7 @@ public class ContextoCuartetasY {
 
         // usar entero por defecto en caso mixto :3
         return "entero";
+
     }
 
     // verificar si un tipo es numerico para convertir al tipo de mayor jerarquia
@@ -240,6 +268,7 @@ public class ContextoCuartetasY {
         }
 
         return false;
+
     }
 
     // verificar si un tipo es flotante en cualquier vocabulario
@@ -251,5 +280,7 @@ public class ContextoCuartetasY {
         }
 
         return false;
+
     }
+
 }

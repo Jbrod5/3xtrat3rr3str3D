@@ -11,6 +11,7 @@ public final class MiniUUID {
      * Generar un identificador unico de 8 caracteres dividido en dos tramos de 4 separados por "-".
      */
     public static String generate() {
+
         // Generamos el UUID y eliminamos los guiones originales
         String fullUuid = UUID.randomUUID().toString().replace("-", "");
 
@@ -20,5 +21,7 @@ public final class MiniUUID {
 
         // Unimos los dos tramos con el guion :D
         return part1 + "-" + part2;
+
     }
+
 }

@@ -114,8 +114,10 @@ public class ResultadoAnalisis {
             List<CuartetaResultado> cuartetas,
             String codigoC,
             ResultadoGcc resultadoGcc) {
+
         this.exito = exito;
         this.errores = new ArrayList<>();
+
         // copiar errores si existen
         if (errores != null) {
             this.errores.addAll(errores);
@@ -141,24 +143,28 @@ public class ResultadoAnalisis {
         }
 
         this.simbolos = new ArrayList<>();
+
         // copiar simbolos si existen
         if (simbolos != null) {
             this.simbolos.addAll(simbolos);
         }
 
         this.tipos = new ArrayList<>();
+
         // copiar tipos si existen
         if (tipos != null) {
             this.tipos.addAll(tipos);
         }
 
         this.pasosPila = new ArrayList<>();
+
         // copiar pasos si existen
         if (pasosPila != null) {
             this.pasosPila.addAll(pasosPila);
         }
 
         this.simbolosCrudos = new ArrayList<>();
+
         // copiar crudos si existen
         if (simbolosCrudos != null) {
             this.simbolosCrudos.addAll(simbolosCrudos);
@@ -170,6 +176,7 @@ public class ResultadoAnalisis {
         }
 
         this.cuartetas = new ArrayList<>();
+
         // copiar cuartetas si existen
         if (cuartetas != null) {
             this.cuartetas.addAll(cuartetas);
@@ -182,6 +189,7 @@ public class ResultadoAnalisis {
         }
 
         this.resultadoGcc = resultadoGcc;
+
     }
 
     /**
@@ -276,4 +284,5 @@ public class ResultadoAnalisis {
     public ResultadoGcc getResultadoGcc() {
         return this.resultadoGcc;
     }
+
 }

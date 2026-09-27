@@ -36,16 +36,19 @@ public class ManejadorExpresionesY {
 
     // visitar la expresion interna del parentesis
     public String visitarExprParentesis(ExprParentesis nodo) {
+
         // visitar la expresion interna si existe
         if (nodo.getExpresion() != null) {
             return nodo.getExpresion().accept(generador);
         }
 
         return null;
+
     }
 
     // llamar a una funcion con call y sus parametros
     public String visitarExprLlamadaFuncion(ExprLlamadaFuncion nodo) {
+
         // evaluar los argumentos de la llamada
         List<String> argumentos = new ArrayList<>();
 
@@ -66,6 +69,7 @@ public class ManejadorExpresionesY {
             }
 
         }
+
         // agregar un param por cada argumento a la lista de cuartetas
         for (int i = 0; i < argumentos.size(); i++) {
             ctx.getCuartetas().add(new Cuarteta("param", argumentos.get(i), "_", "_", ctx.inferirTipoDe(argumentos.get(i), ctx.getTiposConocidos()), "_", "_"));
@@ -76,10 +80,12 @@ public class ManejadorExpresionesY {
         ctx.getCuartetas().add(new Cuarteta("call", nodo.getNombre(), String.valueOf(argumentos.size()), temp, "_", "_", "_"));
 
         return temp;
+
     }
 
     // generar acceso a arreglo con temporal
     public String visitarExprAccesoArray(ExprAccesoArray nodo) {
+
         // evaluar el objeto del acceso
         String objeto = "_";
         if (nodo.getObjeto() != null) {
@@ -106,10 +112,12 @@ public class ManejadorExpresionesY {
         ctx.getCuartetas().add(new Cuarteta("=[]", objeto, indice, temp, "_", "entero", "_"));
 
         return temp;
+
     }
 
     // generar acceso a miembro con temporal
     public String visitarExprAccesoMiembro(ExprAccesoMiembro nodo) {
+
         // evaluar el objeto del acceso
         String objeto = "_";
         if (nodo.getObjeto() != null) {
@@ -125,10 +133,12 @@ public class ManejadorExpresionesY {
         ctx.getCuartetas().add(new Cuarteta(".", objeto, nodo.getMiembro(), temp, "_", "_", "_"));
 
         return temp;
+
     }
 
     // generar post incremento sobre la misma variable
     public String visitarExprPostIncremento(ExprPostIncremento nodo) {
+
         // evaluar la variable
         String variable = "_";
         if (nodo.getVariable() != null) {
@@ -143,10 +153,12 @@ public class ManejadorExpresionesY {
         ctx.getCuartetas().add(new Cuarteta("+", variable, "1", variable, ctx.inferirTipoDe(variable, ctx.getTiposConocidos()), "entero", ctx.inferirTipoDe(variable, ctx.getTiposConocidos())));
 
         return variable;
+
     }
 
     // generar post decremento sobre la misma variable
     public String visitarExprPostDecremento(ExprPostDecremento nodo) {
+
         // evaluar la variable
         String variable = "_";
         if (nodo.getVariable() != null) {
@@ -161,6 +173,7 @@ public class ManejadorExpresionesY {
         ctx.getCuartetas().add(new Cuarteta("-", variable, "1", variable, ctx.inferirTipoDe(variable, ctx.getTiposConocidos()), "entero", ctx.inferirTipoDe(variable, ctx.getTiposConocidos())));
 
         return variable;
+
     }
 
     // visitar lista literal sin generar cuartetas
@@ -171,6 +184,7 @@ public class ManejadorExpresionesY {
 
     // generar menos unario con opcode propio
     public String visitarExprNegativa(ExprNegativa nodo) {
+
         // evaluar la expresion interna
         String valor = "_";
         if (nodo.getExpresion() != null) {
@@ -195,6 +209,7 @@ public class ManejadorExpresionesY {
         ctx.getCuartetas().add(new Cuarteta("uminus", valor, "_", temp, tipoNeg, "_", tipoNeg));
 
         return temp;
+
     }
 
     // generar negacion logica con temporal booleano
@@ -212,6 +227,7 @@ public class ManejadorExpresionesY {
 
         // agregar la negacion logica con temporal a la lista de cuartetas
         String temp = ctx.getTemporales().nuevoTemporal();
+
         // registrar el temporal como booleano
         ctx.getTiposConocidos().put(temp, "booleano");
         ctx.getCuartetas().add(new Cuarteta("!", valor, "_", temp, ctx.inferirTipoDe(valor, ctx.getTiposConocidos()), "_", "booleano"));
@@ -255,10 +271,12 @@ public class ManejadorExpresionesY {
         ctx.getCuartetas().add(new Cuarteta(nodo.getOperador(), izquierdo, derecho, temp, ctx.tipoAritmetico(izquierdo), ctx.tipoAritmetico(derecho), tipoResMult));
 
         return temp;
+
     }
 
     // generar suma resta o concatenacion con tipo inferido
     public String visitarExprSumaResta(ExprSumaResta nodo) {
+
         // evaluar el operando izquierdo
         String izquierdo = "_";
         if (nodo.getIzquierdo() != null) {
@@ -291,12 +309,14 @@ public class ManejadorExpresionesY {
 
         // usar cadena cuando se concatena texto con mas
         if ("+".equals(nodo.getOperador())) {
+
             boolean izqEsCadenaSuma = ctx.esTipoCadena(tipoIzqSuma);
             boolean derEsCadenaSuma = ctx.esTipoCadena(tipoDerSuma);
 
             if (izqEsCadenaSuma || derEsCadenaSuma) {
                 tipoResSuma = "cadena";
             }
+
         }
 
         // registrar el temporal con el tipo inferido
@@ -304,10 +324,12 @@ public class ManejadorExpresionesY {
         ctx.getCuartetas().add(new Cuarteta(nodo.getOperador(), izquierdo, derecho, temp, ctx.tipoAritmetico(izquierdo), ctx.tipoAritmetico(derecho), tipoResSuma));
 
         return temp;
+
     }
 
     // generar comparacion relacional con temporal booleano
     public String visitarExprRelacional(ExprRelacional nodo) {
+
         // evaluar el operando izquierdo
         String izquierdo = "_";
         if (nodo.getIzquierdo() != null) {
@@ -337,10 +359,12 @@ public class ManejadorExpresionesY {
         ctx.getCuartetas().add(new Cuarteta(nodo.getOperador(), izquierdo, derecho, temp, ctx.inferirTipoDe(izquierdo, ctx.getTiposConocidos()), ctx.inferirTipoDe(derecho, ctx.getTiposConocidos()), "booleano"));
 
         return temp;
+
     }
 
     // generar conjuncion logica con temporal booleano
     public String visitarExprAnd(ExprAnd nodo) {
+
         // evaluar el operando izquierdo
         String izquierdo = "_";
         if (nodo.getIzquierdo() != null) {
@@ -369,10 +393,12 @@ public class ManejadorExpresionesY {
         ctx.getCuartetas().add(new Cuarteta("&&", izquierdo, derecho, temp, ctx.inferirTipoDe(izquierdo, ctx.getTiposConocidos()), ctx.inferirTipoDe(derecho, ctx.getTiposConocidos()), "booleano"));
 
         return temp;
+
     }
 
     // generar disyuncion logica con temporal booleano
     public String visitarExprOr(ExprOr nodo) {
+
         // evaluar el operando izquierdo
         String izquierdo = "_";
         if (nodo.getIzquierdo() != null) {
@@ -402,10 +428,12 @@ public class ManejadorExpresionesY {
         ctx.getCuartetas().add(new Cuarteta("||", izquierdo, derecho, temp, ctx.inferirTipoDe(izquierdo, ctx.getTiposConocidos()), ctx.inferirTipoDe(derecho, ctx.getTiposConocidos()), "booleano"));
 
         return temp;
+
     }
 
     // generar carga de literal en temporal o devolver identificador
     public String visitarExprPrimitivo(ExprPrimitivo nodo) {
+
         // verificar si el valor es primitivo
         if (nodo.getValor() instanceof ValorPrimitivo) {
 
@@ -428,8 +456,11 @@ public class ManejadorExpresionesY {
             ctx.getCuartetas().add(new Cuarteta("=", primitivo.getValor(), "_", temp, tipoLiteral, "_", tipoLiteral));
 
             return temp;
+
         }
 
         return null;
+
     }
+
 }

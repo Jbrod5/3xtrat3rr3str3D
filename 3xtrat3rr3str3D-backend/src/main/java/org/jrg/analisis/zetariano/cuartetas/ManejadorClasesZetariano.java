@@ -23,6 +23,7 @@ public class ManejadorClasesZetariano {
 
     // estado compartido de la generacion
     private final ContextoCuartetasZetariano ctx;
+
     // generador duenio para el descenso recursivo
     private final GeneradorCuartetasZetariano generador;
 
@@ -34,6 +35,7 @@ public class ManejadorClasesZetariano {
 
     // definir la clase como struct y visitar sus miembros
     public String visitarDefClase(DefClase nodo) {
+
         // guardar el nombre de la clase actual
         ctx.setNombreClaseActual(nodo.getNombre());
 
@@ -52,17 +54,21 @@ public class ManejadorClasesZetariano {
                 if (miembro != null) {
                     miembro.accept(generador);
                 }
+
             }
 
         }
+
         // limpiar el nombre de la clase actual
         ctx.setNombreClaseActual(null);
 
         return null;
+
     }
 
     // construir el string de campos separados por coma con formato nombre:tipo
     public String construirCamposClase(List<NodoASTZetariano> miembros) {
+
         // devolver guion bajo si no hay miembros
         if (miembros == null || miembros.isEmpty()) {
             return "_";
@@ -71,6 +77,7 @@ public class ManejadorClasesZetariano {
         // acumular cada campo con su tipo
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < miembros.size(); i++) {
+
             NodoASTZetariano miembro = miembros.get(i);
 
             // omitir miembros nulos o que no son atributos
@@ -108,6 +115,7 @@ public class ManejadorClasesZetariano {
             }
 
             sb.append(campo);
+
         }
 
         // devolver guion bajo si no se recolecto ningun campo
@@ -116,6 +124,7 @@ public class ManejadorClasesZetariano {
         }
 
         return sb.toString();
+
     }
 
     // extraer el nombre del tipo desde un nodo de tipo
@@ -128,6 +137,7 @@ public class ManejadorClasesZetariano {
 
         // extraer el nombre cuando es TipoDato
         if (tipoNodo instanceof TipoDato) {
+
             String nombre = ((TipoDato) tipoNodo).getTipo();
 
             // usar guion bajo si el nombre es nulo
@@ -136,9 +146,11 @@ public class ManejadorClasesZetariano {
             }
 
             return nombre;
+
         }
 
         return "_";
+
     }
 
     // omitir atributos porque solo ocupan memoria
@@ -149,22 +161,26 @@ public class ManejadorClasesZetariano {
 
     // visitar el constructor interno del miembro
     public String visitarMiembroConstructor(MiembroConstructor nodo) {
+
         // visitar el constructor interno si existe
         if (nodo.getConstructor() != null) {
             nodo.getConstructor().accept(generador);
         }
 
         return null;
+
     }
 
     // visitar el metodo interno del miembro
     public String visitarMiembroMetodo(MiembroMetodo nodo) {
+
         // visitar el metodo interno si existe
         if (nodo.getMetodo() != null) {
             nodo.getMetodo().accept(generador);
         }
 
         return null;
+
     }
 
     // visitar el atributo simple sin generar cuartetas
@@ -181,29 +197,38 @@ public class ManejadorClasesZetariano {
 
     // contar params para el sobrecargasss xd
     private int contarParametros(NodoASTZetariano parametrosNodo) {
+
         // devolver cero si no es lista de parametros
         if (parametrosNodo instanceof Parametros == false) {
             return 0;
         }
+
         Parametros parametros = (Parametros) parametrosNodo;
+
         // devolver cero si la lista es nula
         if (parametros.getParametros() == null) {
             return 0;
         }
+
         return parametros.getParametros().size();
+
     }
 
     // armar el nombre con _N cuando hay params
     private String componerNombre(String base, int cantidad) {
+
         // dejar el nombre pelon si no hay params xd
         if (cantidad <= 0) {
             return base;
         }
+
         return base + "_" + cantidad;
+
     }
 
     // agregar los marcadores de inicio y fin del constructor
     public String visitarDefConstructor(DefConstructor nodo) {
+
         // construir el string de tipos de parametros
         String tiposParams = extraerTiposParametrosZet(nodo.getParametros());
 
@@ -228,10 +253,12 @@ public class ManejadorClasesZetariano {
         ctx.getCuartetas().add(new Cuarteta("func_end", nombreFuncion, "_", "_", "_", "_", "_"));
 
         return null;
+
     }
 
     // agregar los marcadores de inicio y fin del metodo sin retorno
     public String visitarMetodoSinRetorno(MetodoSinRetorno nodo) {
+
         // construir el string de tipos de parametros
         String tiposParams = extraerTiposParametrosZet(nodo.getParametros());
 
@@ -263,10 +290,12 @@ public class ManejadorClasesZetariano {
         ctx.getCuartetas().add(new Cuarteta("func_end", nombreFuncion, "_", "_", "_", "_", "_"));
 
         return null;
+
     }
 
     // agregar los marcadores de inicio y fin del metodo con retorno
     public String visitarMetodoConRetorno(MetodoConRetorno nodo) {
+
         // construir el string de tipos de parametros
         String tiposParams = extraerTiposParametrosZet(nodo.getParametros());
 
@@ -295,23 +324,25 @@ public class ManejadorClasesZetariano {
 
         // recorrer las instrucciones del cuerpo
         if (nodo.getInstrucciones() != null) {
-            for (NodoASTZetariano instruccion : nodo.getInstrucciones()) {
 
+            for (NodoASTZetariano instruccion : nodo.getInstrucciones()) {
                 if (instruccion != null) {
                     instruccion.accept(generador);
                 }
-
             }
+
         }
 
         // agregar marcador de fin a la lista de cuartetas
         ctx.getCuartetas().add(new Cuarteta("func_end", nombreFuncion, "_", "_", "_", "_", "_"));
 
         return null;
+
     }
 
     // construir el string de params con formato nombre tipo separados por coma
     public String extraerTiposParametrosZet(NodoASTZetariano parametrosNodo) {
+
         // devolver guion bajo si no hay parametros
         if (parametrosNodo == null) {
             return "_";
@@ -333,22 +364,27 @@ public class ManejadorClasesZetariano {
         // acumular los params separados por coma
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < parametros.getParametros().size(); i++) {
+
             NodoASTZetariano p = parametros.getParametros().get(i);
             String nombre = "_";
             String tipo = "_";
 
             if (p instanceof ParamSimple) {
+
                 nombre = ((ParamSimple) p).getIdentificador();
                 NodoASTZetariano tipoNodo = ((ParamSimple) p).getTipo();
                 if (tipoNodo instanceof TipoDato) {
                     tipo = ((TipoDato) tipoNodo).getTipo();
                 }
+
             } else if (p instanceof ParamArray) {
+
                 nombre = ((ParamArray) p).getIdentificador();
                 NodoASTZetariano tipoNodo = ((ParamArray) p).getTipo();
                 if (tipoNodo instanceof TipoDato) {
                     tipo = ((TipoDato) tipoNodo).getTipo() + "[]";
                 }
+
             }
 
             if (nombre == null) {
@@ -364,8 +400,11 @@ public class ManejadorClasesZetariano {
             }
 
             sb.append(nombre).append(":").append(tipo);
+
         }
+
         return sb.toString();
+
     }
 
     // visitar el parametro simple sin generar cuartetas
@@ -379,4 +418,5 @@ public class ManejadorClasesZetariano {
         // TODO
         return null;
     }
+
 }

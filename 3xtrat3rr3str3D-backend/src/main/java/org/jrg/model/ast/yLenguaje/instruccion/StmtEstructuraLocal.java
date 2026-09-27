@@ -23,4 +23,5 @@ public class StmtEstructuraLocal extends NodoASTY {
     public <T> T accept(YAstVisitor<T> visitor) {
         return visitor.visitarStmtEstructuraLocal(this);
     }
+
 }

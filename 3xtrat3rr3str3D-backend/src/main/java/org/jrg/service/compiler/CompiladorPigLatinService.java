@@ -93,7 +93,9 @@ public class CompiladorPigLatinService {
         List<Tipo> tipos = new ArrayList<>();
         List<CuartetaResultado> cuartetas = new ArrayList<>();
         if (ast instanceof Programa) {
+
             try {
+
                 AnalizadorSemanticoPigLatin analizador = new AnalizadorSemanticoPigLatin(recolector);
                 analizador.analizar((Programa) ast, rutaBase);
                 simbolos = analizador.obtenerSimbolos();
@@ -104,6 +106,7 @@ public class CompiladorPigLatinService {
                 for (int i = 0; i < cuartetasImportadas.size(); i++) {
                     cuartetas.add(new CuartetaResultado(cuartetasImportadas.get(i)));
                 }
+
                 // luego las cuartetas del archivo principal
                 // generar cuartetas a partir del ast
                 GeneradorCuartetasPigLatin generadorCuartetas = new GeneradorCuartetasPigLatin();
@@ -111,18 +114,23 @@ public class CompiladorPigLatinService {
                 // registrar los tipos de variables en el generador
                 List<Simbolo> simbolosDelAnalisis = analizador.obtenerSimbolos();
                 for (int i = 0; i < simbolosDelAnalisis.size(); i++) {
+
                     Simbolo simboloActual = simbolosDelAnalisis.get(i);
+
                     // omitir simbolos sin tipo
                     if (simboloActual == null || simboloActual.getTipo() == null) {
                         continue;
                     }
+
                     // registrar el nombre con su tipo
                     generadorCuartetas.registrarTipoVariable(simboloActual.getNombre(), simboloActual.getTipo().getNombre());
+
                 }
 
                 // registrar los campos de cada tipo importado en el generador
                 List<Tipo> tiposDelAnalisis = analizador.obtenerTipos();
                 for (int i = 0; i < tiposDelAnalisis.size(); i++) {
+
                     Tipo tipoActual = tiposDelAnalisis.get(i);
 
                     // omitir tipos nulos
@@ -140,14 +148,17 @@ public class CompiladorPigLatinService {
                     // juntar los nombres de los campos
                     List<String> nombresCampos = new ArrayList<>();
                     for (int j = 0; j < campos.size(); j++) {
+
                         Simbolo campo = campos.get(j);
                         if (campo != null) {
                             nombresCampos.add(campo.getNombre());
                         }
+
                     }
 
                     // registrar los campos en el generador
                     generadorCuartetas.registrarCamposDeStruct(tipoActual.getNombre(), nombresCampos);
+
                 }
 
                 ast.accept(generadorCuartetas);
@@ -159,6 +170,7 @@ public class CompiladorPigLatinService {
             } catch (RuntimeException e) {
                 recolector.agregar(TipoError.SEMANTICO, 1, 1, "error durante el analisis semantico: " + e.getMessage());
             }
+
         }
 
         // generar codigo C a partir de las cuartetas
@@ -178,6 +190,7 @@ public class CompiladorPigLatinService {
         }
 
         return construirResultado(recolector, arbolTextual, "", "", simbolos, tipos, new ArrayList<>(), cuartetas, codigoC, resultadoGcc);
+
     }
 
 
@@ -213,5 +226,7 @@ public class CompiladorPigLatinService {
         boolean exito = errores.isEmpty();
 
         return new ResultadoAnalisis(exito, errores, arbolTextual, astMermaid, codigoPigLatin, simbolosResultado, tiposResultado, pasosPila, simbolos, tipos, cuartetas, codigoC, resultadoGcc);
+
     }
+
 }

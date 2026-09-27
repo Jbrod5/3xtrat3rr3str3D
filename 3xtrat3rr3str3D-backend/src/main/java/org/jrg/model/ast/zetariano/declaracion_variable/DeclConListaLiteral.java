@@ -11,11 +11,13 @@ public class DeclConListaLiteral extends NodoASTZetariano {
     private final NodoASTZetariano listaExpresiones;
 
     public DeclConListaLiteral(NodoASTZetariano tipo, String identificador, int dimensiones, NodoASTZetariano listaExpresiones, int linea, int columna) {
+
         super(linea, columna);
         this.tipo = tipo;
         this.identificador = identificador;
         this.dimensiones = dimensiones;
         this.listaExpresiones = listaExpresiones;
+
     }
 
     public NodoASTZetariano getTipo() {
@@ -38,4 +40,5 @@ public class DeclConListaLiteral extends NodoASTZetariano {
     public <T> T accept(ZetarianoAstVisitor<T> visitor) {
         return visitor.visitarDeclConListaLiteral(this);
     }
+
 }

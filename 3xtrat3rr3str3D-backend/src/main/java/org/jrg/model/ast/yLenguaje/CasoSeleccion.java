@@ -14,9 +14,11 @@ public class CasoSeleccion extends NodoASTY {
      * Crear un caso de seleccion con su valor e instrucciones.
      */
     public CasoSeleccion(NodoASTY valor, List<NodoASTY> instrucciones, int linea, int columna) {
+
         super(linea, columna);
         this.valor = valor;
         this.instrucciones = instrucciones;
+
     }
 
     public NodoASTY getValor() {
@@ -31,4 +33,5 @@ public class CasoSeleccion extends NodoASTY {
     public <T> T accept(YAstVisitor<T> visitor) {
         return visitor.visitarCasoSeleccion(this);
     }
+
 }

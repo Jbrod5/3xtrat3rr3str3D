@@ -8,9 +8,11 @@ public class ExprLlamadaFuncion extends NodoAST {
     private final NodoAST argumentos;
 
     public ExprLlamadaFuncion(String nombre, NodoAST argumentos, int linea, int columna) {
+
         super(linea, columna);
         this.nombre = nombre;
         this.argumentos = argumentos;
+
     }
 
     public String getNombre() {
@@ -25,4 +27,5 @@ public class ExprLlamadaFuncion extends NodoAST {
     public <T> T accept(LatinusAstVisitor<T> visitor) {
         return visitor.visitExprLlamadaFuncion(this);
     }
+
 }

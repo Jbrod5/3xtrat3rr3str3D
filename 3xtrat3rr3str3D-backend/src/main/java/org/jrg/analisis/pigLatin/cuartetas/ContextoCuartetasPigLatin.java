@@ -21,6 +21,7 @@ public class ContextoCuartetasPigLatin {
 
     // crear el contexto con estructuras vacias
     public ContextoCuartetasPigLatin() {
+
         // inicializar la lista y el generador
         this.cuartetas = new ArrayList<>();
         this.temporales = new GeneradorTemporales();
@@ -29,6 +30,7 @@ public class ContextoCuartetasPigLatin {
         this.tiposConocidos = new HashMap<>();
         this.camposDeStructs = new HashMap<>();
         this.tiposDeVariables = new HashMap<>();
+
     }
 
     // obtener la lista de cuartetas generadas
@@ -86,6 +88,7 @@ public class ContextoCuartetasPigLatin {
 
         // guardar los campos para resolver escrituras por nombre
         this.camposDeStructs.put(nombreStruct, campos);
+
     }
 
     // registrar el tipo de una variable declarada
@@ -98,10 +101,12 @@ public class ContextoCuartetasPigLatin {
 
         // guardar el tipo para usos posteriores
         this.tiposDeVariables.put(nombre, tipo);
+
     }
 
     // adivinar el tipo del literal por como se ve
     public String inferirTipoLiteral(String valor) {
+
         // devolver guion bajo si el valor es nulo o vacio de tipo
         if (valor == null || valor.equals("_")) {
             return "_";
@@ -134,6 +139,7 @@ public class ContextoCuartetasPigLatin {
 
         // cualquier otra cosa es de tipo desconocidooo
         return "_";
+
     }
 
     // adivinar el tipo con el mapa o por como se ve
@@ -158,6 +164,7 @@ public class ContextoCuartetasPigLatin {
 
         // adivinar por como se ve el literal
         return inferirTipoLiteral(nombre);
+
     }
 
     // verificar si un tipo corresponde a cadena de texto
@@ -174,6 +181,7 @@ public class ContextoCuartetasPigLatin {
 
     // adivinar el tipo del numero, int si no se sabe
     public String tipoAritmetico(String nombre) {
+
         // adivinar el tipo del operando si ya se sabe
         String tipo = inferirTipoDe(nombre, tiposConocidos);
 
@@ -183,6 +191,7 @@ public class ContextoCuartetasPigLatin {
         }
 
         return tipo;
+
     }
 
     // adivinar que tipo sale de la cuenta
@@ -194,11 +203,13 @@ public class ContextoCuartetasPigLatin {
 
         // usar el tipo comun cuando ambos coinciden y es conocido
         if (tipoA.equals(tipoB)) {
+
             if (tipoA.equals("_")) {
                 return "entero";
             }
 
             return tipoA;
+
         }
 
         // convertir al tipo de mayor jerarquia cuando algun operando es flotante
@@ -208,6 +219,7 @@ public class ContextoCuartetasPigLatin {
 
         // usar entero por defecto en caso mixto
         return "entero";
+
     }
 
     // verificar si un tipo es numerico para convertir al tipo de mayor jerarquia
@@ -222,7 +234,9 @@ public class ContextoCuartetasPigLatin {
         if ("flotante".equals(tipo) || "decimalis".equals(tipo) || "double".equals(tipo)) {
             return true;
         }
+
         return false;
+
     }
 
     // verificar si un tipo es flotante en cualquier vocabulario
@@ -234,5 +248,7 @@ public class ContextoCuartetasPigLatin {
         }
 
         return false;
+
     }
+
 }

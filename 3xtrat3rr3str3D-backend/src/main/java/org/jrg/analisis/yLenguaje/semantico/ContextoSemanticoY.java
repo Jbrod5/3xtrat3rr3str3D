@@ -28,6 +28,7 @@ public class ContextoSemanticoY {
      * Crear el contexto semantico para el lenguaje Y.
      */
     public ContextoSemanticoY(RecolectorErrores recolectorErrores) {
+
         // si no viene recolector se crea uno nuevo
         if (recolectorErrores == null) {
             this.recolectorErrores = new RecolectorErrores();
@@ -40,12 +41,14 @@ public class ContextoSemanticoY {
         this.tiposPrimitivos = new HashMap<>();
         this.profundidadCiclos = 0;
         this.profundidadSeleccion = 0;
+
     }
 
     /**
      * Iniciar el contexto registrando los tipos primitivos.
      */
     public void iniciar() {
+
         // crear el ambito global
         this.ambitoGlobal = new AmbitoSemantico("global", null);
 
@@ -60,19 +63,23 @@ public class ContextoSemanticoY {
 
         // apilar el ambito global como ambito actual
         this.ambitos.push(this.ambitoGlobal);
+
     }
 
     // registrar los cinco tipos primitivos del lenguaje
     private void registrarTiposPrimitivos() {
+
         agregarTipoPrimitivo("entero");
         agregarTipoPrimitivo("cadena");
         agregarTipoPrimitivo("flotante");
         agregarTipoPrimitivo("caracter");
         agregarTipoPrimitivo("booleano");
+
     }
 
     // crear un tipo primitivo y registrarlo en el ambito global
     private void agregarTipoPrimitivo(String nombre) {
+
         Tipo tipo = new Tipo(nombre, true);
         this.tiposPrimitivos.put(nombre, tipo);
 
@@ -86,6 +93,7 @@ public class ContextoSemanticoY {
      * Agregar un error semantico al recolector.
      */
     public void agregarError(NodoASTY nodo, String descripcion) {
+
         int linea = 0;
         int columna = 0;
 
@@ -96,6 +104,7 @@ public class ContextoSemanticoY {
         }
 
         this.recolectorErrores.agregar(TipoError.SEMANTICO, linea, columna, descripcion);
+
     }
 
     /**
@@ -109,12 +118,14 @@ public class ContextoSemanticoY {
         }
 
         return this.ambitos.peek();
+
     }
 
     /**
      * Entrar a un ambito nuevo hijo del actual.
      */
     public void entrarAmbito(String nombre) {
+
         AmbitoSemantico padre = ambitoActual();
         AmbitoSemantico nuevo = new AmbitoSemantico(nombre, padre);
 
@@ -129,6 +140,7 @@ public class ContextoSemanticoY {
 
         // apilarlo como actual
         this.ambitos.push(nuevo);
+
     }
 
     /**
@@ -195,16 +207,20 @@ public class ContextoSemanticoY {
      * Obtener un tipo primitivo por nombre.
      */
     public Tipo tipoPrimitivo(String nombre) {
+
         if (nombre == null) {
             return null;
         }
+
         return this.tiposPrimitivos.get(nombre);
+
     }
 
     /**
      * Buscar un tipo en los ambitos o en los primitivos.
      */
     public Tipo tipoPorNombre(String nombre) {
+
         if (nombre == null) {
             return null;
         }
@@ -217,10 +233,12 @@ public class ContextoSemanticoY {
 
         // buscar en el ambito actual
         if (ambitoActual() != null) {
+
             Tipo existente = ambitoActual().buscarTipo(nombre);
             if (existente != null) {
                 return existente;
             }
+
         }
 
         // por ultimo buscar en el ambito global :c
@@ -229,12 +247,14 @@ public class ContextoSemanticoY {
         }
 
         return null;
+
     }
 
     /**
      * Declarar un tipo en el ambito actual.
      */
     public boolean declararTipo(NodoASTY nodo, Tipo tipo) {
+
         if (tipo == null) {
             return false;
         }
@@ -247,12 +267,14 @@ public class ContextoSemanticoY {
 
         ambitoActual().declararTipo(tipo);
         return true;
+
     }
 
     /**
      * Declarar un simbolo en el ambito actual.
      */
     public boolean declarar(NodoASTY nodo, String nombre, Tipo tipo, CategoriaSimbolo categoria, Integer tamano) {
+
         if (nombre == null || nombre.isEmpty()) {
             agregarError(nodo, "declaracion sin identificador");
             return false;
@@ -277,12 +299,14 @@ public class ContextoSemanticoY {
         }
 
         return true;
+
     }
 
     /**
      * Resolver un simbolo por nombre buscando en todos los ambitos.
      */
     public Simbolo resolver(String nombre, NodoASTY nodo) {
+
         Simbolo simbolo = ambitoActual().buscarSimbolo(nombre);
 
         // reportar error si no existe
@@ -291,12 +315,14 @@ public class ContextoSemanticoY {
         }
 
         return simbolo;
+
     }
 
     /**
      * Construir el tipo de un arreglo a partir del tipo base.
      */
     public Tipo tipoArray(Tipo base) {
+
         if (base == null) {
             return null;
         }
@@ -304,12 +330,14 @@ public class ContextoSemanticoY {
         // dimension 1 con su base y sin campos
         Tipo tipo = new Tipo(base.getNombre(), base.esPrimitivo(), 1, base, new ArrayList<>(), null);
         return tipo;
+
     }
 
     /**
      * Obtener el tipo de los elementos de un arreglo.
      */
     public Tipo tipoElemento(Tipo tipo) {
+
         if (tipo == null || tipo.getDimension() <= 0) {
             return null;
         }
@@ -320,12 +348,14 @@ public class ContextoSemanticoY {
         }
 
         return new Tipo(tipo.getNombre(), tipo.esPrimitivo());
+
     }
 
     /**
      * Verificar si un tipo es numerico.
      */
     public boolean esNumerico(Tipo tipo) {
+
         if (tipo == null) {
             return false;
         }
@@ -334,6 +364,7 @@ public class ContextoSemanticoY {
         String nombre = tipo.getNombre();
 
         return "entero".equals(nombre) || "flotante".equals(nombre) || "caracter".equals(nombre);
+
     }
 
     /**
@@ -375,6 +406,7 @@ public class ContextoSemanticoY {
      * Verificar si un tipo es asignable a otro.
      */
     public boolean esCompatible(Tipo esperado, Tipo real) {
+
         if (esperado == null || real == null) {
             return false;
         }
@@ -402,15 +434,18 @@ public class ContextoSemanticoY {
         }
 
         return false;
+
     }
 
     /**
      * Obtener el tipo de mayor jerarquia entre dos tipos numericos.
      */
     public Tipo tipoMayorJerarquia(Tipo a, Tipo b) {
+
         if (a == null) {
             return b;
         }
+
         if (b == null) {
             return a;
         }
@@ -424,20 +459,25 @@ public class ContextoSemanticoY {
         if (esEntero(a) || esEntero(b)) {
             return tipoPrimitivo("entero");
         }
+
         return a;
+
     }
 
     /**
      * Obtener todos los simbolos registrados.
      */
     public List<Simbolo> obtenerSimbolos() {
+
         List<Simbolo> resultado = new ArrayList<>();
         colectarSimbolos(this.ambitoGlobal, resultado);
         return resultado;
+
     }
 
     // recorrer el arbol de ambitos acumulando simbolos, metodos y constructores
     private void colectarSimbolos(AmbitoSemantico ambito, List<Simbolo> resultado) {
+
         if (ambito == null) {
             return;
         }
@@ -449,20 +489,24 @@ public class ContextoSemanticoY {
         for (AmbitoSemantico hijo : ambito.obtenerHijos()) {
             colectarSimbolos(hijo, resultado);
         }
+
     }
 
     /**
      * Obtener todos los tipos registrados.
      */
     public List<Tipo> obtenerTipos() {
+
         List<Tipo> resultado = new ArrayList<>();
         colectarTipos(this.ambitoGlobal, resultado);
 
         return resultado;
+
     }
 
     // recorrer el arbol de ambitos acumulando tipos
     private void colectarTipos(AmbitoSemantico ambito, List<Tipo> resultado) {
+
         if (ambito == null) {
             return;
         }
@@ -473,6 +517,7 @@ public class ContextoSemanticoY {
         for (AmbitoSemantico hijo : ambito.obtenerHijos()) {
             colectarTipos(hijo, resultado);
         }
+
     }
 
     /**
@@ -481,4 +526,5 @@ public class ContextoSemanticoY {
     public RecolectorErrores obtenerRecolectorErrores() {
         return this.recolectorErrores;
     }
+
 }

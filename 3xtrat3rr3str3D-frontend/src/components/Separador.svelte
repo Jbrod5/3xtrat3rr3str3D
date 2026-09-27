@@ -9,11 +9,13 @@
   let inicioY;
   
   function iniciarArrastre(ev) {
+
     valorInicial = valor;
     inicioX = ev.clientX;
     inicioY = ev.clientY;
     
     function mover(evMov) {
+
       let nuevoValor;
       if (direccion === 'vertical') {
         const delta = evMov.clientX - inicioX;
@@ -22,7 +24,9 @@
         const delta = inicioY - evMov.clientY;
         nuevoValor = valorInicial + delta;
       }
+
       onRedimensionar(nuevoValor);
+
     }
     
     function soltar() {
@@ -32,6 +36,7 @@
     
     window.addEventListener('mousemove', mover);
     window.addEventListener('mouseup', soltar);
+
   }
 </script>
 

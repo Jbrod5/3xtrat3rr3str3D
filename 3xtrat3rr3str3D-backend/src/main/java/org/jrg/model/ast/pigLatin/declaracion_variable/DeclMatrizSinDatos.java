@@ -10,11 +10,13 @@ public class DeclMatrizSinDatos extends NodoAST {
     private final NodoAST tipo;
 
     public DeclMatrizSinDatos(String identificador, NodoAST tamanoFilas, NodoAST tamanoColumnas, NodoAST tipo, int linea, int columna) {
+
         super(linea, columna);
         this.identificador = identificador;
         this.tamanoFilas = tamanoFilas;
         this.tamanoColumnas = tamanoColumnas;
         this.tipo = tipo;
+
     }
 
     public String getIdentificador() {
@@ -37,4 +39,5 @@ public class DeclMatrizSinDatos extends NodoAST {
     public <T> T accept(LatinusAstVisitor<T> visitor) {
         return visitor.visitDeclMatrizSinDatos(this);
     }
+
 }

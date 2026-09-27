@@ -12,9 +12,11 @@ public class VarArray extends NodoASTY {
      * Crear un acceso a array con su base e indice.
      */
     public VarArray(NodoASTY base, NodoASTY indice, int linea, int columna) {
+
         super(linea, columna);
         this.base = base;
         this.indice = indice;
+
     }
 
     public NodoASTY getBase() {
@@ -29,4 +31,5 @@ public class VarArray extends NodoASTY {
     public <T> T accept(YAstVisitor<T> visitor) {
         return visitor.visitarVarArray(this);
     }
+
 }

@@ -13,10 +13,12 @@ public class ExprSumaResta extends NodoASTY {
      * Crear una expresion de suma o resta.
      */
     public ExprSumaResta(NodoASTY izquierdo, String operador, NodoASTY derecho, int linea, int columna) {
+
         super(linea, columna);
         this.izquierdo = izquierdo;
         this.operador = operador;
         this.derecho = derecho;
+
     }
 
     public NodoASTY getIzquierdo() {
@@ -35,4 +37,5 @@ public class ExprSumaResta extends NodoASTY {
     public <T> T accept(YAstVisitor<T> visitor) {
         return visitor.visitarExprSumaResta(this);
     }
+
 }

@@ -21,7 +21,9 @@ public class ArchivoController {
      * Listar un directorio con metadata basica de cada entrada.
      */
     public void listar(Context ctx) {
+
         try {
+
             // extraer la ruta del cuerpo de la peticion
             Map<String, String> cuerpo = ctx.bodyAsClass(Map.class);
             String rutaBase = cuerpo.get("ruta");
@@ -45,6 +47,7 @@ public class ArchivoController {
 
 
         } catch (Exception e) {
+
             System.err.println("Error al listar directorio: " + e.getMessage());
 
             // construir la respuesta de error
@@ -56,13 +59,16 @@ public class ArchivoController {
 
 
         }
+
     }
 
     /**
      * Devolver el proyecto completo con todos los archivos y su contenido.
      */
     public void cargarProyecto(Context ctx) {
+
         try {
+
             // extraer la ruta base del cuerpo de la peticion
             Map<String, String> cuerpo = ctx.bodyAsClass(Map.class);
             String rutaBase = cuerpo.get("ruta");
@@ -86,6 +92,7 @@ public class ArchivoController {
 
 
         } catch (Exception e) {
+
             System.err.println("Error al cargar proyecto: " + e.getMessage());
 
             // construir la respuesta de error
@@ -94,14 +101,18 @@ public class ArchivoController {
             respuesta.put("mensaje", e.getMessage());
 
             ctx.status(500).json(respuesta);
+
         }
+
     }
 
     /**
      * Guardar un archivo recibiendo archivo ruta y contenido.
      */
     public void guardar(Context ctx) {
+
         try {
+
             // extraer los campos del cuerpo de la peticion
             Map<String, String> cuerpo = ctx.bodyAsClass(Map.class);
             String archivo = cuerpo.get("archivo");
@@ -117,11 +128,13 @@ public class ArchivoController {
 //              }
             // asignar ruta por defecto si no viene
             if (ruta == null || ruta.isEmpty()) {
+
                 if (archivo != null && !archivo.isEmpty()) {
                     ruta = archivo;
                 } else {
                     ruta = "principal.z";
                 }
+
             }
 
             System.out.println("backend guardando archivo=" + archivo + " ruta=" + ruta);
@@ -139,6 +152,7 @@ public class ArchivoController {
 
 
         } catch (Exception e) {
+
             System.err.println("error al guardar archivo: " + e.getMessage());
 
             // construir la respuesta de error
@@ -147,14 +161,18 @@ public class ArchivoController {
             respuesta.put("mensaje", e.getMessage());
 
             ctx.status(500).json(respuesta);
+
         }
+
     }
 
     /**
      * Leer el contenido de un archivo desde disco.
      */
     public void leer(Context ctx) {
+
         try {
+
             // extraer la ruta del cuerpo de la peticion
             Map<String, String> cuerpo = ctx.bodyAsClass(Map.class);
             String ruta = cuerpo.get("ruta");
@@ -170,12 +188,16 @@ public class ArchivoController {
             ctx.status(200).json(respuesta);
 
         } catch (Exception e) {
+
             // construir la respuesta de error
             Map<String, Object> respuesta = new HashMap<>();
             respuesta.put("exito", false);
             respuesta.put("mensaje", e.getMessage());
 
             ctx.status(500).json(respuesta);
+
         }
+
     }
+
 }

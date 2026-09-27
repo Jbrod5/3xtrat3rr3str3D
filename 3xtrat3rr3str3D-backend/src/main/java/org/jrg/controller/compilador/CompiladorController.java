@@ -19,16 +19,20 @@ public class CompiladorController {
 
 
     public CompiladorController(CompiladorPigLatinService pigLatin, CompiladorZetarianoService zetariano, CompiladorYLenguajeService compiladorY) {
+
         this.compiladorPigLatin = pigLatin;
         this.compiladorZetariano = zetariano;
         this.compiladorY = compiladorY;
+
     }
 
     /**
      * Compilar codigo recibido como texto plano eligiendo el lenguaje por query param.
      */
     public void analizar(Context ctx) {
+
         try {
+
             String codigo = ctx.body();
             String lenguaje = ctx.queryParam("lenguaje");
             String ruta = ctx.queryParam("ruta");
@@ -47,13 +51,16 @@ public class CompiladorController {
         } catch (RuntimeException e) {
             ctx.status(500).json(construirError(e));
         }
+
     }
 
     /**
      * Traducir codigo recibido como texto plano a un lenguaje destino.
      */
     public void traducir(Context ctx) {
+
         try {
+
             String codigo = ctx.body();
             String lenguaje = ctx.queryParam("lenguaje");
             String ruta = ctx.queryParam("ruta");
@@ -68,13 +75,16 @@ public class CompiladorController {
         } catch (RuntimeException e) {
             ctx.status(500).json(construirError(e));
         }
+
     }
 
     /**
      * Compilar codigo recibido como JSON con los campos codigo y lenguaje.
      */
     public void compilar(Context ctx) {
+
         try {
+
             Map<String, String> cuerpo = ctx.bodyAsClass(Map.class);
 
             String codigo = cuerpo.get("codigo");
@@ -91,21 +101,27 @@ public class CompiladorController {
         } catch (RuntimeException e) {
             ctx.status(500).json(construirError(e));
         }
+
     }
 
 
     // ejecutar la compilacion delegando al servicio correspondiente
     private ResultadoAnalisis ejecutarCompilacion(String lenguaje, String codigo, String ruta) {
+
         if ("zetariano".equalsIgnoreCase(lenguaje) || "zet".equalsIgnoreCase(lenguaje)) {
+
             // extraer el nombre base del archivo sin ruta ni extension
             String nombreArchivo = "";
             if (ruta != null && ruta.isEmpty() == false) {
+
                 String nombreConExtension = ruta;
+
                 // cortar la ruta hasta la ultima diagonal
                 int ultimoSlash = ruta.lastIndexOf('/');
                 if (ultimoSlash >= 0) {
                     nombreConExtension = ruta.substring(ultimoSlash + 1);
                 }
+
                 // cortar la extension desde el ultimo punto
                 int ultimoPunto = nombreConExtension.lastIndexOf('.');
                 if (ultimoPunto > 0) {
@@ -113,9 +129,12 @@ public class CompiladorController {
                 } else {
                     nombreArchivo = nombreConExtension;
                 }
+
             }
+
             // pasar el nombre del archivo para validar la clase
             return this.compiladorZetariano.analizar(codigo, nombreArchivo);
+
         }
 
         if ("y".equalsIgnoreCase(lenguaje) || "ylenguaje".equalsIgnoreCase(lenguaje)) {
@@ -124,15 +143,19 @@ public class CompiladorController {
 
         // pig latin recibe la ruta base para resolver imports
         return this.compiladorPigLatin.analizar(codigo, ruta);
+
     }
 
     // construir una respuesta de error uniforme
     private Map<String, Object> construirError(RuntimeException e) {
+
         Map<String, Object> respuesta = new HashMap<>();
 
         respuesta.put("exito", false);
         respuesta.put("mensaje", e.getMessage());
 
         return respuesta;
+
     }
+
 }

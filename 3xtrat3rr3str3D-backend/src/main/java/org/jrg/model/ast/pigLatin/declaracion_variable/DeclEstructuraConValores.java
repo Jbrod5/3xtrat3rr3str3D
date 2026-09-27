@@ -9,10 +9,12 @@ public class DeclEstructuraConValores extends NodoAST {
     private final NodoAST atributos;
 
     public DeclEstructuraConValores(String identificador, String tipo, NodoAST atributos, int linea, int columna) {
+
         super(linea, columna);
         this.identificador = identificador;
         this.tipo = tipo;
         this.atributos = atributos;
+
     }
 
     public String getIdentificador() {
@@ -31,4 +33,5 @@ public class DeclEstructuraConValores extends NodoAST {
     public <T> T accept(LatinusAstVisitor<T> visitor) {
         return visitor.visitDeclEstructuraConValores(this);
     }
+
 }

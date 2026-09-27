@@ -19,4 +19,5 @@ public class StmtImpresion extends NodoAST {
     public <T> T accept(LatinusAstVisitor<T> visitor) {
         return visitor.visitStmtImpresion(this);
     }
+
 }

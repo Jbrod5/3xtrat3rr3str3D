@@ -32,4 +32,5 @@ public class EscuchaErroresAntlr extends BaseErrorListener {
         // poner la columna en base 1 y pasarla al recolector
         this.recolector.agregar(this.tipoError, line, charPositionInLine + 1, msg);
     }
+
 }

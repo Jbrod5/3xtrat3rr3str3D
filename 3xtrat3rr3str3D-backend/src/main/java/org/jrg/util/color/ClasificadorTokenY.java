@@ -5,7 +5,9 @@ import org.jrg.antlrBase.yLenguaje.YLenguajeLexer;
 public class ClasificadorTokenY {
 
     public static String clasificar(int tokenType) {
+
         switch (tokenType) {
+
             case YLenguajeLexer.ESTRUCTURAS_TAG:
             case YLenguajeLexer.FUNCIONES_TAG:
             case YLenguajeLexer.ESTRUCTURA:
@@ -85,6 +87,9 @@ public class ClasificadorTokenY {
 
             default:
                 return "unknown";
+
         }
+
     }
+
 }

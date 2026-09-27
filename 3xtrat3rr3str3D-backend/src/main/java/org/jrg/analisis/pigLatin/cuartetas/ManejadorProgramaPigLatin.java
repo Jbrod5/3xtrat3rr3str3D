@@ -28,6 +28,7 @@ public class ManejadorProgramaPigLatin {
 
     // visitar el programa con main de apertura y cierre
     public String visitPrograma(Programa nodo) {
+
         // visitar seccion de variables globales si existe
         if (nodo.getSeccionGlobalVariables() != null) {
             nodo.getSeccionGlobalVariables().accept(generador);
@@ -45,6 +46,7 @@ public class ManejadorProgramaPigLatin {
         ctx.getCuartetas().add(new Cuarteta("func_end", "main", "_", "_", "_", "_", "_"));
 
         return null;
+
     }
 
     // visitar la seccion de importaciones sin generar cuartetas
@@ -61,28 +63,38 @@ public class ManejadorProgramaPigLatin {
 
     // visitar las declaraciones de variables globales
     public String visitSeccionGlobalVariables(SeccionGlobalVariables nodo) {
+
         // visitar declaraciones si existen
         if (nodo.getDeclaraciones() != null) {
+
             for (NodoAST decl : nodo.getDeclaraciones()) {
                 if (decl != null) {
                     decl.accept(generador);
                 }
             }
+
         }
+
         return null;
+
     }
 
     // visitar las instrucciones del bloque principal
     public String visitSeccionMaior(SeccionMaior nodo) {
+
         // visitar instrucciones del bloque principal
         if (nodo.getInstrucciones() != null) {
+
             for (NodoAST inst : nodo.getInstrucciones()) {
                 if (inst != null) {
                     inst.accept(generador);
                 }
             }
+
         }
+
         return null;
+
     }
 
     // visitar el tipo de dato sin generar cuartetas
@@ -111,14 +123,17 @@ public class ManejadorProgramaPigLatin {
 
         // visitar instrucciones del bloque
         if (nodo.getInstrucciones() != null) {
+
             for (NodoAST inst : nodo.getInstrucciones()) {
                 if (inst != null) {
                     inst.accept(generador);
                 }
             }
+
         }
 
         return null;
+
     }
 
     // visitar el elemento a imprimir y devolver su resultado
@@ -126,4 +141,5 @@ public class ManejadorProgramaPigLatin {
         // visitar la expresion interna y devolver su resultado
         return nodo.getExpresion().accept(generador);
     }
+
 }

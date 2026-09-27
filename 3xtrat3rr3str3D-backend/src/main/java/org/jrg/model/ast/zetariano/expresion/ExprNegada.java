@@ -9,9 +9,11 @@ public class ExprNegada extends NodoASTZetariano {
     private final NodoASTZetariano expresion;
 
     public ExprNegada(String operador, NodoASTZetariano expresion, int linea, int columna) {
+
         super(linea, columna);
         this.operador = operador;
         this.expresion = expresion;
+
     }
 
     public String getOperador() {
@@ -26,4 +28,5 @@ public class ExprNegada extends NodoASTZetariano {
     public <T> T accept(ZetarianoAstVisitor<T> visitor) {
         return visitor.visitarExprNegada(this);
     }
+
 }

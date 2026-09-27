@@ -25,4 +25,5 @@ public class SeccionFunciones extends NodoASTY {
     public <T> T accept(YAstVisitor<T> visitor) {
         return visitor.visitarSeccionFunciones(this);
     }
+
 }

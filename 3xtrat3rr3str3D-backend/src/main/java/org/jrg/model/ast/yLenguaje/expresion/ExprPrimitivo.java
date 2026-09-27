@@ -23,4 +23,5 @@ public class ExprPrimitivo extends NodoASTY {
     public <T> T accept(YAstVisitor<T> visitor) {
         return visitor.visitarExprPrimitivo(this);
     }
+
 }

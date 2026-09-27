@@ -14,11 +14,13 @@ public class DeclArrayConValores extends NodoASTY {
      * Crear una declaracion de array con valores iniciales.
      */
     public DeclArrayConValores(NodoASTY tipo, String nombre, NodoASTY tamano, NodoASTY listaValores, int linea, int columna) {
+
         super(linea, columna);
         this.tipo = tipo;
         this.nombre = nombre;
         this.tamano = tamano;
         this.listaValores = listaValores;
+
     }
 
     public NodoASTY getTipo() {
@@ -41,4 +43,5 @@ public class DeclArrayConValores extends NodoASTY {
     public <T> T accept(YAstVisitor<T> visitor) {
         return visitor.visitarDeclArrayConValores(this);
     }
+
 }

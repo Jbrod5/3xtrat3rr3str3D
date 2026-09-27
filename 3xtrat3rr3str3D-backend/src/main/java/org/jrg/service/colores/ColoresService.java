@@ -13,6 +13,7 @@ public class ColoresService {
      * Obtener la lista de tokens coloreados a partir del codigo recibido.
      */
     public List<Object> obtenerColores(String codigo, String lenguaje) {
+
         List<TokenColor> coloresToken;
 
         if ("piglatin".equalsIgnoreCase(lenguaje) || "lat".equalsIgnoreCase(lenguaje)) {
@@ -29,17 +30,22 @@ public class ColoresService {
         // convertir tokens a lista de mapas
         List<Object> colores = new ArrayList<>();
         for (TokenColor tc : coloresToken) {
+
             Map<String, Object> tokenInfo = new java.util.HashMap<>();
             tokenInfo.put("start", tc.start);
             tokenInfo.put("length", tc.length);
             tokenInfo.put("category", tc.category);
             colores.add(tokenInfo);
+
         }
 
         return colores;
+
     }
+
     // compatibilidad con version anterior sin parametro lenguaje
     public List<Object> obtenerColores(String codigo) {
         return obtenerColores(codigo, "piglatin");
     }
+
 }

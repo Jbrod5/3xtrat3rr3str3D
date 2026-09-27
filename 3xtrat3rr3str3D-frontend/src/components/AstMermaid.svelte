@@ -2,7 +2,7 @@
   import { onMount, tick } from 'svelte';
   import mermaid from 'mermaid';
 
-  export let codigoMermaid; // código original del backend
+  export let codigoMermaid; // codigo original del backend
 
   // Referencias al DOM
   let contenedorDiagrama;
@@ -30,22 +30,27 @@
   let dragStartOffsetX = 0, dragStartOffsetY = 0;
 
   // ============================================================
-  //  INICIALIZACIÓN
+  //  INICIALIZACION
   // ============================================================
   onMount(() => {
+
     mermaid.initialize({
+
       startOnLoad: false,
       theme: 'default',
       maxEdges: 5000,
       maxTextSize: 10000000,
       flowchart: {
+
         useMaxWidth: false,
         htmlLabels: true,
         curve: 'basis',
         rankSpacing: 250,
         nodeSpacing: 60,
         padding: 20,
+
       },
+
     });
 
     codigoEditable = codigoMermaid || '';
@@ -60,6 +65,7 @@
         renderizar(codigoEditable);
       }
     });
+
   });
 
   // ============================================================
@@ -67,38 +73,52 @@
   // ============================================================
   let ultimoProp = '';
   $: {
+
     if (codigoMermaid !== undefined && codigoMermaid !== null) {
+
       if (codigoMermaid !== ultimoProp) {
+
         ultimoProp = codigoMermaid;
         if (!modoEdicion) {
+
           codigoEditable = codigoMermaid;
           if (vistaActual === 'diagrama') {
             renderizar(codigoEditable);
           } else {
-            // Si estamos en modo código, actualizar el textarea
+
+            // Si estamos en modo codigo, actualizar el textarea
             if (textareaEditor) {
               textareaEditor.value = codigoEditable;
             }
+
           }
+
         }
+
       }
+
     }
+
   }
 
   // ============================================================
   //  RENDERIZADO MERMAID
   // ============================================================
   async function renderizar(codigo) {
+
     if (!contenedorDiagrama) return;
     if (estaRenderizando) return;
 
     if (!codigo || codigo.trim() === '') {
-      contenedorDiagrama.innerHTML = '<div class="text-muted small">No hay código Mermaid para mostrar.</div>';
+
+      contenedorDiagrama.innerHTML = '<div class="text-muted small">No hay codigo Mermaid para mostrar.</div>';
       svgCache = null;
       return;
+
     }
 
     try {
+
       estaRenderizando = true;
       const codigoSaneado = sanearMermaid(codigo);
       const { svg } = await mermaid.render(idUnico, codigoSaneado);
@@ -107,19 +127,25 @@
       offsetX = 0;
       offsetY = 0;
       aplicarTransformacion();
+
     } catch (err) {
+
       console.error('Error renderizando Mermaid:', err);
       contenedorDiagrama.innerHTML = `<div class="text-danger small">Error al renderizar AST: ${err.message}</div>`;
       svgCache = null;
+
     } finally {
       estaRenderizando = false;
     }
+
   }
 
   function sanearMermaid(codigo) {
+
     if (!codigo) return codigo;
     let resultado = codigo.replace(/\\"/g, '');
     resultado = resultado.replace(/\["([^"]*)"\]/g, (match, contenido) => {
+
       let limpio = contenido
         .replace(/\(/g, ' ')
         .replace(/\)/g, ' ')
@@ -131,8 +157,10 @@
         .replace(/,/g, ' ');
       limpio = limpio.replace(/\s+/g, ' ');
       return `["${limpio}"]`;
+
     });
     return resultado;
+
   }
 
   // ============================================================
@@ -142,21 +170,29 @@
     nivelZoom = Math.min(nivelZoom * 1.2, ZOOM_MAX);
     aplicarTransformacion();
   }
+
   function zoomOut() {
     nivelZoom = Math.max(nivelZoom * 0.8, ZOOM_MIN);
     aplicarTransformacion();
   }
+
   function zoomReset() {
+
     nivelZoom = 1;
     offsetX = 0;
     offsetY = 0;
     aplicarTransformacion();
+
   }
+
   function zoomFit() {
+
     if (contenedorWrapper && contenedorDiagrama) {
+
       const wrapperRect = contenedorWrapper.getBoundingClientRect();
       const svg = contenedorDiagrama.querySelector('svg');
       if (svg) {
+
         const svgRect = svg.getBoundingClientRect();
         const scaleX = (wrapperRect.width - 40) / Math.max(svgRect.width, 1);
         const scaleY = (wrapperRect.height - 40) / Math.max(svgRect.height, 1);
@@ -164,20 +200,27 @@
         offsetX = 0;
         offsetY = 0;
         aplicarTransformacion();
+
       }
+
     }
+
   }
+
   function aplicarTransformacion() {
+
     if (contenedorDiagrama) {
       contenedorDiagrama.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${nivelZoom})`;
       contenedorDiagrama.style.transformOrigin = 'top left';
     }
+
   }
 
   // ============================================================
   //  ARRASTRE
   // ============================================================
   function iniciarArrastre(ev) {
+
     if (ev.button !== 0) return;
     if (ev.target.closest('button') || ev.target.closest('a')) return;
     isDragging = true;
@@ -188,8 +231,11 @@
     contenedorWrapper.style.cursor = 'grabbing';
     document.body.style.userSelect = 'none';
     ev.preventDefault();
+
   }
+
   function moverArrastre(ev) {
+
     if (!isDragging) return;
     const deltaX = ev.clientX - startX;
     const deltaY = ev.clientY - startY;
@@ -197,88 +243,117 @@
     offsetY = dragStartOffsetY + deltaY;
     aplicarTransformacion();
     ev.preventDefault();
+
   }
+
   function finalizarArrastre() {
+
     if (isDragging) {
+
       isDragging = false;
       contenedorWrapper.style.cursor = 'grab';
       document.body.style.userSelect = '';
+
     }
+
   }
+
   function manejarWheel(ev) {
+
     if (ev.ctrlKey || ev.metaKey) {
+
       ev.preventDefault();
       if (ev.deltaY < 0) zoomIn();
       else zoomOut();
+
     }
+
   }
 
   // ============================================================
   //  FUNCIONES EXPORTADAS
   // ============================================================
   export function copiarMermaid() {
+
     const texto = codigoEditable || '';
     if (!texto) {
-      alert('No hay código Mermaid para copiar.');
+      alert('No hay codigo Mermaid para copiar.');
       return;
     }
+
     navigator.clipboard.writeText(texto)
-      .then(() => alert('Código Mermaid copiado al portapapeles.'))
+      .then(() => alert('Codigo Mermaid copiado al portapapeles.'))
       .catch(() => {
+
         const textarea = document.createElement('textarea');
         textarea.value = texto;
         document.body.appendChild(textarea);
         textarea.select();
         document.execCommand('copy');
         document.body.removeChild(textarea);
-        alert('Código Mermaid copiado al portapapeles.');
+        alert('Codigo Mermaid copiado al portapapeles.');
+
       });
+
   }
 
   // ============================================================
   //  SWITCH DE VISTA
   // ============================================================
   function toggleVista() {
+
     if (vistaActual === 'diagrama') {
+
       vistaActual = 'codigo';
       mostrarCodigo = true;
-      // Asegurar que el textarea tenga el código actual
+
+      // Asegurar que el textarea tenga el codigo actual
       if (textareaEditor) {
         textareaEditor.value = codigoEditable;
       }
+
     } else {
+
       vistaActual = 'diagrama';
       mostrarCodigo = false;
       renderizar(codigoEditable);
+
     }
+
   }
 
   // ============================================================
-  //  ACCIONES DE EDICIÓN
+  //  ACCIONES DE EDICION
   // ============================================================
   function aplicarEdicion() {
+
     // Leer el valor del textarea
     if (textareaEditor) {
       codigoEditable = textareaEditor.value;
       modoEdicion = true;
     }
+
     vistaActual = 'diagrama';
     mostrarCodigo = false;
     renderizar(codigoEditable);
+
   }
 
   function restaurarOriginal() {
+
     codigoEditable = codigoMermaid || '';
     modoEdicion = false;
     if (textareaEditor) {
       textareaEditor.value = codigoEditable;
     }
+
     if (vistaActual === 'codigo') {
-      // Si estamos en modo código, solo actualizar el textarea
+      // Si estamos en modo codigo, solo actualizar el textarea
       // pero no renderizar hasta que el usuario quiera
     } else {
       renderizar(codigoEditable);
     }
+
   }
 </script>
 
@@ -290,7 +365,7 @@
       <span class="small text-muted">Diagrama</span>
       <div class="form-check form-switch mb-0">
         <input class="form-check-input" type="checkbox" id="vistaSwitch" bind:checked={mostrarCodigo} on:change={toggleVista}>
-        <label class="form-check-label small text-muted" for="vistaSwitch">Código</label>
+        <label class="form-check-label small text-muted" for="vistaSwitch">Codigo</label>
       </div>
     </div>
     <span class="vr"></span>
@@ -306,7 +381,7 @@
       <button class="btn btn-sm btn-outline-secondary" on:click={zoomIn} title="Acercar (Ctrl + Scroll)">
         <i class="bi bi-zoom-in"></i>
       </button>
-      <button class="btn btn-sm btn-outline-secondary" on:click={zoomReset} title="Restablecer zoom y posición">
+      <button class="btn btn-sm btn-outline-secondary" on:click={zoomReset} title="Restablecer zoom y posicion">
         <i class="bi bi-arrows-angle-expand"></i>
       </button>
       <button class="btn btn-sm btn-outline-secondary" on:click={zoomFit} title="Ajustar al contenedor">
@@ -315,7 +390,7 @@
       <span class="text-muted small ms-2">(Arrastrar para mover)</span>
     {/if}
 
-    <!-- Botones de edición (solo código) -->
+    <!-- Botones de edicion (solo codigo) -->
     {#if vistaActual === 'codigo'}
       <button class="btn btn-sm btn-outline-primary" on:click={aplicarEdicion}>
         <i class="bi bi-arrow-repeat"></i> Renderizar
@@ -350,12 +425,12 @@
       </div>
     {:else}
       <div class="w-100 h-100 d-flex flex-column" style="border: 1px solid #e9ecef; border-radius: 4px; background: #fff; padding: 8px;">
-        <label class="small text-muted mb-1">Editar código Mermaid (JSON):</label>
+        <label class="small text-muted mb-1">Editar codigo Mermaid (JSON):</label>
         <textarea
           bind:this={textareaEditor}
           class="form-control font-monospace flex-grow-1"
           style="resize: none; font-size: 13px; line-height: 1.5; border: none; outline: none; background: #f8f9fa;"
-          placeholder="Escribe o pega el código Mermaid aquí..."
+          placeholder="Escribe o pega el codigo Mermaid aqui..."
           bind:value={codigoEditable}
           on:input={() => { modoEdicion = true; }}
         ></textarea>

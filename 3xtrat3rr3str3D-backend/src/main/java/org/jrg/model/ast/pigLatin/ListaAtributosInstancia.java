@@ -21,4 +21,5 @@ public class ListaAtributosInstancia extends NodoAST {
     public <T> T accept(LatinusAstVisitor<T> visitor) {
         return visitor.visitListaAtributosInstancia(this);
     }
+
 }

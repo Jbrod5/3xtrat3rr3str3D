@@ -12,9 +12,11 @@ public class ParamArray extends NodoASTY {
      * Crear un parametro array con su tipo y nombre.
      */
     public ParamArray(NodoASTY tipo, String nombre, int linea, int columna) {
+
         super(linea, columna);
         this.tipo = tipo;
         this.nombre = nombre;
+
     }
 
     public NodoASTY getTipo() {
@@ -29,4 +31,5 @@ public class ParamArray extends NodoASTY {
     public <T> T accept(YAstVisitor<T> visitor) {
         return visitor.visitarParamArray(this);
     }
+
 }

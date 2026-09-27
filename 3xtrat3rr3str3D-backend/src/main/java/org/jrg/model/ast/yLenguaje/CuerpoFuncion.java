@@ -25,4 +25,5 @@ public class CuerpoFuncion extends NodoASTY {
     public <T> T accept(YAstVisitor<T> visitor) {
         return visitor.visitarCuerpoFuncion(this);
     }
+
 }

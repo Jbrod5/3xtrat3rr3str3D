@@ -11,12 +11,14 @@ public class DefClase extends NodoASTZetariano {
     private final List<NodoASTZetariano> miembros;
 
     public DefClase(String nombre, List<NodoASTZetariano> miembros, int linea, int columna) {
+
         super(linea, columna);
         this.nombre = nombre;
         this.miembros = new ArrayList<>();
         if (miembros != null) {
             this.miembros.addAll(miembros);
         }
+
     }
 
     public String getNombre() {
@@ -31,4 +33,5 @@ public class DefClase extends NodoASTZetariano {
     public <T> T accept(ZetarianoAstVisitor<T> visitor) {
         return visitor.visitarDefClase(this);
     }
+
 }

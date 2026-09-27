@@ -11,10 +11,12 @@ public class ResultadoExpresion {
      * Crear un resultado de expresion.
      */
     public ResultadoExpresion(Tipo tipo, Simbolo simbolo, Constante constante, boolean asignable) {
+
         this.tipo = tipo;
         this.simbolo = simbolo;
         this.constante = constante;
         this.asignable = asignable;
+
     }
 
     /**
@@ -51,4 +53,5 @@ public class ResultadoExpresion {
     public boolean isAsignable() {
         return asignable;
     }
+
 }

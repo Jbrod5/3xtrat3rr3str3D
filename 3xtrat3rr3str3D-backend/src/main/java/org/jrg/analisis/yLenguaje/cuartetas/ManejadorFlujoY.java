@@ -37,6 +37,7 @@ public class ManejadorFlujoY {
         }
 
         return null;
+
     }
 
     // visitar la seleccion interna de la instruccion
@@ -48,6 +49,7 @@ public class ManejadorFlujoY {
         }
 
         return null;
+
     }
 
     // visitar el ciclo interno de la instruccion
@@ -59,10 +61,12 @@ public class ManejadorFlujoY {
         }
 
         return null;
+
     }
 
     // generar el si con ramas sino y contrario
     public String visitarStatementSi(StatementSi nodo) {
+
         // evaluar la condicion principal
         String condicion = "_";
         if (nodo.getCondicionPrincipal() != null) {
@@ -97,6 +101,7 @@ public class ManejadorFlujoY {
         if (nodo.getCondicionesSino() != null) {
 
             for (int i = 0; i < nodo.getCondicionesSino().size(); i++) {
+
                 // evaluar la condicion de la rama actual
                 String condicionSino = "_";
                 if (nodo.getCondicionesSino().get(i) != null) {
@@ -115,11 +120,13 @@ public class ManejadorFlujoY {
 
                 // visitar el bloque de la rama actual si existe
                 if (nodo.getBloquesSino() != null) {
+
                     if (i < nodo.getBloquesSino().size()) {
                         if (nodo.getBloquesSino().get(i) != null) {
                             nodo.getBloquesSino().get(i).accept(generador);
                         }
                     }
+
                 }
 
                 // agregar el salto al final a la lista de cuartetas
@@ -127,7 +134,9 @@ public class ManejadorFlujoY {
 
                 // agregar la etiqueta de la rama que sigue a la lista de cuartetas
                 ctx.getCuartetas().add(new Cuarteta("label", lSiguienteSino, "_", "_", "_", "_", "_"));
+
             }
+
         }
 
         // visitar el bloque contrario si existe
@@ -139,10 +148,12 @@ public class ManejadorFlujoY {
         ctx.getCuartetas().add(new Cuarteta("label", lfin, "_", "_", "_", "_", "_"));
 
         return null;
+
     }
 
     // generar la seleccion elegir con comparaciones por caso
     public String visitarStatementElegir(StatementElegir nodo) {
+
         // evaluar la expresion de seleccion
         String selector = "_";
         if (nodo.getExpresion() != null) {
@@ -210,6 +221,7 @@ public class ManejadorFlujoY {
                             }
 
                         }
+
                     }
 
                     // agregar el salto al final a la lista de cuartetas
@@ -219,12 +231,12 @@ public class ManejadorFlujoY {
                     ctx.getCuartetas().add(new Cuarteta("label", lSiguiente, "_", "_", "_", "_", "_"));
 
                 } else {
-
                     // visitar el caso directamente
                     caso.accept(generador);
-
                 }
+
             }
+
         }
 
         // visitar el caso por defecto si existe
@@ -236,6 +248,7 @@ public class ManejadorFlujoY {
         ctx.getCuartetas().add(new Cuarteta("label", lfin, "_", "_", "_", "_", "_"));
 
         return null;
+
     }
 
     // generar el ciclo para con etiquetas de inicio y fin
@@ -248,11 +261,13 @@ public class ManejadorFlujoY {
         // crear las etiquetas del ciclo
         String lInicio = ctx.getTemporales().nuevaEtiqueta();
         String lFin = ctx.getTemporales().nuevaEtiqueta();
+
         // crear la etiqueta del paso para el continuar
         String lPaso = ctx.getTemporales().nuevaEtiqueta();
 
         // asignar las etiquetas actuales
         ctx.setEtiquetaBreakActual(lFin);
+
         // ctx.setEtiquetaContinueActual(lInicio);
         // el continuar va al paso para no saltarse el incremento
         ctx.setEtiquetaContinueActual(lPaso);
@@ -288,7 +303,9 @@ public class ManejadorFlujoY {
 
             // agregar el salto al final si la condicion es falsa a la lista de cuartetas
             ctx.getCuartetas().add(new Cuarteta("if_false", condicion, lFin, "_", "booleano", "_", "_"));
+
         }
+
         // visitar el bloque si existe
         if (nodo.getBloque() != null) {
             nodo.getBloque().accept(generador);
@@ -311,6 +328,7 @@ public class ManejadorFlujoY {
         ctx.setEtiquetaContinueActual(anteriorContinue);
 
         return null;
+
     }
 
     // generar el ciclo mientras con etiquetas de inicio y fin
@@ -360,6 +378,7 @@ public class ManejadorFlujoY {
         ctx.setEtiquetaContinueActual(anteriorContinue);
 
         return null;
+
     }
 
     // generar el ciclo hacer que ejecuta el bloque al menos una vez
@@ -414,6 +433,7 @@ public class ManejadorFlujoY {
         ctx.setEtiquetaContinueActual(anteriorContinue);
 
         return null;
+
     }
 
     // generar la inicializacion con declaracion del para
@@ -431,9 +451,11 @@ public class ManejadorFlujoY {
 
             // agregar la asignacion a la variable a la lista de cuartetas
             ctx.getCuartetas().add(new Cuarteta(":=", valor, "_", nodo.getNombre(), ctx.inferirTipoDe(valor, ctx.getTiposConocidos()), "_", "_"));
+
         }
 
         return null;
+
     }
 
     // generar la inicializacion con asignacion del para
@@ -464,16 +486,19 @@ public class ManejadorFlujoY {
         ctx.getCuartetas().add(new Cuarteta(":=", valor, "_", variable, ctx.inferirTipoDe(valor, ctx.getTiposConocidos()), "_", "_"));
 
         return null;
+
     }
 
     // visitar la expresion del paso del para
     public String visitarPasoParaExpr(PasoParaExpr nodo) {
+
         // visitar la expresion del paso si existe
         if (nodo.getExpresion() != null) {
             nodo.getExpresion().accept(generador);
         }
 
         return null;
+
     }
 
     // generar la asignacion del paso del para
@@ -503,5 +528,7 @@ public class ManejadorFlujoY {
         ctx.getCuartetas().add(new Cuarteta(":=", valor, "_", variable, ctx.inferirTipoDe(valor, ctx.getTiposConocidos()), "_", "_"));
 
         return null;
+
     }
+
 }

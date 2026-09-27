@@ -21,8 +21,10 @@ public class CuartetaPrint extends CuartetaC {
      */
     @Override
     public String obtenerCodigoC(ContextoTraduccion ctx) {
+
         // resolver el valor a imprimir
         String valor = ctx.expresionOperando(arg1);
+
         // elegir formato por la forma del valor primero
         String formato = null;
         String reg = null;
@@ -33,12 +35,15 @@ public class CuartetaPrint extends CuartetaC {
             formato = "%c";
             reg = "AX_CHAR";
         }
+
         // elegir formato segun el arreglo del slot si no hay forma
         if (formato == null) {
+
             String arreglo = ctx.arregloDe(arg1);
             if (arreglo == null) {
                 arreglo = ctx.arregloPara(tipoArg1);
             }
+
             formato = "%d";
             reg = "AX_INT";
             if ("stackstring".equals(arreglo)) {
@@ -54,8 +59,12 @@ public class CuartetaPrint extends CuartetaC {
                 formato = "%d";
                 reg = "AX_BOOLEAN";
             }
+
         }
+
         // imprimir por registro con salto y flush
         return reg + " = " + valor + ";\n    printf(\"" + formato + "\\n\", " + reg + ");\n    fflush(stdout);";
+
     }
+
 }

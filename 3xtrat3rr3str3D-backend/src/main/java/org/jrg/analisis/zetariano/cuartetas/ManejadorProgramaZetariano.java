@@ -17,6 +17,7 @@ public class ManejadorProgramaZetariano {
 
     // estado compartido de la generacion
     private final ContextoCuartetasZetariano ctx;
+
     // generador duenio para el descenso recursivo
     private final GeneradorCuartetasZetariano generador;
 
@@ -28,12 +29,14 @@ public class ManejadorProgramaZetariano {
 
     // visitar la definicion de clase del programa
     public String visitarPrograma(Programa nodo) {
+
         // visitar la definicion de clase si existe
         if (nodo.getDefinicionClase() != null) {
             nodo.getDefinicionClase().accept(generador);
         }
 
         return null;
+
     }
 
     // visitar el tipo de dato sin generar cuartetas
@@ -50,6 +53,7 @@ public class ManejadorProgramaZetariano {
 
     // recorrer las instrucciones del bloque
     public String visitarBloque(Bloque nodo) {
+
         // recorrer las instrucciones del bloque
         if (nodo.getInstrucciones() != null) {
 
@@ -65,10 +69,12 @@ public class ManejadorProgramaZetariano {
         }
 
         return null;
+
     }
 
     // recorrer las instrucciones del caso switch
     public String visitarCasoSwitch(CasoSwitch nodo) {
+
         // recorrer las instrucciones del caso
         if (nodo.getInstrucciones() != null) {
 
@@ -80,13 +86,16 @@ public class ManejadorProgramaZetariano {
                 }
 
             }
+
         }
 
         return null;
+
     }
 
     // recorrer las instrucciones del caso por defecto
     public String visitarCasoDefault(CasoDefault nodo) {
+
         // recorrer las instrucciones del caso por defecto
         if (nodo.getInstrucciones() != null) {
 
@@ -102,10 +111,12 @@ public class ManejadorProgramaZetariano {
         }
 
         return null;
+
     }
 
     // visitar el valor primitivo cargandolo en un temporal
     public String visitarValorPrimitivo(ValorPrimitivo nodo) {
+
         // version anterior: no generaba nada y los case quedaban en 0
         // public String visitarValorPrimitivo(ValorPrimitivo nodo) {
         //     // TODO
@@ -115,20 +126,27 @@ public class ManejadorProgramaZetariano {
         if (nodo.getTipoDato() == TipoPrimitivo.IDENTIFICADOR) {
             return nodo.getValor();
         }
+
         // guardar el nulo como literal especial
         if (nodo.getTipoDato() == TipoPrimitivo.NULO) {
+
             String tempNulo = ctx.getTemporales().nuevoTemporal();
             ctx.getCuartetas().add(new Cuarteta("=", "null", "_", tempNulo, "_", "_", "_"));
             return tempNulo;
+
         }
+
         // guardar el literal en un temporal
         String temp = ctx.getTemporales().nuevoTemporal();
+
         // adivinar el tipo del literal
         String tipoLiteral = ctx.inferirTipoLiteral(nodo.getValor());
+
         // registrar el temporal con el tipo inferido
         ctx.getTiposConocidos().put(temp, tipoLiteral);
         ctx.getCuartetas().add(new Cuarteta("=", nodo.getValor(), "_", temp, tipoLiteral, "_", tipoLiteral));
         return temp;
+
     }
 
     // visitar la lista de expresiones sin generar cuartetas
@@ -136,4 +154,5 @@ public class ManejadorProgramaZetariano {
         // TODO
         return null;
     }
+
 }

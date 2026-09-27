@@ -10,11 +10,13 @@ public class CicloPer extends NodoAST {
     private final NodoAST bloque;
 
     public CicloPer(NodoAST inicializacion, NodoAST condicion, NodoAST paso, NodoAST bloque, int linea, int columna) {
+
         super(linea, columna);
         this.inicializacion = inicializacion;
         this.condicion = condicion;
         this.paso = paso;
         this.bloque = bloque;
+
     }
 
     public NodoAST getInicializacion() {
@@ -37,4 +39,5 @@ public class CicloPer extends NodoAST {
     public <T> T accept(LatinusAstVisitor<T> visitor) {
         return visitor.visitCicloPer(this);
     }
+
 }

@@ -73,14 +73,19 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
 
     // estado compartido de la generacion
     private final ContextoCuartetasZetariano ctx;
+
     // manejadora de programa y base
     private final ManejadorProgramaZetariano manejadorPrograma;
+
     // manejadora de clases constructores y metodos
     private final ManejadorClasesZetariano manejadorClases;
+
     // manejadora de declaraciones y asignaciones
     private final ManejadorDeclaracionesZetariano manejadorDeclaraciones;
+
     // manejadora de flujo seleccion y ciclos
     private final ManejadorFlujoZetariano manejadorFlujo;
+
     // manejadora de expresiones
     private final ManejadorExpresionesZetariano manejadorExpresiones;
 
@@ -88,14 +93,17 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
      * Crear el generador de cuartetas para el lenguaje Zetariano.
      */
     public GeneradorCuartetasZetariano() {
+
         // inicializar el contexto compartido
         this.ctx = new ContextoCuartetasZetariano();
+
         // crear las manejadoras con el contexto y este generador
         this.manejadorPrograma = new ManejadorProgramaZetariano(ctx, this);
         this.manejadorClases = new ManejadorClasesZetariano(ctx, this);
         this.manejadorDeclaraciones = new ManejadorDeclaracionesZetariano(ctx, this);
         this.manejadorFlujo = new ManejadorFlujoZetariano(ctx, this);
         this.manejadorExpresiones = new ManejadorExpresionesZetariano(ctx, this);
+
     }
 
     /**
@@ -449,4 +457,5 @@ public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> 
     public String visitarExprPrimitivo(ExprPrimitivo nodo) {
         return manejadorExpresiones.visitarExprPrimitivo(nodo);
     }
+
 }

@@ -9,10 +9,12 @@ public class DeclObjetoNovus extends NodoAST {
     private final NodoAST argumentos;
 
     public DeclObjetoNovus(String identificador, String tipo, NodoAST argumentos, int linea, int columna) {
+
         super(linea, columna);
         this.identificador = identificador;
         this.tipo = tipo;
         this.argumentos = argumentos;
+
     }
 
     public String getIdentificador() {
@@ -31,4 +33,5 @@ public class DeclObjetoNovus extends NodoAST {
     public <T> T accept(LatinusAstVisitor<T> visitor) {
         return visitor.visitDeclObjetoNovus(this);
     }
+
 }

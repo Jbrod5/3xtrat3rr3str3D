@@ -9,9 +9,11 @@ public class ExprPrimitivo extends NodoAST {
     private final TipoPrimitivo tipoDato;
 
     public ExprPrimitivo(NodoAST valor, TipoPrimitivo tipoDato, int linea, int columna) {
+
         super(linea, columna);
         this.valor = valor;
         this.tipoDato = tipoDato;
+
     }
 
     public NodoAST getValor() {
@@ -26,4 +28,5 @@ public class ExprPrimitivo extends NodoAST {
     public <T> T accept(LatinusAstVisitor<T> visitor) {
         return visitor.visitExprPrimitivo(this);
     }
+
 }

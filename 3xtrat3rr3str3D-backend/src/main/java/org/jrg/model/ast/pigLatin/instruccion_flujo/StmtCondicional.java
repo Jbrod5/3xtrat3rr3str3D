@@ -19,4 +19,5 @@ public class StmtCondicional extends NodoAST {
     public <T> T accept(LatinusAstVisitor<T> visitor) {
         return visitor.visitStmtCondicional(this);
     }
+
 }

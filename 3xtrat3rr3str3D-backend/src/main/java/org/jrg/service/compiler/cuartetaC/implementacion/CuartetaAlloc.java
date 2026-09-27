@@ -4,7 +4,7 @@ import org.jrg.service.compiler.cuartetaC.ContextoTraduccion;
 import org.jrg.service.compiler.cuartetaC.CuartetaC;
 import org.jrg.service.compiler.cuartetaC.SlotHS;
 
-// reservar un bloque en heap con base en hptr
+// reservar un bloque en heap con base en heappointer
 public class CuartetaAlloc extends CuartetaC {
 
     /**
@@ -20,20 +20,27 @@ public class CuartetaAlloc extends CuartetaC {
      */
     @Override
     public String obtenerCodigoC(ContextoTraduccion ctx) {
+
         // omitir destinos sin nombre valido
         if (resultado == null || resultado.isEmpty() || resultado.equals("_")) {
             return "";
         }
+
         // resolver la dimension a expresion
         String dim = ctx.expresionOperando(arg2);
+
         // declarar el destino como base entera
         SlotHS slot = ctx.declararSlot(resultado, "entero");
+
         // recordar el struct base del arreglo si trae
         if (arg1 != null && arg1.isEmpty() == false && arg1.equals("_") == false) {
             ctx.mapaBases.put(resultado, arg1);
         }
+
         // tomar la base actual y avanzar el puntero
-        String destino = slot.getArreglo() + "[fp + " + slot.getIndice() + "]";
-        return destino + " = hptr;\n    hptr = hptr + " + dim + ";";
+        String destino = slot.getArreglo() + "[framepointer + " + slot.getIndice() + "]";
+        return destino + " = heappointer;\n    heappointer = heappointer + " + dim + ";";
+
     }
+
 }

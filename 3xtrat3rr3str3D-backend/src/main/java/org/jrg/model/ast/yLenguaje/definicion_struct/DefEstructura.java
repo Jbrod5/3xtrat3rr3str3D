@@ -14,9 +14,11 @@ public class DefEstructura extends NodoASTY {
      * Crear una definicion de estructura con su nombre y atributos.
      */
     public DefEstructura(String nombre, List<NodoASTY> atributos, int linea, int columna) {
+
         super(linea, columna);
         this.nombre = nombre;
         this.atributos = atributos;
+
     }
 
     public String getNombre() {
@@ -31,4 +33,5 @@ public class DefEstructura extends NodoASTY {
     public <T> T accept(YAstVisitor<T> visitor) {
         return visitor.visitarDefEstructura(this);
     }
+
 }

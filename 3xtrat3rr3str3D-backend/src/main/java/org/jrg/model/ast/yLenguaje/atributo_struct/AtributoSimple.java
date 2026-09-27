@@ -12,9 +12,11 @@ public class AtributoSimple extends NodoASTY {
      * Crear un atributo simple con su tipo y nombre.
      */
     public AtributoSimple(NodoASTY tipo, String nombre, int linea, int columna) {
+
         super(linea, columna);
         this.tipo = tipo;
         this.nombre = nombre;
+
     }
 
     public NodoASTY getTipo() {
@@ -29,4 +31,5 @@ public class AtributoSimple extends NodoASTY {
     public <T> T accept(YAstVisitor<T> visitor) {
         return visitor.visitarAtributoSimple(this);
     }
+
 }

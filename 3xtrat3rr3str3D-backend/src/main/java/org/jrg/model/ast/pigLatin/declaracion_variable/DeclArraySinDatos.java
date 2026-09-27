@@ -9,10 +9,12 @@ public class DeclArraySinDatos extends NodoAST {
     private final NodoAST tipo;
 
     public DeclArraySinDatos(String identificador, NodoAST tamano, NodoAST tipo, int linea, int columna) {
+
         super(linea, columna);
         this.identificador = identificador;
         this.tamano = tamano;
         this.tipo = tipo;
+
     }
 
     public String getIdentificador() {
@@ -31,4 +33,5 @@ public class DeclArraySinDatos extends NodoAST {
     public <T> T accept(LatinusAstVisitor<T> visitor) {
         return visitor.visitDeclArraySinDatos(this);
     }
+
 }

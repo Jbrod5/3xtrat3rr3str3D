@@ -8,9 +8,11 @@ public class ExprInstanciaObjeto extends NodoAST {
     private final NodoAST argumentos;
 
     public ExprInstanciaObjeto(String tipo, NodoAST argumentos, int linea, int columna) {
+
         super(linea, columna);
         this.tipo = tipo;
         this.argumentos = argumentos;
+
     }
 
     public String getTipo() {
@@ -25,4 +27,5 @@ public class ExprInstanciaObjeto extends NodoAST {
     public <T> T accept(LatinusAstVisitor<T> visitor) {
         return visitor.visitExprInstanciaObjeto(this);
     }
+
 }

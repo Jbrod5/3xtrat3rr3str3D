@@ -8,9 +8,11 @@ public class ExprPreIncremento extends NodoAST {
     private final NodoAST variable;
 
     public ExprPreIncremento(String operador, NodoAST variable, int linea, int columna) {
+
         super(linea, columna);
         this.operador = operador;
         this.variable = variable;
+
     }
 
     public String getOperador() {
@@ -25,4 +27,5 @@ public class ExprPreIncremento extends NodoAST {
     public <T> T accept(LatinusAstVisitor<T> visitor) {
         return visitor.visitExprPreIncremento(this);
     }
+
 }

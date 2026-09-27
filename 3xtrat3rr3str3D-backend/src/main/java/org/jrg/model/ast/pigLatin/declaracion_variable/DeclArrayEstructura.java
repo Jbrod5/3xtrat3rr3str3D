@@ -9,10 +9,12 @@ public class DeclArrayEstructura extends NodoAST {
     private final String tipo;
 
     public DeclArrayEstructura(String identificador, NodoAST tamano, String tipo, int linea, int columna) {
+
         super(linea, columna);
         this.identificador = identificador;
         this.tamano = tamano;
         this.tipo = tipo;
+
     }
 
     public String getIdentificador() {
@@ -31,4 +33,5 @@ public class DeclArrayEstructura extends NodoAST {
     public <T> T accept(LatinusAstVisitor<T> visitor) {
         return visitor.visitDeclArrayEstructura(this);
     }
+
 }

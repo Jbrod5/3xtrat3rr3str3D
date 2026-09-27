@@ -19,4 +19,5 @@ public abstract class NodoASTY {
     public int getColumna() {
         return columna;
     }
+
 }

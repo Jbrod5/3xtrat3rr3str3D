@@ -17,6 +17,7 @@ public class ContextoCuartetasZetariano {
     private final GeneradorTemporales temporales;
     private String etiquetaBreakActual;
     private String etiquetaContinueActual;
+
     // nombre de la clase actual para prefijar funciones
     private String nombreClaseActual;
     private final Map<String, String> tiposConocidos;
@@ -26,6 +27,7 @@ public class ContextoCuartetasZetariano {
      * Crear el contexto con estructuras vacias.
      */
     public ContextoCuartetasZetariano() {
+
         // inicializar la lista y el generador
         this.cuartetas = new ArrayList<>();
         this.temporales = new GeneradorTemporales();
@@ -34,6 +36,7 @@ public class ContextoCuartetasZetariano {
         this.nombreClaseActual = null;
         this.tiposConocidos = new HashMap<>();
         this.tiposDeVariables = new HashMap<>();
+
     }
 
     /**
@@ -108,6 +111,7 @@ public class ContextoCuartetasZetariano {
 
     // registrar el tipo de una variable declarada
     public void registrarTipoVariable(String nombre, String tipo) {
+
         // omitir nombres o tipos nulos
         if (nombre == null || tipo == null) {
             return;
@@ -115,28 +119,38 @@ public class ContextoCuartetasZetariano {
 
         // guardar el tipo para usos posteriores
         this.tiposDeVariables.put(nombre, tipo);
+
     }
 
     // extraer el nombre del tipo desde un nodo de tipo
     public String nombreDeTipo(NodoASTZetariano tipoNodo) {
+
         // devolver guion bajo si el nodo es nulo
         if (tipoNodo == null) {
             return "_";
         }
+
         // extraer el nombre cuando es TipoDato
         if (tipoNodo instanceof TipoDato) {
+
             String nombre = ((TipoDato) tipoNodo).getTipo();
+
             // usar guion bajo si el nombre es nulo
             if (nombre == null) {
                 return "_";
             }
+
             return nombre;
+
         }
+
         return "_";
+
     }
 
     // adivinar el tipo del literal por como se ve
     public String inferirTipoLiteral(String valor) {
+
         // devolver guion bajo si el valor es nulo o vacio de tipo
         if (valor == null || valor.equals("_")) {
             return "_";
@@ -169,10 +183,12 @@ public class ContextoCuartetasZetariano {
 
         // cualquier otra cosa es de tipo desconocido
         return "_";
+
     }
 
     // adivinar el tipo con el mapa o por como se ve
     public String inferirTipoDe(String nombre, Map<String, String> tipos) {
+
         // devolver guion bajo si el nombre es nulo o vacio de tipo
         if (nombre == null || nombre.equals("_")) {
             return "_";
@@ -192,20 +208,24 @@ public class ContextoCuartetasZetariano {
 
         // adivinar por como se ve el literal
         return inferirTipoLiteral(nombre);
+
     }
 
     // verificar si un tipo corresponde a cadena de texto
     public boolean esTipoCadena(String tipo) {
+
         // comparar contra los nombres de cadena de los tres lenguajes
         if ("cadena".equals(tipo) || "textum".equals(tipo) || "String".equals(tipo)) {
             return true;
         }
 
         return false;
+
     }
 
     // adivinar el tipo del numero, int si no se sabe
     public String tipoAritmetico(String nombre) {
+
         // adivinar el tipo del operando si ya se sabe
         String tipo = inferirTipoDe(nombre, tiposConocidos);
 
@@ -215,21 +235,25 @@ public class ContextoCuartetasZetariano {
         }
 
         return tipo;
+
     }
 
     // adivinar que tipo sale de la cuenta
     public String tipoResultadoAritmetico(String a, String b) {
+
         // adivinar los tipos de los dos lados
         String tipoA = inferirTipoDe(a, tiposConocidos);
         String tipoB = inferirTipoDe(b, tiposConocidos);
 
         // usar el tipo comun cuando ambos coinciden y es conocido
         if (tipoA.equals(tipoB)) {
+
             if (tipoA.equals("_")) {
                 return "entero";
             }
 
             return tipoA;
+
         }
 
         // convertir al tipo de mayor jerarquia cuando algun operando es flotante
@@ -243,10 +267,12 @@ public class ContextoCuartetasZetariano {
 
         // usar entero por defecto en caso mixto
         return "entero";
+
     }
 
     // verificar si un tipo es numerico para convertir al tipo de mayor jerarquia
     public boolean esTipoNumerico(String tipo) {
+
         // comparar contra enteros de los tres lenguajes
         if ("entero".equals(tipo) || "numerus".equals(tipo) || "int".equals(tipo)) {
             return true;
@@ -258,15 +284,19 @@ public class ContextoCuartetasZetariano {
         }
 
         return false;
+
     }
 
     // verificar si un tipo es flotante en cualquier vocabulario
     public boolean esTipoFlotante(String tipo) {
+
         // comparar contra flotantes de los tres lenguajes
         if ("flotante".equals(tipo) || "decimalis".equals(tipo) || "double".equals(tipo)) {
             return true;
         }
 
         return false;
+
     }
+
 }

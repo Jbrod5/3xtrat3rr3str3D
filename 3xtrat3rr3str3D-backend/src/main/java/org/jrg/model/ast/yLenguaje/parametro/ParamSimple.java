@@ -12,9 +12,11 @@ public class ParamSimple extends NodoASTY {
      * Crear un parametro simple con su tipo y nombre.
      */
     public ParamSimple(NodoASTY tipo, String nombre, int linea, int columna) {
+
         super(linea, columna);
         this.tipo = tipo;
         this.nombre = nombre;
+
     }
 
     public NodoASTY getTipo() {
@@ -29,4 +31,5 @@ public class ParamSimple extends NodoASTY {
     public <T> T accept(YAstVisitor<T> visitor) {
         return visitor.visitarParamSimple(this);
     }
+
 }

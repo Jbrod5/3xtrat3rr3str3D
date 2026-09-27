@@ -18,10 +18,12 @@ public class Constante {
      * Crear una constante con valor tipo y posicion.
      */
     public Constante(Object valor, Tipo tipo, int linea, int columna) {
+
         this.valor = valor;
         this.tipo = tipo;
         this.linea = linea;
         this.columna = columna;
+
     }
 
     /**
@@ -65,4 +67,5 @@ public class Constante {
     public int getColumna() {
         return columna;
     }
+
 }

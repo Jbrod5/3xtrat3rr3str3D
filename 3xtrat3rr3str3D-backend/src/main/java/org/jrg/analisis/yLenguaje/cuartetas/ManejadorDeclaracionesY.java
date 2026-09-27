@@ -35,22 +35,26 @@ public class ManejadorDeclaracionesY {
 
     // visitar la declaracion interna de la instruccion
     public String visitarStmtDeclaracion(StmtDeclaracion nodo) {
+
         // visitar la declaracion si existe
         if (nodo.getDeclaracion() != null) {
             nodo.getDeclaracion().accept(generador);
         }
 
         return null;
+
     }
 
     // visitar la asignacion interna de la instruccion
     public String visitarStmtAsignacion(StmtAsignacion nodo) {
+
         // visitar la asignacion si existe
         if (nodo.getAsignacion() != null) {
             nodo.getAsignacion().accept(generador);
         }
 
         return null;
+
     }
 
     // omitir structs locales porque solo son tipos
@@ -61,6 +65,7 @@ public class ManejadorDeclaracionesY {
 
     // generar el retorno con valor o sin valor
     public String visitarStmtRetorno(StmtRetorno nodo) {
+
         // evaluar la expresion de retorno si existe
         if (nodo.getExpresion() != null) {
 
@@ -73,33 +78,38 @@ public class ManejadorDeclaracionesY {
 
             // agregar el retorno con valor a la lista de cuartetas
             ctx.getCuartetas().add(new Cuarteta("return", valor, "_", "_", ctx.inferirTipoDe(valor, ctx.getTiposConocidos()), "_", "_"));
-        } else {
 
+        } else {
             // agregar el retorno sin valor a la lista de cuartetas
             ctx.getCuartetas().add(new Cuarteta("return", "_", "_", "_", "_", "_", "_"));
         }
 
         return null;
+
     }
 
     // generar salto a la etiqueta de continuar si existe
     public String visitarStmtContinuar(StmtContinuar nodo) {
+
         // agregar salto a la etiqueta de continuar si existe a la lista de cuartetas
         if (ctx.getEtiquetaContinueActual() != null) {
             ctx.getCuartetas().add(new Cuarteta("goto", ctx.getEtiquetaContinueActual(), "_", "_", "_", "_", "_"));
         }
 
         return null;
+
     }
 
     // generar salto a la etiqueta de romper si existe
     public String visitarStmtRomper(StmtRomper nodo) {
+
         // agregar salto a la etiqueta de romper si existe a la lista de cuartetas
         if (ctx.getEtiquetaBreakActual() != null) {
             ctx.getCuartetas().add(new Cuarteta("goto", ctx.getEtiquetaBreakActual(), "_", "_", "_", "_", "_"));
         }
 
         return null;
+
     }
 
     // visitar la expresion interna de la instruccion
@@ -111,10 +121,12 @@ public class ManejadorDeclaracionesY {
         }
 
         return null;
+
     }
 
     // declarar una variable con valor inicial opcional
     public String visitarDeclConTipoYValor(DeclConTipoYValor nodo) {
+
         // agregar la asignacion a la lista de cuartetas inicial si hay valor
         if (nodo.getValor() != null) {
 
@@ -131,17 +143,25 @@ public class ManejadorDeclaracionesY {
             String tipoDeclY = ctx.nombreDeTipo(nodo.getTipo());
             String tipoResY = "_";
             if (tipoDeclY != null && tipoDeclY.isEmpty() == false) {
+
                 tipoResY = tipoDeclY;
+
                 // registrar la variable con su tipo declarado
                 ctx.getTiposConocidos().put(nodo.getNombre(), tipoDeclY);
+
             }
+
             ctx.getCuartetas().add(new Cuarteta(":=", valor, "_", nodo.getNombre(), ctx.inferirTipoDe(valor, ctx.getTiposConocidos()), "_", tipoResY));
+
         }
+
         return null;
+
     }
 
     // reservar un arreglo solo con tamano
     public String visitarDeclArraySinValores(DeclArraySinValores nodo) {
+
         // evaluar el tamano del arreglo
         String tamano = "_";
         if (nodo.getTamano() != null) {
@@ -157,10 +177,12 @@ public class ManejadorDeclaracionesY {
         ctx.getCuartetas().add(new Cuarteta("alloc", tamano, "_", nodo.getNombre(), ctx.inferirTipoDe(tamano, ctx.getTiposConocidos()), "_", "_"));
 
         return null;
+
     }
 
     // reservar un arreglo y llenarlo con sus valores
     public String visitarDeclArrayConValores(DeclArrayConValores nodo) {
+
         // evaluar el tamano del arreglo
         String tamano = "_";
         if (nodo.getTamano() != null) {
@@ -185,6 +207,7 @@ public class ManejadorDeclaracionesY {
 
             // recorrer cada valor de la lista
             if (listaExpresiones.getExpresiones() != null) {
+
                 for (int i = 0; i < listaExpresiones.getExpresiones().size(); i++) {
 
                     // evaluar el valor actual
@@ -196,8 +219,11 @@ public class ManejadorDeclaracionesY {
 
                     // agregar la asignacion a la posicion actual a la lista de cuartetas
                     ctx.getCuartetas().add(new Cuarteta("[]=", nodo.getNombre(), String.valueOf(i), valor, "_", "entero", "_"));
+
                 }
+
             }
+
         } else {
 
             // visitar la lista si tiene otro formato
@@ -208,12 +234,15 @@ public class ManejadorDeclaracionesY {
         }
 
         return null;
+
     }
 
     // reservar una matriz con filas por columnas del tipo base
     public String visitarDeclMatriz(DeclMatriz nodo) {
+
         // extraer el tipo base declarado
         String tipoBase = ctx.nombreDeTipo(nodo.getTipo());
+
         // evaluar el tamano de filas
         String filas = "_";
         if (nodo.getTamanoFilas() != null) {
@@ -243,12 +272,15 @@ public class ManejadorDeclaracionesY {
         ctx.getCuartetas().add(new Cuarteta("alloc", tipoBase, tempTotal, nodo.getNombre(), tipoBase, "entero", tipoBase));
 
         return null;
+
     }
 
     // reservar una matriz y llenarla con sus filas de valores
     public String visitarDeclMatrizConValores(DeclMatrizConValores nodo) {
+
         // extraer el tipo base declarado
         String tipoBase = ctx.nombreDeTipo(nodo.getTipo());
+
         // evaluar el tamano de filas
         String filas = "_";
         if (nodo.getTamanoFilas() != null) {
@@ -278,31 +310,43 @@ public class ManejadorDeclaracionesY {
 
         // recorrer cada fila con sus valores
         if (nodo.getFilas() != null) {
+
             for (int f = 0; f < nodo.getFilas().size(); f++) {
+
                 List<NodoASTY> fila = nodo.getFilas().get(f);
+
                 // omitir filas nulas
                 if (fila == null) {
                     continue;
                 }
+
                 for (int c = 0; c < fila.size(); c++) {
+
                     // evaluar el valor actual
                     String val = fila.get(c).accept(generador);
+
                     // si es nulo usar lo de respaldo
                     if (val == null) {
                         val = "_";
                     }
+
                     // calcular el indice lineal como fila por columnas mas columna
                     String tempFila = ctx.getTemporales().nuevoTemporal();
                     ctx.getCuartetas().add(new Cuarteta("*", String.valueOf(f), columnas, tempFila, "entero", ctx.tipoAritmetico(columnas), ctx.tipoResultadoAritmetico(String.valueOf(f), columnas)));
                     String tempIndice = ctx.getTemporales().nuevoTemporal();
                     ctx.getCuartetas().add(new Cuarteta("+", tempFila, String.valueOf(c), tempIndice, ctx.tipoAritmetico(tempFila), "entero", ctx.tipoResultadoAritmetico(tempFila, String.valueOf(c))));
+
                     // agregar la asignacion a la posicion actual a la lista de cuartetas
                     ctx.getCuartetas().add(new Cuarteta("[]=", nodo.getNombre(), tempIndice, val, "_", "entero", "_"));
+
                 }
+
             }
+
         }
 
         return null;
+
     }
 
     // devolver el nombre de la variable directamente
@@ -313,6 +357,7 @@ public class ManejadorDeclaracionesY {
 
     // componer la referencia de arreglo con base e indice
     public String visitarVarArray(VarArray nodo) {
+
         // evaluar la base del acceso
         String base = "_";
         if (nodo.getBase() != null) {
@@ -335,10 +380,12 @@ public class ManejadorDeclaracionesY {
 
         // devolver la referencia compuesta sin agregar cuarteta a la lista :D
         return base + "[" + indice + "]";
+
     }
 
     // componer la referencia de miembro con base y campo
     public String visitarVarMiembro(VarMiembro nodo) {
+
         // evaluar la base del acceso
         String base = "_";
         if (nodo.getBase() != null) {
@@ -351,5 +398,7 @@ public class ManejadorDeclaracionesY {
 
         // devolver la referencia compuesta sin agregar cuarteta a la lista
         return base + "." + nodo.getMiembro();
+
     }
+
 }

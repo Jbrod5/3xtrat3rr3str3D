@@ -5,7 +5,9 @@ import org.jrg.antlrBase.zetariano.ZetarianoLexer;
 public class ClasificadorTokenZetariano {
 
     public static String clasificar(int tokenType) {
+
         switch (tokenType) {
+
             case ZetarianoLexer.PUBLIC:
             case ZetarianoLexer.CLASS:
             case ZetarianoLexer.VOID:
@@ -93,6 +95,9 @@ public class ClasificadorTokenZetariano {
 
             default:
                 return "unknown";
+
         }
+
     }
+
 }

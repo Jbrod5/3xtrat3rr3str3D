@@ -21,14 +21,19 @@ public class CuartetaRead extends CuartetaC {
      */
     @Override
     public String obtenerCodigoC(ContextoTraduccion ctx) {
+
         // omitir la lectura sin variable destino
         if (resultado == null || resultado.equals("_")) {
             return "";
         }
+
         // declarar el destino siempre entero
         SlotHS slot = ctx.declararSlot(resultado, "entero");
+
         // leer con scanf sobre el slot
-        String destino = slot.getArreglo() + "[fp + " + slot.getIndice() + "]";
+        String destino = slot.getArreglo() + "[framepointer + " + slot.getIndice() + "]";
         return "scanf(\"%d\", &" + destino + ");";
+
     }
+
 }

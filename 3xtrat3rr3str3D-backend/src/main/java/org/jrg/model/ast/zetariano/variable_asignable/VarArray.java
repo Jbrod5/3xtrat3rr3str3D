@@ -9,9 +9,11 @@ public class VarArray extends NodoASTZetariano {
     private final NodoASTZetariano indice;
 
     public VarArray(NodoASTZetariano variable, NodoASTZetariano indice, int linea, int columna) {
+
         super(linea, columna);
         this.variable = variable;
         this.indice = indice;
+
     }
 
     public NodoASTZetariano getVariable() {
@@ -26,4 +28,5 @@ public class VarArray extends NodoASTZetariano {
     public <T> T accept(ZetarianoAstVisitor<T> visitor) {
         return visitor.visitarVarArray(this);
     }
+
 }

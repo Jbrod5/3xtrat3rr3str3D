@@ -10,10 +10,12 @@ public class AsignacionCompuesta extends NodoASTZetariano {
     private final NodoASTZetariano expresion;
 
     public AsignacionCompuesta(NodoASTZetariano variable, String operador, NodoASTZetariano expresion, int linea, int columna) {
+
         super(linea, columna);
         this.variable = variable;
         this.operador = operador;
         this.expresion = expresion;
+
     }
 
     public NodoASTZetariano getVariable() {
@@ -32,4 +34,5 @@ public class AsignacionCompuesta extends NodoASTZetariano {
     public <T> T accept(ZetarianoAstVisitor<T> visitor) {
         return visitor.visitarAsignacionCompuesta(this);
     }
+
 }

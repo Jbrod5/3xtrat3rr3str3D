@@ -19,12 +19,15 @@ public class CuartetaRetorno extends CuartetaC {
      */
     @Override
     public String obtenerCodigoC(ContextoTraduccion ctx) {
+
         // armar el epilogo que limpia el marco
-        String epilogo = "sptr = fp;\n    fptr = fptr - 1;\n    fp = fpstack[fptr];\n    return;";
+        String epilogo = "stackpointer = framepointer;\n    framestackpointer = framestackpointer - 1;\n    framepointer = framestack[framestackpointer];\n    return;";
+
         // retornar solo el epilogo cuando no hay valor
         if (arg1 == null || arg1.equals("_")) {
             return epilogo;
         }
+
         // dejar el valor en su registro natural
         String valor = ctx.expresionOperando(arg1);
         String regNat = "AX_INT";
@@ -46,6 +49,7 @@ public class CuartetaRetorno extends CuartetaC {
         } else if ("bool".equals(tipoArg1) || "boolean".equals(tipoArg1) || "booleano".equals(tipoArg1)) {
             regNat = "AX_BOOLEAN";
         }
+
         // pasar al registro del retorno declarado para que el que llama lea bien
         String regDest = regNat;
         String retornoDecl = ctx.retornosFuncion.get(ctx.funcionActual);
@@ -53,10 +57,14 @@ public class CuartetaRetorno extends CuartetaC {
             String arrDest = ctx.arregloPara(retornoDecl);
             regDest = ctx.registroPara(arrDest);
         }
+
         // convertir con asignacion cuando cambian de registro
         if (regDest.equals(regNat)) {
             return regNat + " = " + valor + ";\n    " + epilogo;
         }
+
         return regNat + " = " + valor + ";\n    " + regDest + " = " + regNat + ";\n    " + epilogo;
+
     }
+
 }

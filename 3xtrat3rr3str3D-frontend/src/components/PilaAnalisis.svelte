@@ -6,51 +6,68 @@
 
   // ========== Funciones helper para la tabla (originales) ==========
   function formatearTipo(tipo) {
+
     if (!tipo) return '--';
     if (tipo.dimension > 0) {
       const base = tipo.tipoBase ? tipo.tipoBase.nombre : tipo.nombre;
       return `${base}[${tipo.dimension}]`;
     }
+
     return tipo.nombre;
+
   }
 
   function esPrimitivoTexto(val) {
-    return val ? 'Sí' : 'No';
+    return val ? 'Si' : 'No';
   }
 
   function badgeCategoria(categoria) {
+
     switch (categoria) {
+
       case 'VARIABLE': return 'bg-primary';
       case 'FUNCION': return 'bg-success';
       case 'PARAMETRO': return 'bg-warning text-dark';
       case 'CAMPO_ESTRUCTURA': return 'bg-info text-dark';
       default: return 'bg-secondary';
+
     }
+
   }
 
   function formatearValorConstante(constante) {
+
   if (!constante) return '--';
+
   // Obtener el valor mediante el metodo getValor() que expone Object
   const valor = constante.valor;
   if (valor === null || valor === undefined) return '--';
+
   // Si es texto, mostrarlo entre comillas para distinguir
   if (typeof valor === 'string') return `"${valor}"`;
+
   // Si es booleano, mostrar 'verum' o 'falsus'
   if (typeof valor === 'boolean') return valor ? 'verum' : 'falsus';
+
   // Numeros o caracteres se muestran directamente
   return String(valor);
+
 }
 
 function mostrarTamano(simbolo) {
-  // Si tiene tamaño (array), mostrarlo, si no '--'
+
+  // Si tiene tamano (array), mostrarlo, si no '--'
   if (simbolo.tamano !== null && simbolo.tamano !== undefined) {
     return simbolo.tamano;
   }
-  // Opcional: si el tipo tiene dimension > 0 pero no tamaño, mostrar '?'
+
+  // Opcional: si el tipo tiene dimension > 0 pero no tamano, mostrar '?'
   if (simbolo.tipo && simbolo.tipo.dimension > 0) {
     return '?';
   }
+
   return '--';
+
 }
 </script>
 
@@ -60,7 +77,7 @@ function mostrarTamano(simbolo) {
       class="btn btn-sm rounded-0 flex-fill"
       class:btn-light={estado.pestanaDerechaActiva !== 'cuartetas'}
       class:btn-white={estado.pestanaDerechaActiva === 'cuartetas'}
-      class:active-pestaña={estado.pestanaDerechaActiva === 'cuartetas'}
+      class:active-pestana={estado.pestanaDerechaActiva === 'cuartetas'}
       on:click={() => ideStore.cambiarPestanaDerecha('cuartetas')}
     >
       <i class="bi bi-list-ol"></i> Cuartetas
@@ -69,7 +86,7 @@ function mostrarTamano(simbolo) {
       class="btn btn-sm rounded-0 flex-fill"
       class:btn-light={estado.pestanaDerechaActiva !== 'c'}
       class:btn-white={estado.pestanaDerechaActiva === 'c'}
-      class:active-pestaña={estado.pestanaDerechaActiva === 'c'}
+      class:active-pestana={estado.pestanaDerechaActiva === 'c'}
       on:click={() => ideStore.cambiarPestanaDerecha('c')}
     >
       <i class="bi bi-filetype-c"></i> C
@@ -78,7 +95,7 @@ function mostrarTamano(simbolo) {
       class="btn btn-sm rounded-0 flex-fill"
       class:btn-light={estado.pestanaDerechaActiva !== 'tabla'}
       class:btn-white={estado.pestanaDerechaActiva === 'tabla'}
-      class:active-pestaña={estado.pestanaDerechaActiva === 'tabla'}
+      class:active-pestana={estado.pestanaDerechaActiva === 'tabla'}
       on:click={() => ideStore.cambiarPestanaDerecha('tabla')}
     >
       <i class="bi bi-table"></i> Tabla
@@ -104,7 +121,7 @@ function mostrarTamano(simbolo) {
         </div>
       {/if}
 
-    <!-- ================= PESTAÑA C ================= -->
+    <!-- ================= PESTANA C ================= -->
     {:else if estado.pestanaDerechaActiva === 'c'}
       {#if archivoActivo?.resultado?.codigoC && archivoActivo.resultado.codigoC.length > 0}
         <div class="d-flex justify-content-between align-items-center mb-2">
@@ -171,7 +188,7 @@ function mostrarTamano(simbolo) {
         </div>
       {/if}
 
-    <!-- ================= PESTAÑA TABLA ================= -->
+    <!-- ================= PESTANA TABLA ================= -->
     {:else if estado.pestanaDerechaActiva === 'tabla'}
       {#if archivoActivo?.resultado?.simbolos && archivoActivo.resultado.simbolos.length > 0}
         <!-- TABLA DE SIMBOLOS -->
@@ -193,7 +210,7 @@ function mostrarTamano(simbolo) {
                   <th class="text-nowrap">Tipo</th>
 
                   <th class="text-nowrap">Valor</th>
-                  <th class="text-nowrap">Tamaño</th>
+                  <th class="text-nowrap">Tamano</th>
 
                   <th class="text-nowrap">Params</th>
 
@@ -264,7 +281,7 @@ function mostrarTamano(simbolo) {
                       <td class="fw-semibold font-monospace text-primary">{tipo.nombre}</td>
                       <td class="text-center">
                         {#if tipo.esPrimitivo}
-                          <span class="badge bg-success">Sí</span>
+                          <span class="badge bg-success">Si</span>
                         {:else}
                           <span class="badge bg-secondary">No</span>
                         {/if}
@@ -303,7 +320,7 @@ function mostrarTamano(simbolo) {
 </div>
 
 <style>
-  .active-pestaña {
+  .active-pestana {
     border-bottom: 2px solid #0d6efd !important;
     font-weight: 600;
   }

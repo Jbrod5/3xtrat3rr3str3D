@@ -19,17 +19,22 @@ public class CuartetaAsignacionArreglo extends CuartetaC {
      */
     @Override
     public String obtenerCodigoC(ContextoTraduccion ctx) {
+
         // resolver el struct base de los elementos si hay
         String baseElem = ctx.mapaBases.get(arg1);
+
         // elegir arreglo de heap segun el base o entero por defecto
         String arregloElem = "heapinteger";
         if (baseElem != null && baseElem.isEmpty() == false && baseElem.equals("_") == false) {
             arregloElem = ctx.arregloHeapPara(baseElem);
         }
+
         // escribir en el heap con base mas indice
         String base = ctx.expresionOperando(arg1);
         String indice = ctx.expresionOperando(arg2);
         String valor = ctx.expresionOperando(resultado);
         return arregloElem + "[" + base + " + " + indice + "] = " + valor + ";";
+
     }
+
 }

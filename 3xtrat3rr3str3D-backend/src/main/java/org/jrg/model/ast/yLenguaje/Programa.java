@@ -12,9 +12,11 @@ public class Programa extends NodoASTY {
      * Crear un programa con sus secciones.
      */
     public Programa(NodoASTY seccionEstructuras, NodoASTY seccionFunciones, int linea, int columna) {
+
         super(linea, columna);
         this.seccionEstructuras = seccionEstructuras;
         this.seccionFunciones = seccionFunciones;
+
     }
 
     public NodoASTY getSeccionEstructuras() {
@@ -29,4 +31,5 @@ public class Programa extends NodoASTY {
     public <T> T accept(YAstVisitor<T> visitor) {
         return visitor.visitarPrograma(this);
     }
+
 }

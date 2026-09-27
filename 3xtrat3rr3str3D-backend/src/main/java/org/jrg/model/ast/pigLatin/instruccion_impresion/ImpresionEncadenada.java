@@ -20,4 +20,5 @@ public class ImpresionEncadenada extends NodoAST {
     public <T> T accept(LatinusAstVisitor<T> visitor) {
         return visitor.visitImpresionEncadenada(this);
     }
+
 }

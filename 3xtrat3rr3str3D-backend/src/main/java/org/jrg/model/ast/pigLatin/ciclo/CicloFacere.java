@@ -8,9 +8,11 @@ public class CicloFacere extends NodoAST {
     private final NodoAST condicion;
 
     public CicloFacere(NodoAST bloque, NodoAST condicion, int linea, int columna) {
+
         super(linea, columna);
         this.bloque = bloque;
         this.condicion = condicion;
+
     }
 
     public NodoAST getBloque() {
@@ -25,4 +27,5 @@ public class CicloFacere extends NodoAST {
     public <T> T accept(LatinusAstVisitor<T> visitor) {
         return visitor.visitCicloFacere(this);
     }
+
 }

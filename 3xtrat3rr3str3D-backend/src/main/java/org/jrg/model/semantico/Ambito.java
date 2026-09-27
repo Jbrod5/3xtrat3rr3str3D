@@ -30,7 +30,9 @@ public class Ambito {
      * Crear un ambito con un ambito padre.
      */
     public Ambito(String nombre, Ambito padre) {
+
         this.id = MiniUUID.generate();
+
         // normalizar nombre nulo
         if (nombre == null) {
             this.nombre = "";
@@ -46,6 +48,7 @@ public class Ambito {
         this.ambitos = new ArrayList<>();
         this.ambitosPorNombre = new HashMap<>();
         this.siguientePosicion = 0;
+
     }
 
     /**
@@ -80,12 +83,14 @@ public class Ambito {
      * Agregar un simbolo al ambito.
      */
     public boolean agregarSimbolo(Simbolo simbolo) {
+
         // validar duplicado
         if (simbolo == null || simbolosPorNombre.containsKey(simbolo.getNombre())) {
             return false;
         }
 
         simbolo.setAmbito(this);
+
         // asignar posicion relativa
         if (simbolo.getPosicionRelativa() < 0) {
             simbolo.setPosicionRelativa(siguientePosicion);
@@ -98,13 +103,16 @@ public class Ambito {
         simbolosPorNombre.put(simbolo.getNombre(), simbolo);
 
         return true;
+
     }
 
     /**
      * Buscar un simbolo en este ambito y en sus padres.
      */
     public Simbolo buscarSimbolo(String nombre) {
+
         Simbolo simbolo = buscarSimboloLocal(nombre);
+
         // retornar coincidencia local
         if (simbolo != null) {
             return simbolo;
@@ -115,16 +123,20 @@ public class Ambito {
         }
 
         return padre.buscarSimbolo(nombre);
+
     }
 
     /**
      * Buscar un simbolo solo en este ambito.
      */
     public Simbolo buscarSimboloLocal(String nombre) {
+
         if (nombre == null) {
             return null;
         }
+
         return simbolosPorNombre.get(nombre);
+
     }
 
     /**
@@ -138,7 +150,9 @@ public class Ambito {
      * Eliminar un simbolo del ambito.
      */
     public boolean eliminarSimbolo(String nombre) {
+
         Simbolo simbolo = simbolosPorNombre.remove(nombre);
+
         // validar existencia
         if (simbolo == null) {
             return false;
@@ -147,6 +161,7 @@ public class Ambito {
         simbolos.remove(simbolo);
 
         return true;
+
     }
 
     /**
@@ -167,37 +182,47 @@ public class Ambito {
      * Agregar un tipo al ambito.
      */
     public boolean agregarTipo(Tipo tipo) {
+
         if (tipo == null || tiposPorNombre.containsKey(tipo.getNombre())) {
             return false;
         }
+
         tipo.setAmbito(this);
         tipos.add(tipo);
         tiposPorNombre.put(tipo.getNombre(), tipo);
         return true;
+
     }
 
     /**
      * Buscar un tipo en este ambito y en sus padres.
      */
     public Tipo buscarTipo(String nombre) {
+
         Tipo tipo = buscarTipoLocal(nombre);
         if (tipo != null) {
             return tipo;
         }
+
         if (padre == null) {
             return null;
         }
+
         return padre.buscarTipo(nombre);
+
     }
 
     /**
      * Buscar un tipo solo en este ambito.
      */
     public Tipo buscarTipoLocal(String nombre) {
+
         if (nombre == null) {
             return null;
         }
+
         return tiposPorNombre.get(nombre);
+
     }
 
     /**
@@ -218,21 +243,26 @@ public class Ambito {
      * Agregar un ambito hijo.
      */
     public boolean agregarAmbito(Ambito ambito) {
+
         if (ambito == null || ambitosPorNombre.containsKey(ambito.getNombre())) {
             return false;
         }
+
         if (ambito.padre == null) {
             ambito.setPadre(this);
         }
+
         ambitos.add(ambito);
         ambitosPorNombre.put(ambito.getNombre(), ambito);
         return true;
+
     }
 
     /**
      * Buscar un ambito por nombre.
      */
     public Ambito buscarAmbito(String nombre) {
+
         if (nombre == null) {
             return null;
         }
@@ -244,13 +274,16 @@ public class Ambito {
 
         // recorrer hijos en profundidad
         for (Ambito hijo : ambitos) {
+
             Ambito resultado = hijo.buscarAmbito(nombre);
             if (resultado != null) {
                 return resultado;
             }
+
         }
 
         return null;
+
     }
 
     /**
@@ -285,18 +318,22 @@ public class Ambito {
      * Reservar la siguiente posicion disponible.
      */
     public int reservarPosicion() {
+
         int posicion = siguientePosicion;
         siguientePosicion++;
 
         return posicion;
+
     }
 
     /**
      * Obtener el nivel del ambito desde la raiz.
      */
     public int getNivel() {
+
         int nivel = 0;
         Ambito actual = padre;
+
         // subir por la cadena de padres
         while (actual != null) {
             nivel++;
@@ -304,15 +341,18 @@ public class Ambito {
         }
 
         return nivel;
+
     }
 
     /**
      * Obtener la ruta de ambitos desde la raiz.
      */
     public List<String> obtenerRuta() {
+
         List<String> ruta = new ArrayList<>();
         List<Ambito> cadena = new ArrayList<>();
         Ambito actual = this;
+
         // subir juntando la cadena hasta la raiz
         while (actual != null) {
             cadena.add(actual);
@@ -325,6 +365,7 @@ public class Ambito {
         }
 
         return ruta;
+
     }
 
     /**
@@ -333,4 +374,5 @@ public class Ambito {
     public boolean esGlobal() {
         return padre == null;
     }
+
 }

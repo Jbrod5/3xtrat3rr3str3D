@@ -10,11 +10,13 @@ public class InitPerDecl extends NodoAST {
     private final NodoAST valor;
 
     public InitPerDecl(String identificador, NodoAST tipo, String asignacion, NodoAST valor, int linea, int columna) {
+
         super(linea, columna);
         this.identificador = identificador;
         this.tipo = tipo;
         this.asignacion = asignacion;
         this.valor = valor;
+
     }
 
     public String getIdentificador() {
@@ -37,4 +39,5 @@ public class InitPerDecl extends NodoAST {
     public <T> T accept(LatinusAstVisitor<T> visitor) {
         return visitor.visitInitPerDecl(this);
     }
+
 }

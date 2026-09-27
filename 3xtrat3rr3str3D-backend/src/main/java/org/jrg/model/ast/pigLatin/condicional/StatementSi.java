@@ -12,12 +12,14 @@ public class StatementSi extends NodoAST {
     private final NodoAST bloqueAliter;
 
     public StatementSi(NodoAST condicion, NodoAST bloque, List<NodoAST> condicionesAliter, List<NodoAST> bloquesAliter, NodoAST bloqueAliter, int linea, int columna) {
+
         super(linea, columna);
         this.condicion = condicion;
         this.bloque = bloque;
         this.condicionesAliter = condicionesAliter;
         this.bloquesAliter = bloquesAliter;
         this.bloqueAliter = bloqueAliter;
+
     }
 
     public NodoAST getCondicion() {
@@ -44,4 +46,5 @@ public class StatementSi extends NodoAST {
     public <T> T accept(LatinusAstVisitor<T> visitor) {
         return visitor.visitStatementSi(this);
     }
+
 }

@@ -23,4 +23,5 @@ public class StmtDeclaracion extends NodoASTY {
     public <T> T accept(YAstVisitor<T> visitor) {
         return visitor.visitarStmtDeclaracion(this);
     }
+
 }

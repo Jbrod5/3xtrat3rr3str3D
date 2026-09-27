@@ -11,11 +11,13 @@ public class DeclArrayConDatos extends NodoAST {
     private final List<NodoAST> valores;
 
     public DeclArrayConDatos(String identificador, NodoAST tamano, NodoAST tipo, List<NodoAST> valores, int linea, int columna) {
+
         super(linea, columna);
         this.identificador = identificador;
         this.tamano = tamano;
         this.tipo = tipo;
         this.valores = valores;
+
     }
 
     public String getIdentificador() {
@@ -38,4 +40,5 @@ public class DeclArrayConDatos extends NodoAST {
     public <T> T accept(LatinusAstVisitor<T> visitor) {
         return visitor.visitDeclArrayConDatos(this);
     }
+
 }

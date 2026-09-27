@@ -11,11 +11,13 @@ public class CicloFor extends NodoASTZetariano {
     private final NodoASTZetariano bloque;
 
     public CicloFor(NodoASTZetariano inicializacion, NodoASTZetariano condicion, NodoASTZetariano paso, NodoASTZetariano bloque, int linea, int columna) {
+
         super(linea, columna);
         this.inicializacion = inicializacion;
         this.condicion = condicion;
         this.paso = paso;
         this.bloque = bloque;
+
     }
 
     public NodoASTZetariano getInicializacion() {
@@ -38,4 +40,5 @@ public class CicloFor extends NodoASTZetariano {
     public <T> T accept(ZetarianoAstVisitor<T> visitor) {
         return visitor.visitarCicloFor(this);
     }
+
 }

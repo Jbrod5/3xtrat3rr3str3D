@@ -8,9 +8,11 @@ public class ExprAccesoMiembroEstructura extends NodoAST {
     private final String miembro;
 
     public ExprAccesoMiembroEstructura(NodoAST objeto, String miembro, int linea, int columna) {
+
         super(linea, columna);
         this.objeto = objeto;
         this.miembro = miembro;
+
     }
 
     public NodoAST getObjeto() {
@@ -25,4 +27,5 @@ public class ExprAccesoMiembroEstructura extends NodoAST {
     public <T> T accept(LatinusAstVisitor<T> visitor) {
         return visitor.visitExprAccesoMiembroEstructura(this);
     }
+
 }

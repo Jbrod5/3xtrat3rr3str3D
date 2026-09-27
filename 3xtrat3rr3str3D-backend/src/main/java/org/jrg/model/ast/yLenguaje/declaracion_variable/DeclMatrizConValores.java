@@ -18,22 +18,30 @@ public class DeclMatrizConValores extends NodoASTY {
      * Crear una declaracion de matriz con valores iniciales por filas.
      */
     public DeclMatrizConValores(NodoASTY tipo, String nombre, NodoASTY tamanoFilas, NodoASTY tamanoColumnas, List<List<NodoASTY>> filas, int linea, int columna) {
+
         super(linea, columna);
         this.tipo = tipo;
         this.nombre = nombre;
         this.tamanoFilas = tamanoFilas;
         this.tamanoColumnas = tamanoColumnas;
         this.filas = new ArrayList<>();
+
         // copiar filas si existen
         if (filas != null) {
+
             for (int i = 0; i < filas.size(); i++) {
+
                 List<NodoASTY> fila = new ArrayList<>();
                 if (filas.get(i) != null) {
                     fila.addAll(filas.get(i));
                 }
+
                 this.filas.add(fila);
+
             }
+
         }
+
     }
 
     public NodoASTY getTipo() {
@@ -60,4 +68,5 @@ public class DeclMatrizConValores extends NodoASTY {
     public <T> T accept(YAstVisitor<T> visitor) {
         return visitor.visitarDeclMatrizConValores(this);
     }
+
 }

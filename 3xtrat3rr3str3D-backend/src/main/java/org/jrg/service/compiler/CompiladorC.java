@@ -40,6 +40,7 @@ public class CompiladorC {
 
         // ejecutar con timeout
         try {
+
             ProcessBuilder constructor = new ProcessBuilder();
             constructor.command("sh", "-c", comando);
             constructor.redirectErrorStream(true);
@@ -72,9 +73,13 @@ public class CompiladorC {
         } catch (IOException e) {
             return new ResultadoGcc(false, "error al ejecutar gcc: " + e.getMessage() + "\nVerifica que gcc este instalado en el sistema", comando, "");
         } catch (InterruptedException e) {
+
             Thread.currentThread().interrupt();
 
             return new ResultadoGcc(false, "compilacion interrumpida: " + e.getMessage(), comando, "");
+
         }
+
     }
+
 }

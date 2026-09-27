@@ -9,9 +9,11 @@ public class ExprLlamadaFuncion extends NodoASTZetariano {
     private final NodoASTZetariano argumentos;
 
     public ExprLlamadaFuncion(String nombre, NodoASTZetariano argumentos, int linea, int columna) {
+
         super(linea, columna);
         this.nombre = nombre;
         this.argumentos = argumentos;
+
     }
 
     public String getNombre() {
@@ -26,4 +28,5 @@ public class ExprLlamadaFuncion extends NodoASTZetariano {
     public <T> T accept(ZetarianoAstVisitor<T> visitor) {
         return visitor.visitarExprLlamadaFuncion(this);
     }
+
 }

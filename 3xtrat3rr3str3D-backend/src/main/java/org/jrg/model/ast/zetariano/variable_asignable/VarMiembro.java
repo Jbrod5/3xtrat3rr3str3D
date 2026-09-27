@@ -9,9 +9,11 @@ public class VarMiembro extends NodoASTZetariano {
     private final String miembro;
 
     public VarMiembro(NodoASTZetariano variable, String miembro, int linea, int columna) {
+
         super(linea, columna);
         this.variable = variable;
         this.miembro = miembro;
+
     }
 
     public NodoASTZetariano getVariable() {
@@ -26,4 +28,5 @@ public class VarMiembro extends NodoASTZetariano {
     public <T> T accept(ZetarianoAstVisitor<T> visitor) {
         return visitor.visitarVarMiembro(this);
     }
+
 }

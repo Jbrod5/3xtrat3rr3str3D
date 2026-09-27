@@ -9,9 +9,11 @@ public class ExprAccesoMiembro extends NodoASTZetariano {
     private final String miembro;
 
     public ExprAccesoMiembro(NodoASTZetariano objeto, String miembro, int linea, int columna) {
+
         super(linea, columna);
         this.objeto = objeto;
         this.miembro = miembro;
+
     }
 
     public NodoASTZetariano getObjeto() {
@@ -26,4 +28,5 @@ public class ExprAccesoMiembro extends NodoASTZetariano {
     public <T> T accept(ZetarianoAstVisitor<T> visitor) {
         return visitor.visitarExprAccesoMiembro(this);
     }
+
 }

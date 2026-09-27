@@ -12,9 +12,11 @@ public class PasoParaAsig extends NodoASTY {
      * Crear un paso de para con asignacion.
      */
     public PasoParaAsig(NodoASTY variable, NodoASTY expresion, int linea, int columna) {
+
         super(linea, columna);
         this.variable = variable;
         this.expresion = expresion;
+
     }
 
     public NodoASTY getVariable() {
@@ -29,4 +31,5 @@ public class PasoParaAsig extends NodoASTY {
     public <T> T accept(YAstVisitor<T> visitor) {
         return visitor.visitarPasoParaAsig(this);
     }
+
 }

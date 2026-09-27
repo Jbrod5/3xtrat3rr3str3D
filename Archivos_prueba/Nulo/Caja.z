@@ -1,0 +1,11 @@
+public class Caja {
+    int dato;
+
+    public Caja(int dato1) {
+        dato = dato1;
+    }
+
+    public int getDato() {
+        return dato;
+    }
+}

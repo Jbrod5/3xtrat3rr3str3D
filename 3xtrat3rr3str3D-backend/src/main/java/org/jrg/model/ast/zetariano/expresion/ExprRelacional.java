@@ -10,10 +10,12 @@ public class ExprRelacional extends NodoASTZetariano {
     private final NodoASTZetariano operandoDerecho;
 
     public ExprRelacional(NodoASTZetariano operandoIzquierdo, String operador, NodoASTZetariano operandoDerecho, int linea, int columna) {
+
         super(linea, columna);
         this.operandoIzquierdo = operandoIzquierdo;
         this.operador = operador;
         this.operandoDerecho = operandoDerecho;
+
     }
 
     public NodoASTZetariano getOperandoIzquierdo() {
@@ -32,4 +34,5 @@ public class ExprRelacional extends NodoASTZetariano {
     public <T> T accept(ZetarianoAstVisitor<T> visitor) {
         return visitor.visitarExprRelacional(this);
     }
+
 }

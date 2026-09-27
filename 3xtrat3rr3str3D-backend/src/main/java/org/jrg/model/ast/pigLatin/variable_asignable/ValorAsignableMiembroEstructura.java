@@ -8,9 +8,11 @@ public class ValorAsignableMiembroEstructura extends NodoAST {
     private final String miembro;
 
     public ValorAsignableMiembroEstructura(NodoAST base, String miembro, int linea, int columna) {
+
         super(linea, columna);
         this.base = base;
         this.miembro = miembro;
+
     }
 
     public NodoAST getBase() {
@@ -25,4 +27,5 @@ public class ValorAsignableMiembroEstructura extends NodoAST {
     public <T> T accept(LatinusAstVisitor<T> visitor) {
         return visitor.visitValorAsignableMiembroEstructura(this);
     }
+
 }

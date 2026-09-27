@@ -20,4 +20,5 @@ public class StmtCiclo extends NodoASTZetariano {
     public <T> T accept(ZetarianoAstVisitor<T> visitor) {
         return visitor.visitarStmtCiclo(this);
     }
+
 }

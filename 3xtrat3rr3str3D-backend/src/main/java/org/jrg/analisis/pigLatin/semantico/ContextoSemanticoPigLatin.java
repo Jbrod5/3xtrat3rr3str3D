@@ -54,6 +54,7 @@ class ContextoSemanticoPigLatin {
         this.tiposConEsquema = new HashSet<>();
         this.contadorAmbitos = 0;
         this.profundidadCiclos = 0;
+
     }
 
     // reiniciar el contexto y dejarlo listo para un nuevo analisis
@@ -76,15 +77,21 @@ class ContextoSemanticoPigLatin {
 
         // apilar el ambito global como ambito actual
         this.ambitos.push(this.ambitoGlobal);
+
     }
 
-    // meter los cinco primitivos
+    // meter los cinco primitivos mas el nulo de objeto
     void registrarTiposPrimitivos() {
+
         agregarTipoPrimitivo("numerus", true);
         agregarTipoPrimitivo("decimalis", true);
         agregarTipoPrimitivo("textum", true);
         agregarTipoPrimitivo("littera", true);
         agregarTipoPrimitivo("bool", true);
+
+        // registrar el nulo para comparar y asignar objetos vacios
+        agregarTipoPrimitivo("null", true);
+
     }
 
     // crear un tipo primitivo y guardarlo en el mapa y en el ambito global
@@ -96,10 +103,12 @@ class ContextoSemanticoPigLatin {
         if (this.ambitoGlobal != null) {
             this.ambitoGlobal.agregarTipo(tipo);
         }
+
     }
 
     // agregar un error semantico tomando linea y columna del nodo
     void agregarError(NodoAST nodo, String descripcion) {
+
         int linea = 0;
         int columna = 0;
 
@@ -109,6 +118,7 @@ class ContextoSemanticoPigLatin {
         }
 
         agregarError(linea, columna, descripcion);
+
     }
 
     // agregar un error semantico con linea y columna explicitas
@@ -118,11 +128,13 @@ class ContextoSemanticoPigLatin {
 
     // devolver el ambito activo (el ultimo que entro)
     Ambito ambitoActual() {
+
         if (this.ambitos.isEmpty()) {
             return this.ambitoGlobal;
         }
 
         return this.ambitos.peek();
+
     }
 
     // entrar a un ambito nuevo hijo del actual
@@ -143,6 +155,7 @@ class ContextoSemanticoPigLatin {
 
         // apilarlo como ambito actual
         this.ambitos.push(nuevoAmbito);
+
     }
 
     // salir del ambito actual regresando al padre
@@ -152,6 +165,7 @@ class ContextoSemanticoPigLatin {
         if (this.ambitos.size() > 1) {
             this.ambitos.pop();
         }
+
     }
 
     // entrar a un ciclo incrementando la profundidad
@@ -179,41 +193,51 @@ class ContextoSemanticoPigLatin {
 
     // buscar un tipo primitivo por nombre
     Tipo tipoPrimitivo(String nombre) {
+
         if (nombre == null) {
             return null;
         }
 
         return this.tiposPrimitivos.get(nombre);
+
     }
 
     // mapear un TipoPrimitivo del AST a su tipo del lenguaje
     Tipo tipoPrimitivo(TipoPrimitivo tipoPrimitivo) {
+
         if (tipoPrimitivo == null) {
             return null;
         }
+
         if (tipoPrimitivo == TipoPrimitivo.ENTERO) {
             return tipoPrimitivo("numerus");
         }
+
         if (tipoPrimitivo == TipoPrimitivo.DECIMAL) {
             return tipoPrimitivo("decimalis");
         }
+
         if (tipoPrimitivo == TipoPrimitivo.CADENA) {
             return tipoPrimitivo("textum");
         }
+
         if (tipoPrimitivo == TipoPrimitivo.CARACTER) {
             return tipoPrimitivo("littera");
         }
+
         if (tipoPrimitivo == TipoPrimitivo.BOOLEANO) {
             return tipoPrimitivo("bool");
         }
 
         return null;
+
     }
 
     // buscar o crear un tipo no primitivo
     // si crear es false y no existe devuelve null
     // si crear es true lo registra y reporta error
     Tipo tipoNoPrimitivo(String nombre, NodoAST nodo, boolean crear) {
+
         if (nombre == null || nombre.isEmpty()) {
             return null;
         }
@@ -242,20 +266,24 @@ class ContextoSemanticoPigLatin {
         }
 
         return tipo;
+
     }
 
     // buscar un tipo no primitivo ya registrado por nombre
     Tipo tipoNoPrimitivoExistente(String nombre) {
+
         if (nombre == null) {
             return null;
         }
 
         return this.tiposNoPrimitivos.get(nombre);
+
     }
 
     // registrar un tipo no primitivo que viene de un import
     // como no se lee el archivo importado se crea sin reportar error :D
     Tipo registrarTipoNoPrimitivoImportado(String nombre, NodoAST nodo) {
+
         if (nombre == null || nombre.isEmpty()) {
             return null;
         }
@@ -274,6 +302,7 @@ class ContextoSemanticoPigLatin {
         }
 
         return tipo;
+
     }
 
     // marcar un tipo como que ya conocemos su esquema de campos
@@ -285,11 +314,13 @@ class ContextoSemanticoPigLatin {
 
     // verificar si conocemos el esquema de campos de un tipo
     boolean tieneEsquemaConocido(Tipo tipo) {
+
         if (tipo == null) {
             return false;
         }
 
         return this.tiposConEsquema.contains(tipo.getNombre());
+
     }
 
     // resolver un tipo por nombre: primitivo o no primitivo
@@ -303,6 +334,7 @@ class ContextoSemanticoPigLatin {
 
         // si no, buscar o crear no primitivo
         return tipoNoPrimitivo(nombre, nodo, true);
+
     }
 
     // devolver un tipo marcador para "desconocido"
@@ -317,6 +349,7 @@ class ContextoSemanticoPigLatin {
 
     // construir el tipo arreglo a partir de un tipo base
     Tipo tipoArray(Tipo tipoBase) {
+
         if (tipoBase == null) {
             return null;
         }
@@ -328,10 +361,12 @@ class ContextoSemanticoPigLatin {
         agregarTipoExtra(tipo);
 
         return tipo;
+
     }
 
     // obtener el tipo de los elementos de un arreglo
     Tipo tipoElemento(Tipo tipo) {
+
         if (tipo == null || tipo.getDimension() <= 0) {
             return null;
         }
@@ -341,10 +376,12 @@ class ContextoSemanticoPigLatin {
         }
 
         return new Tipo(tipo.getNombre(), tipo.esPrimitivo());
+
     }
 
     // agregar un tipo auxiliar evitando duplicados por identidad
     void agregarTipoExtra(Tipo tipo) {
+
         if (tipo == null) {
             return;
         }
@@ -357,10 +394,12 @@ class ContextoSemanticoPigLatin {
         }
 
         this.tiposExtra.add(tipo);
+
     }
 
     // declarar una variable o arreglo en el ambito actual
     boolean declarar(NodoAST nodo, String nombre, Tipo tipo, CategoriaSimbolo categoria, Integer tamano) {
+
         if (nombre == null || nombre.isEmpty()) {
             agregarError(nodo, "declaracion sin identificador");
             return false;
@@ -382,10 +421,12 @@ class ContextoSemanticoPigLatin {
         }
 
         return true;
+
     }
 
     // resolver un simbolo por nombre buscando en todos los ambitos
     Simbolo resolver(String nombre, NodoAST nodo) {
+
         Simbolo simbolo = ambitoActual().buscarSimbolo(nombre);
 
         // reportar error si no existe
@@ -394,6 +435,7 @@ class ContextoSemanticoPigLatin {
         }
 
         return simbolo;
+
     }
 
     // resolver si existe, es lo mismo
@@ -403,11 +445,13 @@ class ContextoSemanticoPigLatin {
 
     // verificar si un tipo es numerico (entero o decimal)
     boolean esNumerico(Tipo tipo) {
+
         if (tipo == null) {
             return false;
         }
 
         return "numerus".equals(tipo.getNombre()) || "decimalis".equals(tipo.getNombre());
+
     }
 
     // verificar si un tipo es entero
@@ -432,12 +476,23 @@ class ContextoSemanticoPigLatin {
 
     // verificar compatibilidad general entre dos tipos
     boolean esCompatible(Tipo esperado, Tipo real) {
+
         if (esperado == null || real == null) {
             return false;
         }
 
         // mismo objeto, compatibles
         if (esperado == real) {
+            return true;
+        }
+
+        // aceptar el nulo hacia cualquier destino de objeto
+        if ("null".equals(real.getNombre())) {
+            return true;
+        }
+
+        // aceptar cualquier origen hacia un destino nulo
+        if ("null".equals(esperado.getNombre())) {
             return true;
         }
 
@@ -453,10 +508,12 @@ class ContextoSemanticoPigLatin {
 
         // tipos simples: misma dimension y mismo nombre
         return esperado.getDimension() == real.getDimension() && sonNombresCompatibles(esperado.getNombre(), real.getNombre());
+
     }
 
     // verificar si un tipo real se puede asignar a un tipo esperado
     boolean esAsignable(Tipo esperado, Tipo real) {
+
         if (esperado == null || real == null) {
             return false;
         }
@@ -473,32 +530,39 @@ class ContextoSemanticoPigLatin {
 
         // si no, ver esCompatible
         return esCompatible(esperado, real);
+
     }
 
     // comparar dos nombres de tipo
     boolean sonNombresCompatibles(String nombreEsperado, String nombreReal) {
+
         if (nombreEsperado == null || nombreReal == null) {
             return false;
         }
 
         return nombreEsperado.equals(nombreReal);
+
     }
 
     // comparar dos tipos base de arreglos
     boolean sonTiposBaseCompatibles(Tipo baseEsperada, Tipo baseReal) {
+
         if (baseEsperada == null || baseReal == null) {
             return false;
         }
 
         return esCompatible(baseEsperada, baseReal);
+
     }
 
     // calcular el tipo de mayor jerarquia entre dos tipos
     // si hay decimalis gana, si no numerus
     Tipo tipoMayorJerarquia(Tipo izquierdo, Tipo derecho) {
+
         if (izquierdo == null) {
             return derecho;
         }
+
         if (derecho == null) {
             return izquierdo;
         }
@@ -510,13 +574,17 @@ class ContextoSemanticoPigLatin {
 
         // ambos numericos
         if (esNumerico(izquierdo) && esNumerico(derecho)) {
+
             if ("decimalis".equals(izquierdo.getNombre()) || "decimalis".equals(derecho.getNombre())) {
                 return tipoPrimitivo("decimalis");
             }
+
             return tipoPrimitivo("numerus");
+
         }
 
         return null;
+
     }
 
     // buscar un campo dentro de un tipo no primitivo
@@ -524,11 +592,13 @@ class ContextoSemanticoPigLatin {
 
         // solo se puede acceder a miembros de tipos no primitivoes
         if (!esNoPrimitivo(tipo)) {
+
             if (nodo != null) {
                 agregarError(nodo, "acceso a miembro invalido");
             }
 
             return null;
+
         }
 
         // buscar el campo en el tipo
@@ -548,6 +618,7 @@ class ContextoSemanticoPigLatin {
         }
 
         return null;
+
     }
 
     // aprender un campo de un tipo no primitivo a partir del uso
@@ -572,6 +643,7 @@ class ContextoSemanticoPigLatin {
         marcarEsquemaConocido(tipo);
 
         return campo;
+
     }
 
     // validar los valores posicionales contra los campos del tipo
@@ -592,35 +664,45 @@ class ContextoSemanticoPigLatin {
 
         // comparar valor por valor contra el campo en la misma posicion
         for (int i = 0; i < tiposValores.size(); i++) {
+
             Tipo esperado = null;
             if (i < campos.size()) {
                 esperado = campos.get(i).getTipo();
             }
+
             validarCompatibilidad(esperado, tiposValores.get(i), nodo);
+
         }
+
     }
 
     // validar que un tipo real sea compatible con el esperado
     void validarCompatibilidad(Tipo esperado, Tipo real, NodoAST nodo) {
+
         if (esperado == null || real == null) {
             return;
         }
+
         if (!esCompatible(esperado, real)) {
             agregarError(nodo, "tipo incompatibles");
         }
+
     }
 
     /**
      * Obtener todos los simbolos registrados en el analisis.
      */
     public List<Simbolo> obtenerSimbolos() {
+
         List<Simbolo> resultado = new ArrayList<>();
         colectarSimbolos(this.ambitoGlobal, resultado);
         return resultado;
+
     }
 
     // recorrer el arbol de ambitos acumulando simbolos
     void colectarSimbolos(Ambito ambito, List<Simbolo> resultado) {
+
         if (ambito == null) {
             return;
         }
@@ -629,12 +711,14 @@ class ContextoSemanticoPigLatin {
         for (Ambito hijo : ambito.getAmbitos()) {
             colectarSimbolos(hijo, resultado);
         }
+
     }
 
     /**
      * Obtener todos los tipos registrados en el analisis.
      */
     public List<Tipo> obtenerTipos() {
+
         List<Tipo> resultado = new ArrayList<>();
 
         // agregar los tipos del ambito global
@@ -645,6 +729,7 @@ class ContextoSemanticoPigLatin {
         // agregar los tipos auxiliares (arreglos, etc etcccccc)
         resultado.addAll(this.tiposExtra);
         return resultado;
+
     }
 
     // obtener el recolector de errores
@@ -657,12 +742,15 @@ class ContextoSemanticoPigLatin {
 
     // registrar un simbolo importado en el ambito global
     void registrarSimboloImportado(Simbolo simbolo) {
+
         if (simbolo == null) return;
         if (this.ambitoGlobal == null) return;
+
         // omitir variables locales de otros archivos para no contaminar el ambito
         if (simbolo.getCategoria() == CategoriaSimbolo.VARIABLE || simbolo.getCategoria() == CategoriaSimbolo.PARAMETRO || simbolo.getCategoria() == CategoriaSimbolo.CONSTANTE) {
             return;
         }
+
         if (this.ambitoGlobal.buscarSimboloLocal(simbolo.getNombre()) != null) return;
 
         // mapear el tipo y los tipos de los parametros al vocabulario de Pig Latin
@@ -671,14 +759,17 @@ class ContextoSemanticoPigLatin {
         for (int i = 0; i < simbolo.getTiposParametros().size(); i++) {
             tiposParams.add(mapearTipoImportado(simbolo.getTiposParametros().get(i)));
         }
+
         simbolo.setTiposParametros(tiposParams);
 
         simbolo.setAmbito(this.ambitoGlobal);
         this.ambitoGlobal.agregarSimbolo(simbolo);
+
     }
 
     // traducir un tipo de otro lenguaje al vocabulario de Pig Latin
     private Tipo mapearTipoImportado(Tipo tipo) {
+
         if (tipo == null) return null;
 
         // mapear segun el nombre
@@ -709,24 +800,30 @@ class ContextoSemanticoPigLatin {
             copia.setDimension(tipo.getDimension());
             copia.setTipoBase(mapearTipoImportado(tipo.getTipoBase()));
         }
+
         return copia;
+
     }
 
     // registrar un tipo importado en el mapa de tipos no primitivos
     void registrarTipoImportado(Tipo tipo) {
+
         if (tipo == null || tipo.getNombre() == null) {
             return;
         }
+
         if (this.tiposNoPrimitivos.containsKey(tipo.getNombre())) {
             return;
         }
 
         // mapear los tipos de los campos al vocabulario de Pig Latin
         if (tipo.getCampos() != null) {
+
             for (int i = 0; i < tipo.getCampos().size(); i++) {
                 Simbolo campo = tipo.getCampos().get(i);
                 campo.setTipo(mapearTipoImportado(campo.getTipo()));
             }
+
         }
 
         this.tiposNoPrimitivos.put(tipo.getNombre(), tipo);
@@ -736,6 +833,7 @@ class ContextoSemanticoPigLatin {
 
         // marcar el esquema como conocido para validar campos al instanciar
         marcarEsquemaConocido(tipo);
+
     }
 
 

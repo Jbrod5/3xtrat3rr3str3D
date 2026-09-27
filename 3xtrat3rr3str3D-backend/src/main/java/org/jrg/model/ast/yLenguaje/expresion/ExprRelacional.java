@@ -13,10 +13,12 @@ public class ExprRelacional extends NodoASTY {
      * Crear una expresion relacional.
      */
     public ExprRelacional(NodoASTY izquierdo, String operador, NodoASTY derecho, int linea, int columna) {
+
         super(linea, columna);
         this.izquierdo = izquierdo;
         this.operador = operador;
         this.derecho = derecho;
+
     }
 
     public NodoASTY getIzquierdo() {
@@ -35,4 +37,5 @@ public class ExprRelacional extends NodoASTY {
     public <T> T accept(YAstVisitor<T> visitor) {
         return visitor.visitarExprRelacional(this);
     }
+
 }

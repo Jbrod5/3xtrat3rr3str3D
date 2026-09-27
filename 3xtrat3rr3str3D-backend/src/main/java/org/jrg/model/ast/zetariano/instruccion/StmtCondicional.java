@@ -20,4 +20,5 @@ public class StmtCondicional extends NodoASTZetariano {
     public <T> T accept(ZetarianoAstVisitor<T> visitor) {
         return visitor.visitarStmtCondicional(this);
     }
+
 }

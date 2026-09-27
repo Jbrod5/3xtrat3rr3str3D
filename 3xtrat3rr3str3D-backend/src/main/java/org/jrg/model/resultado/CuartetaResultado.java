@@ -16,6 +16,7 @@ public class CuartetaResultado {
 
     // crear el resultado con sus cuatro campos y sus tipos
     public CuartetaResultado(String operador, String arg1, String arg2, String resultado, String tipoArg1, String tipoArg2, String tipoResultado) {
+
         // asignar los valores recibidos
         this.operador = operador;
         this.arg1 = arg1;
@@ -24,10 +25,12 @@ public class CuartetaResultado {
         this.tipoArg1 = tipoArg1;
         this.tipoArg2 = tipoArg2;
         this.tipoResultado = tipoResultado;
+
     }
 
     // crear el resultado a partir de una cuarteta
     public CuartetaResultado(Cuarteta cuarteta) {
+
         // extraer cada campo desde la cuarteta
         this.operador = cuarteta.getOperador();
         this.arg1 = cuarteta.getArg1();
@@ -36,6 +39,7 @@ public class CuartetaResultado {
         this.tipoArg1 = cuarteta.getTipoArg1();
         this.tipoArg2 = cuarteta.getTipoArg2();
         this.tipoResultado = cuarteta.getTipoResultado();
+
     }
 
     // dar el operador para el JSON
@@ -72,4 +76,5 @@ public class CuartetaResultado {
     public String getTipoResultado() {
         return tipoResultado;
     }
+
 }

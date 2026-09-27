@@ -5,7 +5,9 @@ import org.jrg.antlrBase.pigLatin.PigLatinLexer;
 public class ClasificadorTokenPigLatin {
 
     public static String clasificar(int tokenType) {
+
         switch (tokenType) {
+
             case PigLatinLexer.IMPORT:
             case PigLatinLexer.VARIABILES:
             case PigLatinLexer.MAIOR:
@@ -36,6 +38,9 @@ public class ClasificadorTokenPigLatin {
             case PigLatinLexer.VERUM:
             case PigLatinLexer.FALSUS:
                 return "boolean";
+
+            case PigLatinLexer.NULL:
+                return "null";
 
             case PigLatinLexer.IDENTIFICADOR:
                 return "identifier";
@@ -87,6 +92,9 @@ public class ClasificadorTokenPigLatin {
 
             default:
                 return "unknown";
+
         }
+
     }
+
 }
