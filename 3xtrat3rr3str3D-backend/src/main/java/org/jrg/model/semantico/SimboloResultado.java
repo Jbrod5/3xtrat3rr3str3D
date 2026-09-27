@@ -13,6 +13,7 @@ public class SimboloResultado {
     private final int posicionRelativa;
     private final Integer tamano;
     private final Object valor;
+    private final String archivo;
 
     /**
      * Crear una representacion de simbolo para la respuesta HTTP.
@@ -33,6 +34,7 @@ public class SimboloResultado {
             this.posicionRelativa = 0;
             this.tamano = null;
             this.valor = null;
+            this.archivo = "";
             return;
 
         }
@@ -72,6 +74,13 @@ public class SimboloResultado {
             this.valor = null;
         } else {
             this.valor = simbolo.getValor().getValor();
+        }
+
+        // copiar el archivo de origen del simbolo
+        if (simbolo.getArchivo() == null) {
+            this.archivo = "";
+        } else {
+            this.archivo = simbolo.getArchivo();
         }
 
     }
@@ -118,6 +127,13 @@ public class SimboloResultado {
 
     public Object getValor() {
         return this.valor;
+    }
+
+    /**
+     * Obtener el archivo de origen del simbolo.
+     */
+    public String getArchivo() {
+        return this.archivo;
     }
 
     // construir una representacion textual del tipo

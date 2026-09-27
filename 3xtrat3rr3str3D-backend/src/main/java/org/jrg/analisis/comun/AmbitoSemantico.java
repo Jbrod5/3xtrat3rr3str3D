@@ -76,6 +76,13 @@ public class AmbitoSemantico {
             ambito.agregarSimbolo(simbolo);
         }
 
+        // heredar el archivo al simbolo sin origen marcado
+        if (simbolo.getArchivo() == null || simbolo.getArchivo().isEmpty()) {
+            if (ambito.getArchivo() != null && ambito.getArchivo().isEmpty() == false) {
+                simbolo.setArchivo(ambito.getArchivo());
+            }
+        }
+
         return true;
 
     }
@@ -366,6 +373,20 @@ public class AmbitoSemantico {
      */
     public String obtenerNombre() {
         return ambito.getNombre();
+    }
+
+    /**
+     * Obtener el archivo de origen del ambito.
+     */
+    public String obtenerArchivo() {
+        return ambito.getArchivo();
+    }
+
+    /**
+     * Asignar el archivo de origen del ambito.
+     */
+    public void fijarArchivo(String archivo) {
+        ambito.setArchivo(archivo);
     }
 
 }

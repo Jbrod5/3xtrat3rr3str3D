@@ -115,6 +115,10 @@ public class CompiladorZetarianoService {
             try {
 
                 AnalizadorSemanticoZetariano analizador = new AnalizadorSemanticoZetariano(recolector);
+
+                // marcar el archivo en curso para el origen de los simbolos
+                analizador.setArchivoActual(extraerNombreArchivo(nombreArchivo));
+
                 analizador.visitarPrograma((Programa) ast);
 
                 // pasar por los ambitos para juntar simbolos
@@ -324,6 +328,19 @@ public class CompiladorZetarianoService {
         List<Boolean> declaradas = new ArrayList<>();
         if (iniciado) {
 
+            // marcar cada analizador con su archivo para el origen de los simbolos
+            for (int i = 0; i < analizadores.size(); i++) {
+
+                // omitir analizadores vacios
+                if (analizadores.get(i) == null) {
+                    continue;
+                }
+
+                // usar el nombre con extension que trae la lista ordenada
+                analizadores.get(i).setArchivoActual(ordenados.get(i).getFileName().toString());
+
+            }
+
             for (int i = 0; i < programas.size(); i++) {
 
                 // omitir archivos sin programa
@@ -452,7 +469,6 @@ public class CompiladorZetarianoService {
 
     // validar que el nombre del archivo coincida con el nombre de la clase
     private void validarNombreArchivo(Programa programa, String nombreArchivo, RecolectorErrores recolector) {
-
         // omitir nombres vacios
         if (nombreArchivo == null || nombreArchivo.isEmpty()) {
             return;
@@ -472,9 +488,34 @@ public class CompiladorZetarianoService {
 
     }
 
+    // extraer el nombre base del archivo desde una ruta completa
+    private String extraerNombreArchivo(String rutaArchivo) {
+
+        // devolver vacio si no hay ruta
+        if (rutaArchivo == null || rutaArchivo.isEmpty()) {
+            return "";
+        }
+
+        // cortar por la ultima diagonal normal o invertida
+        int corteNormal = rutaArchivo.lastIndexOf('/');
+        int corteInvertido = rutaArchivo.lastIndexOf('\\');
+
+        int corte = corteNormal;
+        if (corteInvertido > corte) {
+            corte = corteInvertido;
+        }
+
+        // devolver todo si no hay diagonal
+        if (corte < 0) {
+            return rutaArchivo;
+        }
+
+        return rutaArchivo.substring(corte + 1);
+
+    }
+
     // pasar por los ambitos y juntar todo
     private void colectarSimbolos(AmbitoSemantico ambito, List<Simbolo> simbolos, List<Tipo> tipos) {
-
         if (ambito == null) {
             return;
         }

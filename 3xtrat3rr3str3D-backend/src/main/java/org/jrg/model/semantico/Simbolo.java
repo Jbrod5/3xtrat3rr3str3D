@@ -18,6 +18,7 @@ public class Simbolo {
     private int posicionRelativa;
     private int fila;
     private int columna;
+    private String archivo;
 
     /**
      * Crear un simbolo con nombre categoria y tipo.
@@ -89,6 +90,7 @@ public class Simbolo {
         this.posicionRelativa = posicionRelativa;
         this.fila = fila;
         this.columna = columna;
+        this.archivo = "";
 
     }
 
@@ -265,7 +267,37 @@ public class Simbolo {
      * Asignar el ambito del simbolo.
      */
     public void setAmbito(Ambito ambito) {
+
         this.ambito = ambito;
+
+        // heredar el archivo del ambito si el simbolo no trae origen
+        if (ambito != null && (this.archivo == null || this.archivo.isEmpty())) {
+            if (ambito.getArchivo() != null && ambito.getArchivo().isEmpty() == false) {
+                this.archivo = ambito.getArchivo();
+            }
+        }
+
+    }
+
+    /**
+     * Obtener el archivo de origen del simbolo.
+     */
+    public String getArchivo() {
+        return archivo;
+    }
+
+    /**
+     * Asignar el archivo de origen del simbolo.
+     */
+    public void setArchivo(String archivo) {
+
+        // normalizar archivo nulo
+        if (archivo == null) {
+            this.archivo = "";
+        } else {
+            this.archivo = archivo;
+        }
+
     }
 
     /**

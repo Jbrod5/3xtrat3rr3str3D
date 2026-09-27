@@ -197,7 +197,9 @@ public class GestorImports {
         // analizar solo el pedido primero
         ResultadoAnalisis soloPedido = null;
         if (contenidoPedido != null) {
-            soloPedido = this.compiladorY.analizar(contenidoPedido);
+            // soloPedido = this.compiladorY.analizar(contenidoPedido);
+            // pasar el nombre del archivo para marcar el origen de los simbolos
+            soloPedido = this.compiladorY.analizar(contenidoPedido, Paths.get(rutaAbsoluta).getFileName().toString());
         }
 
         // si no hay tipos sin resolver, no barrer hermanos

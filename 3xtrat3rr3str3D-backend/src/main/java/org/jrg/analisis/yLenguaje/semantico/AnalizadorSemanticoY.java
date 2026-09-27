@@ -111,6 +111,25 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
     }
 
     /**
+     * Analizar un programa Y marcando el archivo de origen.
+     */
+    public void analizar(Programa programa, String nombreArchivo) {
+
+        // iniciar el contexto semantico
+        this.contexto.iniciar();
+
+        // marcar el archivo en curso para el origen de los simbolos
+        this.contexto.setArchivoActual(nombreArchivo);
+
+        // verificar si el programa no es nulo
+        if (programa != null) {
+            // entrar en el programa
+            programa.accept(this);
+        }
+
+    }
+
+    /**
      * Obtener el contexto semantico del analisis.
      */
     public ContextoSemanticoY obtenerContexto() {

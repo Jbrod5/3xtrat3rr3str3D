@@ -126,6 +126,9 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
         this.rutaBase = rutaBase;
         this.contexto.iniciar();
 
+        // marcar el archivo en curso para el origen de los simbolos
+        this.contexto.fijarArchivoActual(extraerNombreArchivo(rutaBase));
+
         // crear el gestor de imports solo si hay ruta base
         if (rutaBase != null && !rutaBase.isEmpty()) {
             this.gestorImports = new GestorImports(rutaBase, this.recolectorErrores);
@@ -158,6 +161,32 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
     public ContextoSemanticoPigLatin obtenerContexto() {
         // devolver el contexto semantico
         return this.contexto;
+    }
+
+    // extraer el nombre base del archivo desde una ruta completa
+    private String extraerNombreArchivo(String rutaBase) {
+
+        // devolver vacio si no hay ruta
+        if (rutaBase == null || rutaBase.isEmpty()) {
+            return "";
+        }
+
+        // cortar por la ultima diagonal normal o invertida
+        int corteNormal = rutaBase.lastIndexOf('/');
+        int corteInvertido = rutaBase.lastIndexOf('\\');
+
+        int corte = corteNormal;
+        if (corteInvertido > corte) {
+            corte = corteInvertido;
+        }
+
+        // devolver todo si no hay diagonal
+        if (corte < 0) {
+            return rutaBase;
+        }
+
+        return rutaBase.substring(corte + 1);
+
     }
 
     /**

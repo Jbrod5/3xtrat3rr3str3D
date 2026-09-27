@@ -89,6 +89,9 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
     // ambito global entre archivos o nulo si es un solo archivo
     private AmbitoSemantico ambitoCompartido;
 
+    // archivo en curso para marcar el origen de los simbolos
+    private String archivoActual;
+
 
     private Tipo tipoClaseActual; // tipo de clase actual en analisis
 
@@ -126,6 +129,23 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
 
         // empezar sin ambito comun si es un solo archivo
         this.ambitoCompartido = null;
+
+        // empezar sin archivo marcado
+        this.archivoActual = "";
+
+    }
+
+    /**
+     * Asignar el archivo en curso para el origen de los simbolos.
+     */
+    public void setArchivoActual(String archivoActual) {
+
+        // normalizar archivo nulo
+        if (archivoActual == null) {
+            this.archivoActual = "";
+        } else {
+            this.archivoActual = archivoActual;
+        }
 
     }
 
@@ -281,6 +301,11 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
 
         // crear el nuevo ambito con el padre actual
         AmbitoSemantico nuevo = new AmbitoSemantico(nombre, ambitoActual);
+
+        // marcar el hijo con el archivo en curso
+        if (this.archivoActual != null && this.archivoActual.isEmpty() == false) {
+            nuevo.fijarArchivo(this.archivoActual);
+        }
 
         // el constructor ya mete el hijo en el padre
 

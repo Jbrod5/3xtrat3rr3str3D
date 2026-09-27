@@ -30,6 +30,7 @@ class ContextoSemanticoPigLatin {
     private final Set<String> tiposConEsquema; // esquema de campos conocido para validar miembros
     private int contadorAmbitos;
     private int profundidadCiclos; // profundidad actual de ciclos anidados
+    private String archivoActual; // archivo que se analiza para marcar origen
 
 
 
@@ -54,6 +55,24 @@ class ContextoSemanticoPigLatin {
         this.tiposConEsquema = new HashSet<>();
         this.contadorAmbitos = 0;
         this.profundidadCiclos = 0;
+        this.archivoActual = "";
+
+    }
+
+    // fijar el archivo en curso y marcar el ambito global con su nombre
+    void fijarArchivoActual(String archivoActual) {
+
+        // normalizar archivo nulo
+        if (archivoActual == null) {
+            this.archivoActual = "";
+        } else {
+            this.archivoActual = archivoActual;
+        }
+
+        // marcar el global para que los simbolos hereden el origen
+        if (this.ambitoGlobal != null && this.archivoActual.isEmpty() == false) {
+            this.ambitoGlobal.setArchivo(this.archivoActual);
+        }
 
     }
 
@@ -145,6 +164,11 @@ class ContextoSemanticoPigLatin {
         Ambito padre = ambitoActual();
         String nombreAmbito = nombre + "_" + this.contadorAmbitos;
         Ambito nuevoAmbito = new Ambito(nombreAmbito, padre);
+
+        // marcar el hijo con el archivo en curso
+        if (this.archivoActual != null && this.archivoActual.isEmpty() == false) {
+            nuevoAmbito.setArchivo(this.archivoActual);
+        }
 
         // el cosntructor de AmbitoSemantico y aregistra el hijo en el padre
 
@@ -762,8 +786,16 @@ class ContextoSemanticoPigLatin {
 
         simbolo.setTiposParametros(tiposParams);
 
-        simbolo.setAmbito(this.ambitoGlobal);
+        // guardar el ambito original antes de registrar en el global
+        Ambito ambitoOriginal = simbolo.getAmbito();
+
+        // simbolo.setAmbito(this.ambitoGlobal);
         this.ambitoGlobal.agregarSimbolo(simbolo);
+
+        // devolver el ambito original para no perder la clase duena
+        if (ambitoOriginal != null) {
+            simbolo.setAmbito(ambitoOriginal);
+        }
 
     }
 

@@ -8,12 +8,18 @@
   function formatearTipo(tipo) {
 
     if (!tipo) return '--';
+
+    // el backend manda el tipo como texto ya resuelto
+    if (typeof tipo === 'string') {
+      return tipo === '' ? '--' : tipo;
+    }
+
     if (tipo.dimension > 0) {
       const base = tipo.tipoBase ? tipo.tipoBase.nombre : tipo.nombre;
       return `${base}[${tipo.dimension}]`;
     }
 
-    return tipo.nombre;
+    return tipo.nombre || '--';
 
   }
 
@@ -215,6 +221,7 @@ function mostrarTamano(simbolo) {
                   <th class="text-nowrap">Params</th>
 
                   <th class="text-nowrap">Ambito</th>
+                  <th class="text-nowrap">Archivo</th>
                   <th class="text-nowrap">Posicion relativa al ambito</th>
                   
                   <th class="text-nowrap">Fila</th>
@@ -230,7 +237,7 @@ function mostrarTamano(simbolo) {
                     <td>
                       <span class="badge {badgeCategoria(simbolo.categoria)}">{simbolo.categoria}</span>
                     </td>
-                    <td class="font-monospace">{formatearTipo(simbolo.tipo)}</td>
+                    <td class="font-monospace text-break" style="min-width: 90px;">{formatearTipo(simbolo.tipo)}</td>
                     
                     <td>{simbolo.valor ? formatearValorConstante(simbolo.valor) : '--'}</td>
                     <td>{simbolo.tamano != null ? simbolo.tamano : '--'}</td>
@@ -242,7 +249,8 @@ function mostrarTamano(simbolo) {
                         <span class="text-muted">--</span>
                       {/if}
                     </td>
-                    <td class="text-center font-monospace text-secondary">{simbolo.nombreAmbito}</td>
+                    <td class="text-center font-monospace text-secondary">{simbolo.ambito ? simbolo.ambito : '--'}</td>
+                    <td class="text-center font-monospace text-break" style="min-width: 90px;">{simbolo.archivo ? simbolo.archivo : '--'}</td>
                     <td class="text-center font-monospace text-secondary">{simbolo.posicionRelativa}</td>
                     <td class="text-center font-monospace text-secondary">{simbolo.fila}</td>
                     <td class="text-center font-monospace text-secondary">{simbolo.columna}</td>

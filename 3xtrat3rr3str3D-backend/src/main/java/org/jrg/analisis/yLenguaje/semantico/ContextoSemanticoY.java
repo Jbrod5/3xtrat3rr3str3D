@@ -23,6 +23,7 @@ public class ContextoSemanticoY {
     private final Stack<AmbitoSemantico> ambitos; // el actual es siempre el ultimo que entro
     private final Map<String, Tipo> tiposPrimitivos;
     private int profundidadCiclos;
+    private String archivoActual; // archivo que se analiza para marcar origen
 
     /**
      * Crear el contexto semantico para el lenguaje Y.
@@ -41,6 +42,21 @@ public class ContextoSemanticoY {
         this.tiposPrimitivos = new HashMap<>();
         this.profundidadCiclos = 0;
         this.profundidadSeleccion = 0;
+        this.archivoActual = "";
+
+    }
+
+    /**
+     * Asignar el archivo en curso para el origen de los simbolos.
+     */
+    public void setArchivoActual(String archivoActual) {
+
+        // normalizar archivo nulo
+        if (archivoActual == null) {
+            this.archivoActual = "";
+        } else {
+            this.archivoActual = archivoActual;
+        }
 
     }
 
@@ -128,6 +144,11 @@ public class ContextoSemanticoY {
 
         AmbitoSemantico padre = ambitoActual();
         AmbitoSemantico nuevo = new AmbitoSemantico(nombre, padre);
+
+        // marcar el hijo con el archivo en curso
+        if (this.archivoActual != null && this.archivoActual.isEmpty() == false) {
+            nuevo.fijarArchivo(this.archivoActual);
+        }
 
 
         // el constructor ya mete el hijo en el padre

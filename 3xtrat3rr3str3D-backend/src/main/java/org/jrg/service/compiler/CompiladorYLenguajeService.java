@@ -37,7 +37,16 @@ public class CompiladorYLenguajeService {
     /**
      * Analizar un programa Y y devolver el resultado completo.
      */
+    // public ResultadoAnalisis analizar(String codigoFuente) {
     public ResultadoAnalisis analizar(String codigoFuente) {
+        // llamar al de abajo sin nombre de archivo
+        return analizar(codigoFuente, null);
+    }
+
+    /**
+     * Analizar un programa Y con el nombre del archivo para marcar el origen.
+     */
+    public ResultadoAnalisis analizar(String codigoFuente, String nombreArchivo) {
 
         // crear el recolector de errores del proceso
         RecolectorErrores recolector = new RecolectorErrores();
@@ -109,7 +118,10 @@ public class CompiladorYLenguajeService {
             try {
 
                 AnalizadorSemanticoY analizador = new AnalizadorSemanticoY(recolector);
-                analizador.analizar((Programa) ast);
+
+                // analizar marcando el archivo de origen
+                // analizador.analizar((Programa) ast);
+                analizador.analizar((Programa) ast, nombreArchivo);
                 simbolos = analizador.obtenerSimbolos();
                 tipos = analizador.obtenerTipos();
 
@@ -330,7 +342,12 @@ public class CompiladorYLenguajeService {
             }
 
             if (programas.get(i) != null) {
+
+                // marcar el archivo en curso para el origen de los simbolos
+                analizador.obtenerContexto().setArchivoActual(archivos.get(i).getFileName().toString());
+
                 programas.get(i).accept(analizador);
+
             }
 
         }

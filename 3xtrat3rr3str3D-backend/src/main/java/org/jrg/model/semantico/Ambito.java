@@ -18,6 +18,7 @@ public class Ambito {
     private final List<Ambito> ambitos;
     private final Map<String, Ambito> ambitosPorNombre;
     private int siguientePosicion;
+    private String archivo;
 
     /**
      * Crear un ambito global o nominal.
@@ -41,6 +42,14 @@ public class Ambito {
         }
 
         this.padre = padre;
+
+        // heredar el archivo del padre para rastrear el origen
+        if (padre != null && padre.getArchivo() != null) {
+            this.archivo = padre.getArchivo();
+        } else {
+            this.archivo = "";
+        }
+
         this.simbolos = new ArrayList<>();
         this.simbolosPorNombre = new HashMap<>();
         this.tipos = new ArrayList<>();
@@ -73,6 +82,27 @@ public class Ambito {
     }
 
     /**
+     * Obtener el archivo de origen del ambito.
+     */
+    public String getArchivo() {
+        return archivo;
+    }
+
+    /**
+     * Asignar el archivo de origen del ambito.
+     */
+    public void setArchivo(String archivo) {
+
+        // normalizar archivo nulo
+        if (archivo == null) {
+            this.archivo = "";
+        } else {
+            this.archivo = archivo;
+        }
+
+    }
+
+    /**
      * Asignar el ambito padre.
      */
     public void setPadre(Ambito padre) {
@@ -90,6 +120,13 @@ public class Ambito {
         }
 
         simbolo.setAmbito(this);
+
+        // heredar el archivo al simbolo sin origen marcado
+        if (simbolo.getArchivo() == null || simbolo.getArchivo().isEmpty()) {
+            if (this.archivo != null && this.archivo.isEmpty() == false) {
+                simbolo.setArchivo(this.archivo);
+            }
+        }
 
         // asignar posicion relativa
         if (simbolo.getPosicionRelativa() < 0) {
