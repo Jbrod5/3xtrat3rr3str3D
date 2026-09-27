@@ -24,7 +24,9 @@ public class Ambito {
      * Crear un ambito global o nominal.
      */
     public Ambito(String nombre) {
+
         this(nombre, null);
+
     }
 
     /**

@@ -13,8 +13,10 @@ public class Parametros extends NodoASTY {
      * Crear una lista de parametros.
      */
     public Parametros(List<NodoASTY> parametros, int linea, int columna) {
+
         super(linea, columna);
         this.parametros = parametros;
+
     }
 
     public List<NodoASTY> getParametros() {

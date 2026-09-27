@@ -11,10 +11,11 @@ public class CuartetaAsignacionSimple extends CuartetaC {
     /**
      * Crear una asignacion con operador explicito.
      */
-    public CuartetaAsignacionSimple(String operador, String arg1, String arg2, String resultado,
-                        String tipoArg1, String tipoArg2, String tipoResultado) {
+    public CuartetaAsignacionSimple(String operador, String arg1, String arg2, String resultado, String tipoArg1, String tipoArg2, String tipoResultado) {
+
         // va al base
         super(operador, arg1, arg2, resultado, tipoArg1, tipoArg2, tipoResultado);
+
     }
 
     /**

@@ -9,9 +9,10 @@ public class CuartetaRetorno extends CuartetaC {
     /**
      * Crear un retorno con operador explicito.
      */
-    public CuartetaRetorno(String operador, String arg1, String arg2, String resultado,
-                     String tipoArg1, String tipoArg2, String tipoResultado) {
+    public CuartetaRetorno(String operador, String arg1, String arg2, String resultado, String tipoArg1, String tipoArg2, String tipoResultado) {
+
         super(operador, arg1, arg2, resultado, tipoArg1, tipoArg2, tipoResultado);
+
     }
 
     /**

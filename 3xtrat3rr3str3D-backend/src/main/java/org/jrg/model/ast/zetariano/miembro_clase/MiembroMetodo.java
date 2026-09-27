@@ -8,8 +8,10 @@ public class MiembroMetodo extends NodoASTZetariano {
     private final NodoASTZetariano metodo;
 
     public MiembroMetodo(NodoASTZetariano metodo, int linea, int columna) {
+
         super(linea, columna);
         this.metodo = metodo;
+
     }
 
     public NodoASTZetariano getMetodo() {

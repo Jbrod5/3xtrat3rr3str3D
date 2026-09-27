@@ -11,8 +11,10 @@ public class TipoDato extends NodoASTY {
      * Crear un tipo de dato con su nombre.
      */
     public TipoDato(String nombre, int linea, int columna) {
+
         super(linea, columna);
         this.nombre = nombre;
+
     }
 
     public String getNombre() {

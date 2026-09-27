@@ -15,16 +15,16 @@ import org.jrg.model.cuarteta.Cuarteta;
 // generar cuartetas del programa y su base en Zetariano
 public class ManejadorProgramaZetariano {
 
-    // estado compartido de la generacion
     private final ContextoCuartetasZetariano ctx;
 
-    // generador duenio para el descenso recursivo
     private final GeneradorCuartetasZetariano generador;
 
     // crear la manejadora con contexto y generador
     public ManejadorProgramaZetariano(ContextoCuartetasZetariano ctx, GeneradorCuartetasZetariano generador) {
+
         this.ctx = ctx;
         this.generador = generador;
+
     }
 
     // visitar la definicion de clase del programa
@@ -118,10 +118,6 @@ public class ManejadorProgramaZetariano {
     public String visitarValorPrimitivo(ValorPrimitivo nodo) {
 
         // version anterior: no generaba nada y los case quedaban en 0
-        // public String visitarValorPrimitivo(ValorPrimitivo nodo) {
-        //     // TODO
-        //     return null;
-        // }
         // devolver el identificador directo sin crear temporal
         if (nodo.getTipoDato() == TipoPrimitivo.IDENTIFICADOR) {
             return nodo.getValor();

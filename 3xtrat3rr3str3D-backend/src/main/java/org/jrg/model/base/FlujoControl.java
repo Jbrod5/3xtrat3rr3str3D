@@ -1,6 +1,5 @@
 package org.jrg.model.base;
 
-
 public class FlujoControl {
 
     private boolean puedeContinuar;
@@ -9,7 +8,9 @@ public class FlujoControl {
      * Crear un flujo de control que inicialmente puede continuar.
      */
     public FlujoControl() {
+
         this.puedeContinuar = true;
+
     }
 
     /**

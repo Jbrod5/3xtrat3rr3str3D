@@ -11,8 +11,10 @@ public class StmtDeclaracion extends NodoASTY {
      * Crear una instruccion de declaracion.
      */
     public StmtDeclaracion(NodoASTY declaracion, int linea, int columna) {
+
         super(linea, columna);
         this.declaracion = declaracion;
+
     }
 
     public NodoASTY getDeclaracion() {

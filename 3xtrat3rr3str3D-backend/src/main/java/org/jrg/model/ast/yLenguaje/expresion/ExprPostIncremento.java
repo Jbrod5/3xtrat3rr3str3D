@@ -11,8 +11,10 @@ public class ExprPostIncremento extends NodoASTY {
      * Crear una expresion de post incremento.
      */
     public ExprPostIncremento(NodoASTY variable, int linea, int columna) {
+
         super(linea, columna);
         this.variable = variable;
+
     }
 
     public NodoASTY getVariable() {

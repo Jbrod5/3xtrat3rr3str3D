@@ -6,8 +6,10 @@ public abstract class NodoASTY {
     private final int columna;
 
     public NodoASTY(int linea, int columna) {
+
         this.linea = linea;
         this.columna = columna;
+
     }
 
     public abstract <T> T accept(YAstVisitor<T> visitor);

@@ -13,8 +13,10 @@ public class ExprListaLiteral extends NodoASTY {
      * Crear una expresion de lista literal.
      */
     public ExprListaLiteral(List<NodoASTY> elementos, int linea, int columna) {
+
         super(linea, columna);
         this.elementos = elementos;
+
     }
 
     public List<NodoASTY> getElementos() {

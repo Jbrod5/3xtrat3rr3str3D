@@ -9,8 +9,10 @@ public class SeccionMaior extends NodoAST {
     private final List<NodoAST> instrucciones;
 
     public SeccionMaior(List<NodoAST> instrucciones, int linea, int columna) {
+
         super(linea, columna);
         this.instrucciones = instrucciones;
+
     }
 
     public List<NodoAST> getInstrucciones() {

@@ -13,8 +13,10 @@ public class ListaExpresiones extends NodoASTY {
      * Crear una lista de expresiones.
      */
     public ListaExpresiones(List<NodoASTY> expresiones, int linea, int columna) {
+
         super(linea, columna);
         this.expresiones = expresiones;
+
     }
 
     public List<NodoASTY> getExpresiones() {

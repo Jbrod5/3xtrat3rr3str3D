@@ -25,8 +25,10 @@ public class ManejadorProgramaY {
 
     // crear la manejadora con contexto y generador
     public ManejadorProgramaY(ContextoCuartetasY ctx, GeneradorCuartetasY generador) {
+
         this.ctx = ctx;
         this.generador = generador;
+
     }
 
     // visitar las secciones del programa
@@ -261,10 +263,6 @@ public class ManejadorProgramaY {
     public String visitarValorPrimitivo(ValorPrimitivo nodo) {
 
         // version anterior: no generaba nada y los caso quedaban en 0
-        // public String visitarValorPrimitivo(ValorPrimitivo nodo) {
-        //     // TODO
-        //     return null;
-        // }
         // devolver el identificador directo sin crear temporal
         if (nodo.getTipo() == TipoPrimitivo.IDENTIFICADOR) {
             return nodo.getValor();

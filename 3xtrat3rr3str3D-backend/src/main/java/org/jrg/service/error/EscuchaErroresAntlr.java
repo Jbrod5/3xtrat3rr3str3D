@@ -17,8 +17,10 @@ public class EscuchaErroresAntlr extends BaseErrorListener {
      * Crear una escucha que dirige los errores hacia el recolector indicado.
      */
     public EscuchaErroresAntlr(RecolectorErrores recolector, TipoError tipoError) {
+
         this.recolector = recolector;
         this.tipoError = tipoError;
+
     }
 
     @Override

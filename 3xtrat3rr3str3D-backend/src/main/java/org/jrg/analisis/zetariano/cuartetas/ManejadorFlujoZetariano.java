@@ -19,16 +19,16 @@ import org.jrg.model.cuarteta.Cuarteta;
 // generar cuartetas de flujo seleccion y ciclos en Zetariano
 public class ManejadorFlujoZetariano {
 
-    // estado compartido de la generacion
     private final ContextoCuartetasZetariano ctx;
 
-    // generador duenio para el descenso recursivo
     private final GeneradorCuartetasZetariano generador;
 
     // crear la manejadora con contexto y generador
     public ManejadorFlujoZetariano(ContextoCuartetasZetariano ctx, GeneradorCuartetasZetariano generador) {
+
         this.ctx = ctx;
         this.generador = generador;
+
     }
 
     // visitar el condicional interno de la instruccion

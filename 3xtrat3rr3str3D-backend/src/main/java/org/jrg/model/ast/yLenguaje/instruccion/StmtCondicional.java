@@ -11,8 +11,10 @@ public class StmtCondicional extends NodoASTY {
      * Crear una instruccion condicional.
      */
     public StmtCondicional(NodoASTY condicional, int linea, int columna) {
+
         super(linea, columna);
         this.condicional = condicional;
+
     }
 
     public NodoASTY getCondicional() {

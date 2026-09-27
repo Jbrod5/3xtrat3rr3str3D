@@ -8,8 +8,10 @@ public class StmtCiclo extends NodoASTZetariano {
     private final NodoASTZetariano ciclo;
 
     public StmtCiclo(NodoASTZetariano ciclo, int linea, int columna) {
+
         super(linea, columna);
         this.ciclo = ciclo;
+
     }
 
     public NodoASTZetariano getCiclo() {

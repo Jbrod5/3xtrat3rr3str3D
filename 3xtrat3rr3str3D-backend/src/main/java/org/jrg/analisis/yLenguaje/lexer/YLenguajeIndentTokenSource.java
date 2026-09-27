@@ -20,16 +20,21 @@ import org.jrg.antlrBase.yLenguaje.YLenguajeLexer;
 public class YLenguajeIndentTokenSource implements TokenSource {
 
     private final Lexer lexerDelegado;
-    private final Stack<Integer> pilaIndentacion = new Stack<>();
-    private final List<Token> tokensPendientes = new ArrayList<>();
+    private final Stack<Integer> pilaIndentacion;
+    private final List<Token> tokensPendientes;
 
-    private Token ultimoTokenReal = null;
-    private boolean inicioDeLinea = true;
-    private boolean finDeArchivoProcesado = false;
+    private Token ultimoTokenReal;
+    private boolean inicioDeLinea;
+    private boolean finDeArchivoProcesado;
 
     public YLenguajeIndentTokenSource(Lexer lexerDelegado) {
 
         this.lexerDelegado = lexerDelegado;
+        this.pilaIndentacion = new Stack<>();
+        this.tokensPendientes = new ArrayList<>();
+        this.ultimoTokenReal = null;
+        this.inicioDeLinea = true;
+        this.finDeArchivoProcesado = false;
 
         // el nivel base (columna 0) siempre esta en la pila
         this.pilaIndentacion.push(0);

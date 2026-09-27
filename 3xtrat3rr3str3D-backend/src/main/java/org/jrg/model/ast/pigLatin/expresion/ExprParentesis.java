@@ -7,8 +7,10 @@ public class ExprParentesis extends NodoAST {
     private final NodoAST expresion;
 
     public ExprParentesis(NodoAST expresion, int linea, int columna) {
+
         super(linea, columna);
         this.expresion = expresion;
+
     }
 
     public NodoAST getExpresion() {

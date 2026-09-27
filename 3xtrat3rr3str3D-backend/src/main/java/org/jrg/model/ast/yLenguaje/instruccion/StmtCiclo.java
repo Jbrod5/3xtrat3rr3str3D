@@ -11,8 +11,10 @@ public class StmtCiclo extends NodoASTY {
      * Crear una instruccion de ciclo.
      */
     public StmtCiclo(NodoASTY ciclo, int linea, int columna) {
+
         super(linea, columna);
         this.ciclo = ciclo;
+
     }
 
     public NodoASTY getCiclo() {

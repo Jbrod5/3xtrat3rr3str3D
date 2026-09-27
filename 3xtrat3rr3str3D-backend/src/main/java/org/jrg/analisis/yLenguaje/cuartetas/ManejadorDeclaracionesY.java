@@ -29,8 +29,10 @@ public class ManejadorDeclaracionesY {
 
     // crear la manejadora con contexto y generador
     public ManejadorDeclaracionesY(ContextoCuartetasY ctx, GeneradorCuartetasY generador) {
+
         this.ctx = ctx;
         this.generador = generador;
+
     }
 
     // visitar la declaracion interna de la instruccion

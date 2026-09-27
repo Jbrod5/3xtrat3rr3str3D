@@ -1,7 +1,7 @@
 <script>
   import { onDestroy, onMount } from 'svelte';
   import { ideStore } from '../lib/stores/ideStore';
-  import { analizarCodigo, traducirCodigo } from '../lib/services/analizadorService.js';
+  import { analizarCodigo } from '../lib/services/analizadorService.js';
 
   import MonacoEditor from './MonacoEditor.svelte';
   import ExploradorArchivos from './ExploradorArchivos.svelte';
@@ -14,7 +14,6 @@
   let estado;
   let archivoActivo;
   let refEditor;
-  let traduciendo = false;
 
   let compilandoProyecto = false;
   let resultadoProyecto = null;
@@ -123,7 +122,7 @@
 
   }
 
-  // ================= Compilar / Traducir =================
+  // ================= Compilar =================
   // detectar el lenguaje segun la extension del archivo activo
 function detectarLenguajeArchivo(nombreArchivo) {
 
@@ -176,32 +175,6 @@ async function enviarCompilacion() {
 
 }
 
-async function enviarTraduccion() {
-
-  if (!archivoActivo) return;
-  const lenguaje = detectarLenguajeArchivo(archivoActivo.nombre);
-  try {
-
-    const resultado = await traducirCodigo(archivoActivo.contenido, lenguaje, archivoActivo.ruta);
-    ideStore.actualizarResultado(archivoActivo.id, resultado);
-    ideStore.cambiarPestanaInferior('resultados');
-    if (!estado.panelInferiorAbierto) ideStore.alternarPanelInferior();
-
-  } catch (err) {
-
-    ideStore.actualizarResultado(archivoActivo.id, {
-
-      exito: false, arbolSintactico: null, astMermaid: null, codigoPigLatin: null,
-      simbolos: [], tipos: [], pasosPila: [],
-      errores: [{ mensaje: 'Fallo de conexion con el servidor: ' + err.message }]
-
-    });
-    ideStore.cambiarPestanaInferior('errores');
-    if (!estado.panelInferiorAbierto) ideStore.alternarPanelInferior();
-
-  }
-
-}
 
   // compilar todos los archivos .pig del proyecto y agregar resultados
   async function compilarProyecto() {
@@ -317,49 +290,6 @@ async function enviarTraduccion() {
 
   }
 
-  function abrirArchivoPig(contenido) {
-
-    const nombreBase = archivoActivo.nombre.replace(/\.[^.]+$/, '');
-    const nombrePig = nombreBase + '.pig';
-
-    const rutaLat = normalizar(archivoActivo.ruta || '');
-    const idx = rutaLat.lastIndexOf('/');
-    const rutaPig = idx >= 0
-      ? rutaLat.substring(0, idx) + '/' + nombrePig
-      : nombrePig;
-
-    const id = ideStore.crearArchivo(nombrePig, rutaPig);
-    setTimeout(() => {
-      ideStore.actualizarContenido(id, contenido);
-      ideStore.activarArchivo(id);
-    }, 50);
-
-  }
-
-  async function verPig() {
-
-    if (!archivoActivo) { alert('No hay archivo activo.'); return; }
-    if (archivoActivo.resultado?.codigoPigLatin) {
-      abrirArchivoPig(archivoActivo.resultado.codigoPigLatin);
-      return;
-    }
-
-    if (traduciendo) return;
-    try {
-
-      traduciendo = true;
-      const resultado = await traducirCodigo(archivoActivo.contenido);
-      ideStore.actualizarResultado(archivoActivo.id, resultado);
-      if (resultado.codigoPigLatin) abrirArchivoPig(resultado.codigoPigLatin);
-      else alert('La traduccion no genero codigo PigLatin.');
-
-    } catch (err) {
-      alert('Error al traducir: ' + err.message);
-    } finally {
-      traduciendo = false;
-    }
-
-  }
 
   // ================= Guardar =================
   // Envia {archivo, ruta, contenido}. Nunca pregunta ruta.
@@ -420,18 +350,12 @@ async function enviarTraduccion() {
       <button class="btn btn-success btn-sm" on:click={compilarProyecto} disabled={compilandoProyecto}>
         <i class="bi bi-collection"></i> Compilar Proyecto
       </button>
-      <button class="btn btn-outline-secondary btn-sm" on:click={enviarTraduccion}>
-        <i class="bi bi-translate"></i> Traducir
-      </button>
       <div class="vr mx-1" style="height: 24px;"></div>
       <button class="btn btn-outline-secondary btn-sm" on:click={abrirArchivoLocal}>
         <i class="bi bi-folder-open"></i> Abrir
       </button>
       <button class="btn btn-outline-secondary btn-sm" on:click={guardarArchivo}>
         <i class="bi bi-save"></i> Guardar
-      </button>
-      <button class="btn btn-outline-secondary btn-sm" on:click={verPig}>
-        <i class="bi bi-eye"></i> Ver .pig
       </button>
       <button class="btn btn-outline-secondary btn-sm" on:click={descargarPig}>
         <i class="bi bi-download"></i> .pig

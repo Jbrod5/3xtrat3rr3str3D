@@ -13,14 +13,7 @@ public class StatementIf extends NodoASTZetariano {
     private final List<NodoASTZetariano> bloquesSinoSi;
     private final NodoASTZetariano bloqueSino;
 
-    public StatementIf(
-            NodoASTZetariano condicion,
-            NodoASTZetariano bloque,
-            List<NodoASTZetariano> condicionesSinoSi,
-            List<NodoASTZetariano> bloquesSinoSi,
-            NodoASTZetariano bloqueSino,
-            int linea,
-            int columna) {
+    public StatementIf( NodoASTZetariano condicion, NodoASTZetariano bloque, List<NodoASTZetariano> condicionesSinoSi, List<NodoASTZetariano> bloquesSinoSi, NodoASTZetariano bloqueSino, int linea, int columna) {
 
         super(linea, columna);
         this.condicion = condicion;

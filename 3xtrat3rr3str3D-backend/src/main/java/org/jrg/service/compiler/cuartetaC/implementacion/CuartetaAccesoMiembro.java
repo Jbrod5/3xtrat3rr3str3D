@@ -10,10 +10,11 @@ public class CuartetaAccesoMiembro extends CuartetaC {
     /**
      * Crear un acceso a miembro con operador explicito.
      */
-    public CuartetaAccesoMiembro(String operador, String arg1, String arg2, String resultado,
-                           String tipoArg1, String tipoArg2, String tipoResultado) {
+    public CuartetaAccesoMiembro(String operador, String arg1, String arg2, String resultado, String tipoArg1, String tipoArg2, String tipoResultado) {
+
         // va al base
         super(operador, arg1, arg2, resultado, tipoArg1, tipoArg2, tipoResultado);
+
     }
 
     /**

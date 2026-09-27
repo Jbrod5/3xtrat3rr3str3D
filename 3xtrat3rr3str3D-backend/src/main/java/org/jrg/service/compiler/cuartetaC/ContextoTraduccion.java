@@ -9,56 +9,39 @@ import org.jrg.model.resultado.CuartetaResultado;
 // estado compartido para la traduccion de cuartetas a maquina Heap Stack
 public class ContextoTraduccion {
 
-    // slots por nombre en la funcion actual
-    public Map<String, SlotHS> slots;
+    public Map<String, SlotHS> slots;  // slots por nombre en la funcion actual
 
-    // cantidad de locales y temporales reservados
-    public int cuentaLocales;
+    public int cuentaLocales;  // cantidad de locales y temporales reservados
 
-    // cantidad de params de la funcion actual
     public int cuentaParams;
 
-    // tabla de cadenas literales con su nombre strN
-    public Map<String, String> tablaCadenas;
+    public Map<String, String> tablaCadenas;  // tabla de cadenas literales con su nombre strN
 
-    // contador de cadenas para la tabla
     public int contadorCadenas;
 
-    // campos por nombre de struct con tipo fuente
-    public Map<String, Map<String, String>> structs;
+    public Map<String, Map<String, String>> structs;  // campos por nombre de struct con tipo fuente
 
-    // orden de campos por nombre de struct
-    public Map<String, List<String>> ordenCampos;
+    public Map<String, List<String>> ordenCampos;  // orden de campos por nombre de struct
 
-    // nombres de structs en orden de aparicion
     public List<String> ordenStructs;
 
-    // nombre de la funcion actual
     public String funcionActual;
 
-    // clase del metodo en proceso o vacio fuera de metodos
-    public String nombreClaseActual;
+    public String nombreClaseActual;  // clase del metodo en proceso o vacio fuera de metodos
 
-    // tipos de retorno conocidos por nombre de funcion
     public Map<String, String> retornosFuncion;
 
-    // nombres de funciones conocidas por func_begin
-    public List<String> funcionesConocidas;
+    public List<String> funcionesConocidas;  // nombres de funciones conocidas por func_begin
 
-    // struct base de cada arreglo instancia u objeto
-    public Map<String, String> mapaBases;
+    public Map<String, String> mapaBases;  // struct base de cada arreglo instancia u objeto
 
-    // orden de locales y temporales precontados
-    public List<String> ordenLocales;
+    public List<String> ordenLocales;  // orden de locales y temporales precontados
 
-    // valores pendientes del siguiente call
-    public List<String> paramsPendientes;
+    public List<String> paramsPendientes;  // valores pendientes del siguiente call
 
-    // tipos pendientes del siguiente call
     public List<String> tiposParamsPendientes;
 
-    // builtins usados para la cabecera
-    public List<String> builtinsUsados;
+    public List<String> builtinsUsados;  // builtins usados para la cabecera
 
     /**
      * Crear un contexto vacio.

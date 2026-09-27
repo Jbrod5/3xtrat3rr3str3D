@@ -11,8 +11,10 @@ public class ExprNegativa extends NodoASTY {
      * Crear una expresion negativa.
      */
     public ExprNegativa(NodoASTY expresion, int linea, int columna) {
+
         super(linea, columna);
         this.expresion = expresion;
+
     }
 
     public NodoASTY getExpresion() {

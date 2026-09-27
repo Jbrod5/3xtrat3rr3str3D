@@ -8,8 +8,10 @@ public class VarSimple extends NodoASTZetariano {
     private final String identificador;
 
     public VarSimple(String identificador, int linea, int columna) {
+
         super(linea, columna);
         this.identificador = identificador;
+
     }
 
     public String getIdentificador() {

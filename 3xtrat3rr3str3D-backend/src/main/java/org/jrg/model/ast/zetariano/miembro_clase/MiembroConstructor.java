@@ -8,8 +8,10 @@ public class MiembroConstructor extends NodoASTZetariano {
     private final NodoASTZetariano constructor;
 
     public MiembroConstructor(NodoASTZetariano constructor, int linea, int columna) {
+
         super(linea, columna);
         this.constructor = constructor;
+
     }
 
     public NodoASTZetariano getConstructor() {

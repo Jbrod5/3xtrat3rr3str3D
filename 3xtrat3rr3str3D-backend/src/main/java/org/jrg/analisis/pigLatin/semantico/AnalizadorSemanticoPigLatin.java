@@ -82,17 +82,11 @@ import org.jrg.model.base.FlujoControl;
 // definir el analizador semantico para el lenguaje Pig Latin
 public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
 
-
-
     private final ContextoSemanticoPigLatin contexto;
     private final RecolectorErrores recolectorErrores; // para pasarlo al gestor de imports
     private String rutaBase; // base del proyecto para resolver imports
     private GestorImports gestorImports; // creado bajo demanda
     private final List<Cuarteta> cuartetasImportadas; // importadas desde otros lenguajes
-
-
-
-
 
     /**
      * Crear el analizador semantico para el lenguaje Pig Latin.
@@ -1461,7 +1455,6 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
             // recorrer cada valor
             for (NodoAST expr : decl.getValores()) {
 
-
                 // verificar si el valor es nulo
                 if (expr == null) {
                     continue;
@@ -1729,7 +1722,6 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
                     continue;
 
                 }
-
 
                 // visitar el valor si existe
                 if (campo.getValor() != null) {

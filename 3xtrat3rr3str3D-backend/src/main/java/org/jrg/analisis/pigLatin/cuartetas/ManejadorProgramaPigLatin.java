@@ -22,8 +22,10 @@ public class ManejadorProgramaPigLatin {
 
     // crear la manejadora con contexto y generador
     public ManejadorProgramaPigLatin(ContextoCuartetasPigLatin ctx, GeneradorCuartetasPigLatin generador) {
+
         this.ctx = ctx;
         this.generador = generador;
+
     }
 
     // visitar el programa con main de apertura y cierre

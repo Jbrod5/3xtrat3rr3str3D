@@ -8,8 +8,10 @@ public class StmtDeclaracion extends NodoASTZetariano {
     private final NodoASTZetariano declaracion;
 
     public StmtDeclaracion(NodoASTZetariano declaracion, int linea, int columna) {
+
         super(linea, columna);
         this.declaracion = declaracion;
+
     }
 
     public NodoASTZetariano getDeclaracion() {

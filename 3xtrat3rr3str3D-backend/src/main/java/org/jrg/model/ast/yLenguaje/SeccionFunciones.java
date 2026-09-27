@@ -13,8 +13,10 @@ public class SeccionFunciones extends NodoASTY {
      * Crear una seccion de funciones con su lista de definiciones.
      */
     public SeccionFunciones(List<NodoASTY> funciones, int linea, int columna) {
+
         super(linea, columna);
         this.funciones = funciones;
+
     }
 
     public List<NodoASTY> getFunciones() {

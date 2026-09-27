@@ -11,8 +11,10 @@ public class ExprPrimitivo extends NodoASTY {
      * Crear una expresion primitiva.
      */
     public ExprPrimitivo(NodoASTY valor, int linea, int columna) {
+
         super(linea, columna);
         this.valor = valor;
+
     }
 
     public NodoASTY getValor() {

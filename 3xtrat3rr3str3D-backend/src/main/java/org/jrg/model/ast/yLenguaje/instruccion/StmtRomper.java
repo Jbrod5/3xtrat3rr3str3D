@@ -9,7 +9,9 @@ public class StmtRomper extends NodoASTY {
      * Crear una instruccion romper.
      */
     public StmtRomper(int linea, int columna) {
+
         super(linea, columna);
+
     }
 
     @Override

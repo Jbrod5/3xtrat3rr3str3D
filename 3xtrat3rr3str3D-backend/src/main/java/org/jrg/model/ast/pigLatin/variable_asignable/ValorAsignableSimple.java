@@ -7,8 +7,10 @@ public class ValorAsignableSimple extends NodoAST {
     private final String identificador;
 
     public ValorAsignableSimple(String identificador, int linea, int columna) {
+
         super(linea, columna);
         this.identificador = identificador;
+
     }
 
     public String getIdentificador() {

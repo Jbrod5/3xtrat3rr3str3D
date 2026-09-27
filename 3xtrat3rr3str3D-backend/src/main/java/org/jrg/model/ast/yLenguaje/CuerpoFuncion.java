@@ -13,8 +13,10 @@ public class CuerpoFuncion extends NodoASTY {
      * Crear un cuerpo de funcion con su lista de instrucciones.
      */
     public CuerpoFuncion(List<NodoASTY> instrucciones, int linea, int columna) {
+
         super(linea, columna);
         this.instrucciones = instrucciones;
+
     }
 
     public List<NodoASTY> getInstrucciones() {

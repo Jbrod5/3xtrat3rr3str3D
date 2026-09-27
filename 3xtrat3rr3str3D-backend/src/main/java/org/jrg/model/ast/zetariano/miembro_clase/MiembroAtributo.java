@@ -8,8 +8,10 @@ public class MiembroAtributo extends NodoASTZetariano {
     private final NodoASTZetariano atributo;
 
     public MiembroAtributo(NodoASTZetariano atributo, int linea, int columna) {
+
         super(linea, columna);
         this.atributo = atributo;
+
     }
 
     public NodoASTZetariano getAtributo() {

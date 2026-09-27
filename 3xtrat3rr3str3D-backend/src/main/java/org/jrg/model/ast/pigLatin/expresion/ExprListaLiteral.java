@@ -8,8 +8,10 @@ public class ExprListaLiteral extends NodoAST {
     private final List<NodoAST> elementos;
 
     public ExprListaLiteral(List<NodoAST> elementos, int linea, int columna) {
+
         super(linea, columna);
         this.elementos = elementos;
+
     }
 
     public List<NodoAST> getElementos() {

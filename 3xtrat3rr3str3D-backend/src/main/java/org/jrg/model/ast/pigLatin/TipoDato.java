@@ -7,8 +7,10 @@ public class TipoDato extends NodoAST {
     private final String tipo;
 
     public TipoDato(String tipo, int linea, int columna) {
+
         super(linea, columna);
         this.tipo = tipo;
+
     }
 
     public String getTipo() {

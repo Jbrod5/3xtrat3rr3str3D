@@ -24,16 +24,16 @@ import org.jrg.model.cuarteta.Cuarteta;
 // generar cuartetas de declaraciones y asignaciones en Zetariano
 public class ManejadorDeclaracionesZetariano {
 
-    // estado compartido de la generacion
     private final ContextoCuartetasZetariano ctx;
 
-    // generador duenio para el descenso recursivo
     private final GeneradorCuartetasZetariano generador;
 
     // crear la manejadora con contexto y generador
     public ManejadorDeclaracionesZetariano(ContextoCuartetasZetariano ctx, GeneradorCuartetasZetariano generador) {
+
         this.ctx = ctx;
         this.generador = generador;
+
     }
 
     // visitar la declaracion interna de la instruccion

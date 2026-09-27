@@ -9,10 +9,11 @@ public class CuartetaEtiqueta extends CuartetaC {
     /**
      * Crear una etiqueta con operador explicito.
      */
-    public CuartetaEtiqueta(String operador, String arg1, String arg2, String resultado,
-                      String tipoArg1, String tipoArg2, String tipoResultado) {
+    public CuartetaEtiqueta(String operador, String arg1, String arg2, String resultado, String tipoArg1, String tipoArg2, String tipoResultado) {
+
         // va al base
         super(operador, arg1, arg2, resultado, tipoArg1, tipoArg2, tipoResultado);
+
     }
 
     /**

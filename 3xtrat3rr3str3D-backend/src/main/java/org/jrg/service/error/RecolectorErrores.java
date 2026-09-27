@@ -13,7 +13,9 @@ public class RecolectorErrores {
      * Crear un recolector de errores vacio.
      */
     public RecolectorErrores() {
+
         this(new ArrayList<>());
+
     }
 
     /**

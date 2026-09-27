@@ -30,8 +30,10 @@ public class ManejadorDeclaracionesPigLatin {
 
     // crear la manejadora con contexto y generador
     public ManejadorDeclaracionesPigLatin(ContextoCuartetasPigLatin ctx, GeneradorCuartetasPigLatin generador) {
+
         this.ctx = ctx;
         this.generador = generador;
+
     }
 
     // crear un objeto con new y asignarlo a su variable

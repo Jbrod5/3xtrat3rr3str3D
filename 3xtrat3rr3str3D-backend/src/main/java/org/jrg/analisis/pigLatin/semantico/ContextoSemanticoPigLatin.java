@@ -19,8 +19,6 @@ import org.jrg.service.error.RecolectorErrores;
 // memoria del analizador semantico del  Pig Latin :D
 class ContextoSemanticoPigLatin {
 
-
-
     private final RecolectorErrores recolectorErrores;
     private Ambito ambitoGlobal;
     private final Stack<Ambito> ambitos; // pila activa, el actual es el ultimo que entro
@@ -31,11 +29,6 @@ class ContextoSemanticoPigLatin {
     private int contadorAmbitos;
     private int profundidadCiclos; // profundidad actual de ciclos anidados
     private String archivoActual; // archivo que se analiza para marcar origen
-
-
-
-
-
 
     // crear el contexto con su recolector
     ContextoSemanticoPigLatin(RecolectorErrores recolectorErrores) {
@@ -173,9 +166,6 @@ class ContextoSemanticoPigLatin {
         // el cosntructor de AmbitoSemantico y aregistra el hijo en el padre
 
         // enlazar el nuevo ambito con su padre
-        // if (padre != null) {
-        //     padre.agregarAmbito(nuevoAmbito);
-        // }
 
         // apilarlo como ambito actual
         this.ambitos.push(nuevoAmbito);
@@ -761,7 +751,6 @@ class ContextoSemanticoPigLatin {
         return this.recolectorErrores;
     }
 
-
     // ==================== REGISTRO DE IMPORTACIONES ====================
 
     // registrar un simbolo importado en el ambito global
@@ -867,6 +856,5 @@ class ContextoSemanticoPigLatin {
         marcarEsquemaConocido(tipo);
 
     }
-
 
 }

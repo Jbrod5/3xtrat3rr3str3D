@@ -11,8 +11,10 @@ public class VarSimple extends NodoASTY {
      * Crear una variable simple con su nombre.
      */
     public VarSimple(String nombre, int linea, int columna) {
+
         super(linea, columna);
         this.nombre = nombre;
+
     }
 
     public String getNombre() {

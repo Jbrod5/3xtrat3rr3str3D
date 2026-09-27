@@ -10,10 +10,11 @@ public class CuartetaUminus extends CuartetaC {
     /**
      * Crear un menos unario con operador explicito.
      */
-    public CuartetaUminus(String operador, String arg1, String arg2, String resultado,
-                    String tipoArg1, String tipoArg2, String tipoResultado) {
+    public CuartetaUminus(String operador, String arg1, String arg2, String resultado, String tipoArg1, String tipoArg2, String tipoResultado) {
+
         // delegar al constructor de la clase base
         super(operador, arg1, arg2, resultado, tipoArg1, tipoArg2, tipoResultado);
+
     }
 
     /**

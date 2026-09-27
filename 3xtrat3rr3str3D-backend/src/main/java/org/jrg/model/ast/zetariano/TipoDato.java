@@ -8,8 +8,10 @@ public class TipoDato extends NodoASTZetariano {
     private final String tipo;
 
     public TipoDato(String tipo, int linea, int columna) {
+
         super(linea, columna);
         this.tipo = tipo;
+
     }
 
     public String getTipo() {

@@ -16,8 +16,6 @@ public class CompiladorController {
     private final CompiladorZetarianoService compiladorZetariano;
     private final CompiladorYLenguajeService compiladorY;
 
-
-
     public CompiladorController(CompiladorPigLatinService pigLatin, CompiladorZetarianoService zetariano, CompiladorYLenguajeService compiladorY) {
 
         this.compiladorPigLatin = pigLatin;
@@ -103,7 +101,6 @@ public class CompiladorController {
         }
 
     }
-
 
     // ejecutar la compilacion delegando al servicio correspondiente
     private ResultadoAnalisis ejecutarCompilacion(String lenguaje, String codigo, String ruta) {

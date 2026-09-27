@@ -3,11 +3,9 @@ package org.jrg.service.compiler.cuartetaC;
 // marca de posicion de una variable en la pila con su arreglo
 public class SlotHS {
 
-    // indice relativo a framepointer donde vive el valor
-    private final int indice;
+    private final int indice;  // indice relativo a framepointer donde vive el valor
 
-    // arreglo tipado donde vive el valor
-    private final String arreglo;
+    private final String arreglo;  // arreglo tipado donde vive el valor
 
     /**
      * Crear un slot con indice y arreglo.

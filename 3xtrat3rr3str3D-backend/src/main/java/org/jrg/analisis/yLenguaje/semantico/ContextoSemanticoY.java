@@ -150,14 +150,9 @@ public class ContextoSemanticoY {
             nuevo.fijarArchivo(this.archivoActual);
         }
 
-
         // el constructor ya mete el hijo en el padre
 
         // enlazar el nuevo ambito con su padre
-        //if (padre != null) {
-        //    padre.obtenerAmbito().agregarAmbito(nuevo.obtenerAmbito());
-        //}
-
 
         // apilarlo como actual
         this.ambitos.push(nuevo);

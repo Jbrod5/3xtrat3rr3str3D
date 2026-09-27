@@ -8,8 +8,10 @@ public class ExprParentesis extends NodoASTZetariano {
     private final NodoASTZetariano expresion;
 
     public ExprParentesis(NodoASTZetariano expresion, int linea, int columna) {
+
         super(linea, columna);
         this.expresion = expresion;
+
     }
 
     public NodoASTZetariano getExpresion() {

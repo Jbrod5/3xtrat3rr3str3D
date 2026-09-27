@@ -11,7 +11,9 @@ public class Constante {
      * Crear una constante con valor y tipo.
      */
     public Constante(Object valor, Tipo tipo) {
+
         this(valor, tipo, 0, 0);
+
     }
 
     /**
@@ -30,14 +32,18 @@ public class Constante {
      * Crear una constante intercambiando el orden de valor y tipo.
      */
     public Constante(Tipo tipo, Object valor) {
+
         this(valor, tipo, 0, 0);
+
     }
 
     /**
      * Crear una constante intercambiando el orden de valor y tipo con posicion.
      */
     public Constante(Tipo tipo, Object valor, int linea, int columna) {
+
         this(valor, tipo, linea, columna);
+
     }
 
     /**

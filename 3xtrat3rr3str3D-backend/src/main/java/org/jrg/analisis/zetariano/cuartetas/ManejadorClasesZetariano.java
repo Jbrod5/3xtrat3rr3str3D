@@ -21,16 +21,16 @@ import org.jrg.model.cuarteta.Cuarteta;
 // generar cuartetas de clases constructores y metodos en Zetariano
 public class ManejadorClasesZetariano {
 
-    // estado compartido de la generacion
     private final ContextoCuartetasZetariano ctx;
 
-    // generador duenio para el descenso recursivo
     private final GeneradorCuartetasZetariano generador;
 
     // crear la manejadora con contexto y generador
     public ManejadorClasesZetariano(ContextoCuartetasZetariano ctx, GeneradorCuartetasZetariano generador) {
+
         this.ctx = ctx;
         this.generador = generador;
+
     }
 
     // definir la clase como struct y visitar sus miembros

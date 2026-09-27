@@ -11,8 +11,10 @@ public class ExprNegada extends NodoASTY {
      * Crear una expresion negada.
      */
     public ExprNegada(NodoASTY expresion, int linea, int columna) {
+
         super(linea, columna);
         this.expresion = expresion;
+
     }
 
     public NodoASTY getExpresion() {

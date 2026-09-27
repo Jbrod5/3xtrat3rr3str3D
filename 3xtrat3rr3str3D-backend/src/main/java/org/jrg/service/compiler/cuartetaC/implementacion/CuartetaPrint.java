@@ -10,10 +10,11 @@ public class CuartetaPrint extends CuartetaC {
     /**
      * Crear una impresion con operador explicito.
      */
-    public CuartetaPrint(String operador, String arg1, String arg2, String resultado,
-                   String tipoArg1, String tipoArg2, String tipoResultado) {
+    public CuartetaPrint(String operador, String arg1, String arg2, String resultado, String tipoArg1, String tipoArg2, String tipoResultado) {
+
         // delegar al constructor de la clase base
         super(operador, arg1, arg2, resultado, tipoArg1, tipoArg2, tipoResultado);
+
     }
 
     /**

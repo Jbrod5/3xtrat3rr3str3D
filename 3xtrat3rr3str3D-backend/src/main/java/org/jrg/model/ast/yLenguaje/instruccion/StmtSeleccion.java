@@ -11,8 +11,10 @@ public class StmtSeleccion extends NodoASTY {
      * Crear una instruccion de seleccion.
      */
     public StmtSeleccion(NodoASTY seleccion, int linea, int columna) {
+
         super(linea, columna);
         this.seleccion = seleccion;
+
     }
 
     public NodoASTY getSeleccion() {

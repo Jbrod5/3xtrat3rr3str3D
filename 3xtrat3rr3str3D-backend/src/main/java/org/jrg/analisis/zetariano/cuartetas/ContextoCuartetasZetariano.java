@@ -18,8 +18,7 @@ public class ContextoCuartetasZetariano {
     private String etiquetaBreakActual;
     private String etiquetaContinueActual;
 
-    // nombre de la clase actual para prefijar funciones
-    private String nombreClaseActual;
+    private String nombreClaseActual;  // nombre de la clase actual para prefijar funciones
     private final Map<String, String> tiposConocidos;
     private final Map<String, String> tiposDeVariables;
 
@@ -257,9 +256,6 @@ public class ContextoCuartetasZetariano {
         }
 
         // convertir al tipo de mayor jerarquia cuando algun operando es flotante
-        // if (esTipoNumerico(tipoA) && esTipoNumerico(tipoB)) {
-        //     return "flotante";
-        // }
 
         if (esTipoFlotante(tipoA) || esTipoFlotante(tipoB)) {
             return "flotante";

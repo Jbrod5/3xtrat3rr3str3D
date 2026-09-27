@@ -8,8 +8,10 @@ public class Programa extends NodoASTZetariano {
     private final NodoASTZetariano definicionClase;
 
     public Programa(NodoASTZetariano definicionClase, int linea, int columna) {
+
         super(linea, columna);
         this.definicionClase = definicionClase;
+
     }
 
     public NodoASTZetariano getDefinicionClase() {

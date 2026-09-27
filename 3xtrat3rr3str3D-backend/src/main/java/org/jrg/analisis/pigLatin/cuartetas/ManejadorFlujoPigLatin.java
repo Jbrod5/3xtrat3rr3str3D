@@ -30,8 +30,10 @@ public class ManejadorFlujoPigLatin {
 
     // crear la manejadora con contexto y generador
     public ManejadorFlujoPigLatin(ContextoCuartetasPigLatin ctx, GeneradorCuartetasPigLatin generador) {
+
         this.ctx = ctx;
         this.generador = generador;
+
     }
 
     // visitar la asignacion interna de la instruccion
@@ -127,37 +129,6 @@ public class ManejadorFlujoPigLatin {
 
     // generar el si con ramas aliter y aliter final
     // version anterior: solo sacaba la rama principal y el aliter final, botaba los aliter intermedios
-    // public String visitStatementSi(StatementSi stmt) {
-    //     // regla para if: evaluar cond, luego if_false, bloque, goto, label else, bloque else, label fin
-    //     String cond = null;
-    //     if (stmt.getCondicion() != null) {
-    //         cond = stmt.getCondicion().accept(generador);
-    //     }
-    //     String Lelse = ctx.getTemporales().nuevaEtiqueta();
-    //     String Lfin = ctx.getTemporales().nuevaEtiqueta();
-    //     // usar guion bajo si la condicion es nula
-    //     String textoCond = "_";
-    //     if (cond != null) {
-    //         textoCond = cond;
-    //     }
-    //     // generar salto a else si es falso
-    //     ctx.getCuartetas().add(new Cuarteta("if_false", textoCond, Lelse, "_", "booleano", "_", "_"));
-    //     // bloque principal
-    //     if (stmt.getBloque() != null) {
-    //         stmt.getBloque().accept(generador);
-    //     }
-    //     // salto al final
-    //     ctx.getCuartetas().add(new Cuarteta("goto", Lfin, "_", "_", "_", "_", "_"));
-    //     // etiqueta else
-    //     ctx.getCuartetas().add(new Cuarteta("label", Lelse, "_", "_", "_", "_", "_"));
-    //     // bloque else
-    //     if (stmt.getBloqueAliter() != null) {
-    //         stmt.getBloqueAliter().accept(generador);
-    //     }
-    //     // etiqueta final
-    //     ctx.getCuartetas().add(new Cuarteta("label", Lfin, "_", "_", "_", "_", "_"));
-    //     return null;
-    // }
 
     // generar el si con ramas aliter y aliter final
     public String visitStatementSi(StatementSi stmt) {

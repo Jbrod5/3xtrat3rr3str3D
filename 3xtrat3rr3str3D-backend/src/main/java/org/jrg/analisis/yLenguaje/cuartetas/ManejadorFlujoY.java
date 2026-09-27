@@ -24,8 +24,10 @@ public class ManejadorFlujoY {
 
     // crear la manejadora con contexto y generador
     public ManejadorFlujoY(ContextoCuartetasY ctx, GeneradorCuartetasY generador) {
+
         this.ctx = ctx;
         this.generador = generador;
+
     }
 
     // visitar el condicional interno de la instruccion

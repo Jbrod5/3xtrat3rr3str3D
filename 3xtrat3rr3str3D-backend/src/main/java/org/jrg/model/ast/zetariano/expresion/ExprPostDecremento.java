@@ -8,8 +8,10 @@ public class ExprPostDecremento extends NodoASTZetariano {
     private final NodoASTZetariano variable;
 
     public ExprPostDecremento(NodoASTZetariano variable, int linea, int columna) {
+
         super(linea, columna);
         this.variable = variable;
+
     }
 
     public NodoASTZetariano getVariable() {

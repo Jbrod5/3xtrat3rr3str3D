@@ -9,8 +9,10 @@ public class SeccionGlobalVariables extends NodoAST {
     private final List<NodoAST> declaraciones;
 
     public SeccionGlobalVariables(List<NodoAST> declaraciones, int linea, int columna) {
+
         super(linea, columna);
         this.declaraciones = declaraciones;
+
     }
 
     public List<NodoAST> getDeclaraciones() {

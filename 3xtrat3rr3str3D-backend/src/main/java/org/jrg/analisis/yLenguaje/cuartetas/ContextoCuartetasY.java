@@ -238,16 +238,11 @@ public class ContextoCuartetasY {
 
         }
 
-
         // convertir al tipo de mayor jerarquia cuando algun operando es flotante
-        // if (esTipoNumerico(tipoA) && esTipoNumerico(tipoB)) {
-        //     return "flotante";
-        // }
 
         if (esTipoFlotante(tipoA) || esTipoFlotante(tipoB)) {
             return "flotante";
         }
-
 
         // usar entero por defecto en caso mixto :3
         return "entero";

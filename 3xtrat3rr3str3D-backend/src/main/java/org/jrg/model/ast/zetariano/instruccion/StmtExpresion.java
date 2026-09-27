@@ -8,8 +8,10 @@ public class StmtExpresion extends NodoASTZetariano {
     private final NodoASTZetariano expresion;
 
     public StmtExpresion(NodoASTZetariano expresion, int linea, int columna) {
+
         super(linea, columna);
         this.expresion = expresion;
+
     }
 
     public NodoASTZetariano getExpresion() {

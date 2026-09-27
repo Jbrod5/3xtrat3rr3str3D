@@ -7,8 +7,10 @@ public class StmtLectura extends NodoAST {
     private final NodoAST lectura;
 
     public StmtLectura(NodoAST lectura, int linea, int columna) {
+
         super(linea, columna);
         this.lectura = lectura;
+
     }
 
     public NodoAST getLectura() {

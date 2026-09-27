@@ -3,32 +3,24 @@ package org.jrg.service.compiler.cuartetaC;
 // clase base abstracta para la traduccion de cuartetas a maquina Heap Stack
 public abstract class CuartetaC {
 
-    // operador de la cuarteta
     protected final String operador;
 
-    // primer argumento de la cuarteta
     protected final String arg1;
 
-    // segundo argumento de la cuarteta
     protected final String arg2;
 
-    // resultado de la cuarteta
     protected final String resultado;
 
-    // tipo del primer argumento
     protected final String tipoArg1;
 
-    // tipo del segundo argumento
     protected final String tipoArg2;
 
-    // tipo del resultado
     protected final String tipoResultado;
 
     /**
      * Crear una cuarteta con sus campos y sus tipos.
      */
-    public CuartetaC(String operador, String arg1, String arg2, String resultado,
-                  String tipoArg1, String tipoArg2, String tipoResultado) {
+    public CuartetaC(String operador, String arg1, String arg2, String resultado, String tipoArg1, String tipoArg2, String tipoResultado) {
 
         // asignar los valores recibidos
         this.operador = operador;

@@ -7,8 +7,10 @@ public class ElementoImprimir extends NodoAST {
     private final NodoAST expresion;
 
     public ElementoImprimir(NodoAST expresion, int linea, int columna) {
+
         super(linea, columna);
         this.expresion = expresion;
+
     }
 
     public NodoAST getExpresion() {

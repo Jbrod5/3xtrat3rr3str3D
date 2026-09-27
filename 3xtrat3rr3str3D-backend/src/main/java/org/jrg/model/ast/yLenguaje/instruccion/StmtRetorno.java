@@ -11,8 +11,10 @@ public class StmtRetorno extends NodoASTY {
      * Crear una instruccion retornar con su expresion.
      */
     public StmtRetorno(NodoASTY expresion, int linea, int columna) {
+
         super(linea, columna);
         this.expresion = expresion;
+
     }
 
     public NodoASTY getExpresion() {

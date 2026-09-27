@@ -24,35 +24,45 @@ public class Simbolo {
      * Crear un simbolo con nombre categoria y tipo.
      */
     public Simbolo(String nombre, CategoriaSimbolo categoria, Tipo tipo) {
+
         this(nombre, categoria, tipo, null, null, new ArrayList<>(), -1, null, -1, 0, 0);
+
     }
 
     /**
      * Crear un simbolo con valor constante.
      */
     public Simbolo(String nombre, CategoriaSimbolo categoria, Tipo tipo, Constante valor) {
+
         this(nombre, categoria, tipo, valor, null, new ArrayList<>(), -1, null, -1, 0, 0);
+
     }
 
     /**
      * Crear un simbolo con valor y posicion.
      */
     public Simbolo(String nombre, CategoriaSimbolo categoria, Tipo tipo, Constante valor, int fila, int columna) {
+
         this(nombre, categoria, tipo, valor, null, new ArrayList<>(), -1, null, -1, fila, columna);
+
     }
 
     /**
      * Crear un simbolo con ambito y posicion.
      */
     public Simbolo(String nombre, CategoriaSimbolo categoria, Tipo tipo, Constante valor, Ambito ambito, int fila, int columna) {
+
         this(nombre, categoria, tipo, valor, null, new ArrayList<>(), -1, ambito, -1, fila, columna);
+
     }
 
     /**
      * Crear un simbolo con parametros y posicion.
      */
     public Simbolo(String nombre, CategoriaSimbolo categoria, Tipo tipo, Constante valor, List<Tipo> tiposParametros, int fila, int columna) {
+
         this(nombre, categoria, tipo, valor, null, tiposParametros, -1, null, -1, fila, columna);
+
     }
 
     /**
@@ -98,14 +108,18 @@ public class Simbolo {
      * Crear un simbolo con tamano parametros y ambito.
      */
     public Simbolo(String nombre, CategoriaSimbolo categoria, Tipo tipo, Constante valor, Integer tamano, List<Tipo> tiposParametros, Ambito ambito, int posicionRelativa, int fila, int columna) {
+
         this(nombre, categoria, tipo, valor, tamano, tiposParametros, -1, ambito, posicionRelativa, fila, columna);
+
     }
 
     /**
      * Crear un simbolo con tamano y cantidad de parametros.
      */
     public Simbolo(String nombre, CategoriaSimbolo categoria, Tipo tipo, Constante valor, int tamano, int numParametros, Ambito ambito, int posicionRelativa, int fila, int columna) {
+
         this(nombre, categoria, tipo, valor, Integer.valueOf(tamano), new ArrayList<>(), numParametros, ambito, posicionRelativa, fila, columna);
+
     }
 
     /**

@@ -7,8 +7,10 @@ public class StmtCiclo extends NodoAST {
     private final NodoAST ciclo;
 
     public StmtCiclo(NodoAST ciclo, int linea, int columna) {
+
         super(linea, columna);
         this.ciclo = ciclo;
+
     }
 
     public NodoAST getCiclo() {

@@ -8,8 +8,10 @@ public class StmtSeleccion extends NodoASTZetariano {
     private final NodoASTZetariano seleccion;
 
     public StmtSeleccion(NodoASTZetariano seleccion, int linea, int columna) {
+
         super(linea, columna);
         this.seleccion = seleccion;
+
     }
 
     public NodoASTZetariano getSeleccion() {

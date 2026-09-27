@@ -11,8 +11,10 @@ public class StmtExpresion extends NodoASTY {
      * Crear una instruccion de expresion.
      */
     public StmtExpresion(NodoASTY expresion, int linea, int columna) {
+
         super(linea, columna);
         this.expresion = expresion;
+
     }
 
     public NodoASTY getExpresion() {

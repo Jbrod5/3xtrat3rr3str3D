@@ -7,8 +7,10 @@ public class StmtAsignacion extends NodoAST {
     private final NodoAST asignacion;
 
     public StmtAsignacion(NodoAST asignacion, int linea, int columna) {
+
         super(linea, columna);
         this.asignacion = asignacion;
+
     }
 
     public NodoAST getAsignacion() {

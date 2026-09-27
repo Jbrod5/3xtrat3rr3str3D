@@ -23,7 +23,9 @@ public class ResultadoExpresion {
      * Crear un resultado con tipo y capacidad de asignacion.
      */
     public ResultadoExpresion(Tipo tipo, boolean asignable) {
+
         this(tipo, null, null, asignable);
+
     }
 
     /**

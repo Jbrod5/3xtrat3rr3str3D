@@ -10,9 +10,10 @@ public class CuartetaAlloc extends CuartetaC {
     /**
      * Crear una reserva con operador explicito.
      */
-    public CuartetaAlloc(String operador, String arg1, String arg2, String resultado,
-                   String tipoArg1, String tipoArg2, String tipoResultado) {
+    public CuartetaAlloc(String operador, String arg1, String arg2, String resultado, String tipoArg1, String tipoArg2, String tipoResultado) {
+
         super(operador, arg1, arg2, resultado, tipoArg1, tipoArg2, tipoResultado);
+
     }
 
     /**

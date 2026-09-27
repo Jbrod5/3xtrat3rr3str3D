@@ -81,30 +81,23 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
 
     private final RecolectorErrores recolectorErrores;
 
-    // ambitosss
     private AmbitoSemantico ambitoGlobal;
     private AmbitoSemantico ambitoActual;
     private AmbitoSemantico ambitoClase;
 
-    // ambito global entre archivos o nulo si es un solo archivo
-    private AmbitoSemantico ambitoCompartido;
+    private AmbitoSemantico ambitoCompartido;  // ambito global entre archivos o nulo si es un solo archivo
 
-    // archivo en curso para marcar el origen de los simbolos
-    private String archivoActual;
-
+    private String archivoActual;  // archivo en curso para marcar el origen de los simbolos
 
     private Tipo tipoClaseActual; // tipo de clase actual en analisis
 
-    // contadores para validar break continue y return
-    private int nivelCiclos;
+    private int nivelCiclos;  // contadores para validar break continue y return
     private int nivelSwitch;
 
-    // estado de la funcion actual
     private boolean enMetodoConRetorno;
     private Tipo tipoRetornoActual;
     private boolean enMetodoConstructor;
 
-    // indicador de mmm alcanzabilidad?? xd dentro de un bloque
     private boolean alcanzable;
 
     /**
@@ -310,9 +303,6 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         // el constructor ya mete el hijo en el padre
 
         // registrar el ambito en el padre si existe
-        //if (ambitoActual != null) {
-        //    ambitoActual.obtenerAmbito().agregarAmbito(nuevo.obtenerAmbito());
-        //}
 
         // actualizar el ambito actual
         ambitoActual = nuevo;
@@ -1927,9 +1917,6 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
 
             // verificar si el caso puede continuar
             // un break final sale del switch y el flujo sigue despues
-            // if (f.puedeContinuar()) {
-            //     todosRetornan = false;
-            // }
             if (f.puedeContinuar() || terminaEnBreak(caso)) {
                 todosRetornan = false;
             }
@@ -1945,9 +1932,6 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
 
             // verificar si el default puede continuar
             // un break final sale del switch y el flujo sigue despues
-            // if (f.puedeContinuar()) {
-            //     todosRetornan = false;
-            // }
             if (f.puedeContinuar() || terminaEnBreak(stmt.getCasoDefecto())) {
                 todosRetornan = false;
             }

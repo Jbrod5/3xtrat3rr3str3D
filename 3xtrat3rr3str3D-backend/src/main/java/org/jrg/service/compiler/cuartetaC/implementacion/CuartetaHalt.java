@@ -9,10 +9,11 @@ public class CuartetaHalt extends CuartetaC {
     /**
      * Crear un halt con operador explicito.
      */
-    public CuartetaHalt(String operador, String arg1, String arg2, String resultado,
-                  String tipoArg1, String tipoArg2, String tipoResultado) {
+    public CuartetaHalt(String operador, String arg1, String arg2, String resultado, String tipoArg1, String tipoArg2, String tipoResultado) {
+
         // delegar al constructor de la clase base
         super(operador, arg1, arg2, resultado, tipoArg1, tipoArg2, tipoResultado);
+
     }
 
     /**

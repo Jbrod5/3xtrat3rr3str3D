@@ -9,8 +9,10 @@ public class RutaImportacion extends NodoAST {
     private final List<String> identificadores;
 
     public RutaImportacion(List<String> identificadores, int linea, int columna) {
+
         super(linea, columna);
         this.identificadores = identificadores;
+
     }
 
     public List<String> getIdentificadores() {

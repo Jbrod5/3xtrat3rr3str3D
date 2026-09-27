@@ -8,8 +8,10 @@ public class StmtAsignacion extends NodoASTZetariano {
     private final NodoASTZetariano asignacion;
 
     public StmtAsignacion(NodoASTZetariano asignacion, int linea, int columna) {
+
         super(linea, columna);
         this.asignacion = asignacion;
+
     }
 
     public NodoASTZetariano getAsignacion() {

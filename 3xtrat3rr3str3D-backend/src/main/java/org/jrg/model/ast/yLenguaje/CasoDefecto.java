@@ -13,8 +13,10 @@ public class CasoDefecto extends NodoASTY {
      * Crear un caso defecto con sus instrucciones.
      */
     public CasoDefecto(List<NodoASTY> instrucciones, int linea, int columna) {
+
         super(linea, columna);
         this.instrucciones = instrucciones;
+
     }
 
     public List<NodoASTY> getInstrucciones() {

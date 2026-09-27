@@ -14,7 +14,9 @@ public class ColoresController {
      * Inicializar el controlador con el servicio de colores.
      */
     public ColoresController(ColoresService coloresService) {
+
         this.coloresService = coloresService;
+
     }
 
     /**

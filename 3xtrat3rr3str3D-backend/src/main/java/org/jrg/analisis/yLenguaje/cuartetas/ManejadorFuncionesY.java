@@ -18,8 +18,10 @@ public class ManejadorFuncionesY {
 
     // crear la manejadora con contexto y generador
     public ManejadorFuncionesY(ContextoCuartetasY ctx, GeneradorCuartetasY generador) {
+
         this.ctx = ctx;
         this.generador = generador;
+
     }
 
     // agregar los marcadores de inicio y fin de funcion sin retorno

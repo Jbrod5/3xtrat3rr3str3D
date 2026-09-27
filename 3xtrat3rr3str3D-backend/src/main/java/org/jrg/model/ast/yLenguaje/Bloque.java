@@ -13,8 +13,10 @@ public class Bloque extends NodoASTY {
      * Crear un bloque con su lista de instrucciones.
      */
     public Bloque(List<NodoASTY> instrucciones, int linea, int columna) {
+
         super(linea, columna);
         this.instrucciones = instrucciones;
+
     }
 
     public List<NodoASTY> getInstrucciones() {

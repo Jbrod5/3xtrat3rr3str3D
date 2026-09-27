@@ -9,8 +9,10 @@ public class ListaAtributosInstancia extends NodoAST {
     private final List<NodoAST> atributos;
 
     public ListaAtributosInstancia(List<NodoAST> atributos, int linea, int columna) {
+
         super(linea, columna);
         this.atributos = atributos;
+
     }
 
     public List<NodoAST> getAtributos() {

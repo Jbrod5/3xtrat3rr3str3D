@@ -6,7 +6,9 @@ import org.jrg.model.ast.pigLatin.base.LatinusAstVisitor;
 public class StmtPerge extends NodoAST {
 
     public StmtPerge(int linea, int columna) {
+
         super(linea, columna);
+
     }
 
     @Override

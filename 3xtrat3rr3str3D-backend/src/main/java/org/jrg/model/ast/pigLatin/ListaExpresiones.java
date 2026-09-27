@@ -9,8 +9,10 @@ public class ListaExpresiones extends NodoAST {
     private final List<NodoAST> expresiones;
 
     public ListaExpresiones(List<NodoAST> expresiones, int linea, int columna) {
+
         super(linea, columna);
         this.expresiones = expresiones;
+
     }
 
     public List<NodoAST> getExpresiones() {

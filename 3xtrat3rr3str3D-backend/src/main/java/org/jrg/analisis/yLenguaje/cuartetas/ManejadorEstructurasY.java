@@ -17,8 +17,10 @@ public class ManejadorEstructurasY {
 
     // crear la manejadora con contexto y generador
     public ManejadorEstructurasY(ContextoCuartetasY ctx, GeneradorCuartetasY generador) {
+
         this.ctx = ctx;
         this.generador = generador;
+
     }
 
     // agregar la definicion del struct a la lista de cuartetas

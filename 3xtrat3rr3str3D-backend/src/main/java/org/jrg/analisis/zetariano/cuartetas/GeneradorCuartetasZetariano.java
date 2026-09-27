@@ -71,22 +71,16 @@ import org.jrg.model.cuarteta.Cuarteta;
 // generador de cuartetas para el lenguaje Zetariano que delega en manejadoras
 public class GeneradorCuartetasZetariano implements ZetarianoAstVisitor<String> {
 
-    // estado compartido de la generacion
     private final ContextoCuartetasZetariano ctx;
 
-    // manejadora de programa y base
     private final ManejadorProgramaZetariano manejadorPrograma;
 
-    // manejadora de clases constructores y metodos
     private final ManejadorClasesZetariano manejadorClases;
 
-    // manejadora de declaraciones y asignaciones
     private final ManejadorDeclaracionesZetariano manejadorDeclaraciones;
 
-    // manejadora de flujo seleccion y ciclos
     private final ManejadorFlujoZetariano manejadorFlujo;
 
-    // manejadora de expresiones
     private final ManejadorExpresionesZetariano manejadorExpresiones;
 
     /**

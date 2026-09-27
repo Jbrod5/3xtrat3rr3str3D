@@ -7,8 +7,10 @@ public class StmtCondicional extends NodoAST {
     private final NodoAST condicional;
 
     public StmtCondicional(NodoAST condicional, int linea, int columna) {
+
         super(linea, columna);
         this.condicional = condicional;
+
     }
 
     public NodoAST getCondicional() {

@@ -20,21 +20,27 @@ public class FuncionPendiente {
      * Crear una funcion pendiente sin tipo de retorno conocido.
      */
     public FuncionPendiente(String nombre, List<Tipo> tiposParametros, int linea, int columna) {
+
         this(nombre, tiposParametros, (Tipo) null, linea, columna);
+
     }
 
     /**
      * Crear una funcion pendiente con tipo de retorno.
      */
     public FuncionPendiente(String nombre, List<Tipo> tiposParametros, Tipo tipoRetorno, int linea, int columna) {
+
         this(nombre, tiposParametros, tipoRetorno, null, linea, columna);
+
     }
 
     /**
      * Crear una funcion pendiente con ambito.
      */
     public FuncionPendiente(String nombre, Ambito ambito, List<Tipo> tiposParametros, int linea, int columna) {
+
         this(nombre, tiposParametros, null, ambito, linea, columna);
+
     }
 
     /**

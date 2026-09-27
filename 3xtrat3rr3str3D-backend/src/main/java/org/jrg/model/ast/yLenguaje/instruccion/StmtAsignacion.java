@@ -11,8 +11,10 @@ public class StmtAsignacion extends NodoASTY {
      * Crear una instruccion de asignacion.
      */
     public StmtAsignacion(NodoASTY asignacion, int linea, int columna) {
+
         super(linea, columna);
         this.asignacion = asignacion;
+
     }
 
     public NodoASTY getAsignacion() {

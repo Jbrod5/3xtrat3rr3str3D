@@ -7,8 +7,10 @@ public class StmtImpresion extends NodoAST {
     private final NodoAST impresion;
 
     public StmtImpresion(NodoAST impresion, int linea, int columna) {
+
         super(linea, columna);
         this.impresion = impresion;
+
     }
 
     public NodoAST getImpresion() {

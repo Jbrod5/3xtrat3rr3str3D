@@ -13,8 +13,10 @@ public class Cuarteta {
 
     // crear la cuarteta con sus cuatro campos
     public Cuarteta(String operador, String arg1, String arg2, String resultado) {
+
         // usar el constructor completo con tipos en _
         this(operador, arg1, arg2, resultado, "_", "_", "_");
+
     }
 
     // crear la cuarteta con sus cuatro campos y sus tipos

@@ -29,14 +29,18 @@ public class ErrorCompilacion {
      * Crear un error sin posicion especifica.
      */
     public ErrorCompilacion(TipoError tipo, String descripcion) {
+
         this(tipo, 0, 0, descripcion);
+
     }
 
     /**
      * Crear un error con una descripcion vacia.
      */
     public ErrorCompilacion(TipoError tipo, int linea, int columna) {
+
         this(tipo, linea, columna, "");
+
     }
 
     /**

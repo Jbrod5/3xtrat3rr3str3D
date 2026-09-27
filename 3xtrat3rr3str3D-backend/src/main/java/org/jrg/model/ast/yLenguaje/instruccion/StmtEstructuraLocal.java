@@ -11,8 +11,10 @@ public class StmtEstructuraLocal extends NodoASTY {
      * Crear una instruccion de estructura local.
      */
     public StmtEstructuraLocal(NodoASTY estructura, int linea, int columna) {
+
         super(linea, columna);
         this.estructura = estructura;
+
     }
 
     public NodoASTY getEstructura() {

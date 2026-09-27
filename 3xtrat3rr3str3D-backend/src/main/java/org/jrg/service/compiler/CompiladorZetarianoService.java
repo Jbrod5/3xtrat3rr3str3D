@@ -469,6 +469,7 @@ public class CompiladorZetarianoService {
 
     // validar que el nombre del archivo coincida con el nombre de la clase
     private void validarNombreArchivo(Programa programa, String nombreArchivo, RecolectorErrores recolector) {
+
         // omitir nombres vacios
         if (nombreArchivo == null || nombreArchivo.isEmpty()) {
             return;
@@ -516,6 +517,7 @@ public class CompiladorZetarianoService {
 
     // pasar por los ambitos y juntar todo
     private void colectarSimbolos(AmbitoSemantico ambito, List<Simbolo> simbolos, List<Tipo> tipos) {
+
         if (ambito == null) {
             return;
         }

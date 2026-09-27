@@ -18,35 +18,45 @@ public class Tipo {
      * Crear un tipo primitivo o nominal sin dimension.
      */
     public Tipo(String nombre, boolean esPrimitivo) {
+
         this(nombre, esPrimitivo, 0, null, new ArrayList<>(), null);
+
     }
 
     /**
      * Crear un tipo con dimension de arreglo.
      */
     public Tipo(String nombre, boolean esPrimitivo, int dimension) {
+
         this(nombre, esPrimitivo, dimension, null, new ArrayList<>(), null);
+
     }
 
     /**
      * Crear un tipo con tipo base y dimension.
      */
     public Tipo(String nombre, boolean esPrimitivo, Tipo tipoBase, int dimension) {
+
         this(nombre, esPrimitivo, dimension, tipoBase, new ArrayList<>(), null);
+
     }
 
     /**
      * Crear un tipo con campos.
      */
     public Tipo(String nombre, boolean esPrimitivo, List<Simbolo> campos) {
+
         this(nombre, esPrimitivo, 0, null, campos, null);
+
     }
 
     /**
      * Crear un tipo con campos y ambito.
      */
     public Tipo(String nombre, boolean esPrimitivo, List<Simbolo> campos, Ambito ambito) {
+
         this(nombre, esPrimitivo, 0, null, campos, ambito);
+
     }
 
     /**

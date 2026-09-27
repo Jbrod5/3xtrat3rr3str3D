@@ -6,7 +6,9 @@ import org.jrg.model.ast.zetariano.base.ZetarianoAstVisitor;
 public class StmtBreak extends NodoASTZetariano {
 
     public StmtBreak(int linea, int columna) {
+
         super(linea, columna);
+
     }
 
     @Override

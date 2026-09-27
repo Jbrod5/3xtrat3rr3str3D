@@ -14,7 +14,9 @@ public class ArchivoController {
      * Inicializar el controlador con el servicio de archivos.
      */
     public ArchivoController(GestorArchivosService gestorArchivosService) {
+
         this.gestorArchivosService = gestorArchivosService;
+
     }
 
     /**
@@ -45,7 +47,6 @@ public class ArchivoController {
 
             ctx.status(200).json(respuesta);
 
-
         } catch (Exception e) {
 
             System.err.println("Error al listar directorio: " + e.getMessage());
@@ -56,7 +57,6 @@ public class ArchivoController {
             respuesta.put("mensaje", e.getMessage());
 
             ctx.status(500).json(respuesta);
-
 
         }
 
@@ -90,7 +90,6 @@ public class ArchivoController {
 
             ctx.status(200).json(respuesta);
 
-
         } catch (Exception e) {
 
             System.err.println("Error al cargar proyecto: " + e.getMessage());
@@ -119,13 +118,6 @@ public class ArchivoController {
             String ruta = cuerpo.get("ruta");
             String contenido = cuerpo.get("contenido");
 
-            //              if (ruta == null || ruta.isEmpty()) {
-//                  if (archivo != null && !archivo.isEmpty()) {
-//                      ruta = archivo;
-//                  } else {
-//                      ruta = "principal.lat";
-//                  }
-//              }
             // asignar ruta por defecto si no viene
             if (ruta == null || ruta.isEmpty()) {
 
@@ -149,7 +141,6 @@ public class ArchivoController {
             respuesta.put("mensaje", "archivo guardado correctamente");
 
             ctx.status(200).json(respuesta);
-
 
         } catch (Exception e) {
 

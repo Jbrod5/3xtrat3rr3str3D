@@ -31,89 +31,43 @@ public class ResultadoAnalisis {
     /**
      * Crear un resultado de analisis sin simbolos crudos.
      */
-    public ResultadoAnalisis(
-            boolean exito,
-            List<ErrorCompilacion> errores,
-            String arbolSintactico,
-            String astMermaid,
-            String codigoPigLatin,
-            List<SimboloResultado> simbolos,
-            List<TipoResultado> tipos,
-            List<Object> pasosPila) {
+    public ResultadoAnalisis( boolean exito, List<ErrorCompilacion> errores, String arbolSintactico, String astMermaid, String codigoPigLatin, List<SimboloResultado> simbolos, List<TipoResultado> tipos, List<Object> pasosPila) {
+
         this(exito, errores, arbolSintactico, astMermaid, codigoPigLatin, simbolos, tipos, pasosPila, null, null, null, null, null);
+
     }
 
     /**
      * Crear un resultado de analisis con simbolos crudos para uso interno.
      */
-    public ResultadoAnalisis(
-            boolean exito,
-            List<ErrorCompilacion> errores,
-            String arbolSintactico,
-            String astMermaid,
-            String codigoPigLatin,
-            List<SimboloResultado> simbolos,
-            List<TipoResultado> tipos,
-            List<Object> pasosPila,
-            List<Simbolo> simbolosCrudos,
-            List<Tipo> tiposCrudos) {
+    public ResultadoAnalisis( boolean exito, List<ErrorCompilacion> errores, String arbolSintactico, String astMermaid, String codigoPigLatin, List<SimboloResultado> simbolos, List<TipoResultado> tipos, List<Object> pasosPila, List<Simbolo> simbolosCrudos, List<Tipo> tiposCrudos) {
+
         this(exito, errores, arbolSintactico, astMermaid, codigoPigLatin, simbolos, tipos, pasosPila, simbolosCrudos, tiposCrudos, null, null, null);
+
     }
 
     /**
      * Crear un resultado de analisis con simbolos crudos y cuartetas.
      */
-    public ResultadoAnalisis(
-            boolean exito,
-            List<ErrorCompilacion> errores,
-            String arbolSintactico,
-            String astMermaid,
-            String codigoPigLatin,
-            List<SimboloResultado> simbolos,
-            List<TipoResultado> tipos,
-            List<Object> pasosPila,
-            List<Simbolo> simbolosCrudos,
-            List<Tipo> tiposCrudos,
-            List<CuartetaResultado> cuartetas) {
+    public ResultadoAnalisis( boolean exito, List<ErrorCompilacion> errores, String arbolSintactico, String astMermaid, String codigoPigLatin, List<SimboloResultado> simbolos, List<TipoResultado> tipos, List<Object> pasosPila, List<Simbolo> simbolosCrudos, List<Tipo> tiposCrudos, List<CuartetaResultado> cuartetas) {
+
         this(exito, errores, arbolSintactico, astMermaid, codigoPigLatin, simbolos, tipos, pasosPila, simbolosCrudos, tiposCrudos, cuartetas, null, null);
+
     }
 
     /**
      * Crear un resultado de analisis con simbolos crudos cuartetas y codigo C.
      */
-    public ResultadoAnalisis(
-            boolean exito,
-            List<ErrorCompilacion> errores,
-            String arbolSintactico,
-            String astMermaid,
-            String codigoPigLatin,
-            List<SimboloResultado> simbolos,
-            List<TipoResultado> tipos,
-            List<Object> pasosPila,
-            List<Simbolo> simbolosCrudos,
-            List<Tipo> tiposCrudos,
-            List<CuartetaResultado> cuartetas,
-            String codigoC) {
+    public ResultadoAnalisis( boolean exito, List<ErrorCompilacion> errores, String arbolSintactico, String astMermaid, String codigoPigLatin, List<SimboloResultado> simbolos, List<TipoResultado> tipos, List<Object> pasosPila, List<Simbolo> simbolosCrudos, List<Tipo> tiposCrudos, List<CuartetaResultado> cuartetas, String codigoC) {
+
         this(exito, errores, arbolSintactico, astMermaid, codigoPigLatin, simbolos, tipos, pasosPila, simbolosCrudos, tiposCrudos, cuartetas, codigoC, null);
+
     }
 
     /**
      * Crear un resultado de analisis con simbolos crudos cuartetas codigo C y resultado de gcc.
      */
-    public ResultadoAnalisis(
-            boolean exito,
-            List<ErrorCompilacion> errores,
-            String arbolSintactico,
-            String astMermaid,
-            String codigoPigLatin,
-            List<SimboloResultado> simbolos,
-            List<TipoResultado> tipos,
-            List<Object> pasosPila,
-            List<Simbolo> simbolosCrudos,
-            List<Tipo> tiposCrudos,
-            List<CuartetaResultado> cuartetas,
-            String codigoC,
-            ResultadoGcc resultadoGcc) {
+    public ResultadoAnalisis( boolean exito, List<ErrorCompilacion> errores, String arbolSintactico, String astMermaid, String codigoPigLatin, List<SimboloResultado> simbolos, List<TipoResultado> tipos, List<Object> pasosPila, List<Simbolo> simbolosCrudos, List<Tipo> tiposCrudos, List<CuartetaResultado> cuartetas, String codigoC, ResultadoGcc resultadoGcc) {
 
         this.exito = exito;
         this.errores = new ArrayList<>();

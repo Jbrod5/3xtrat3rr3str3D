@@ -39,8 +39,10 @@ public class ManejadorExpresionesPigLatin {
 
     // crear la manejadora con contexto y generador
     public ManejadorExpresionesPigLatin(ContextoCuartetasPigLatin ctx, GeneradorCuartetasPigLatin generador) {
+
         this.ctx = ctx;
         this.generador = generador;
+
     }
 
     // devolver el identificador directamente sin cuartetas

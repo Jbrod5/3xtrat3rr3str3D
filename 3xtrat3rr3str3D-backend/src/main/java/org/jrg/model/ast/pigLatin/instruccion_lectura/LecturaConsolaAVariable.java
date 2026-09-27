@@ -7,8 +7,10 @@ public class LecturaConsolaAVariable extends NodoAST {
     private final NodoAST variable;
 
     public LecturaConsolaAVariable(NodoAST variable, int linea, int columna) {
+
         super(linea, columna);
         this.variable = variable;
+
     }
 
     public NodoAST getVariable() {

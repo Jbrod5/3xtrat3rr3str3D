@@ -13,8 +13,10 @@ public class SeccionEstructuras extends NodoASTY {
      * Crear una seccion de estructuras con su lista de definiciones.
      */
     public SeccionEstructuras(List<NodoASTY> estructuras, int linea, int columna) {
+
         super(linea, columna);
         this.estructuras = estructuras;
+
     }
 
     public List<NodoASTY> getEstructuras() {

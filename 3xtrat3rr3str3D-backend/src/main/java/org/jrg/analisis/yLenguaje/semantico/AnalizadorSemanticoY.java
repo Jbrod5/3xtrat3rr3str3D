@@ -77,7 +77,6 @@ import org.jrg.service.error.RecolectorErrores;
 // definir el analizador semantico para el lenguaje Y
 public class AnalizadorSemanticoY implements YAstVisitor<Object> {
 
-
     private final ContextoSemanticoY contexto;    // contexto semantico del analisis
     private boolean enFuncionConRetorno;          // indicador de si se esta dentro de una funcion con retorno
     private Tipo tipoRetornoActual;               //  tipo de retorno esperado actual
@@ -149,9 +148,6 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
     public List<Tipo> obtenerTipos() {
         return this.contexto.obtenerTipos();
     }
-
-
-
 
     // ==================== AUXILIARES DE TIPOS ====================
 
@@ -479,7 +475,6 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
         simbolo.setTiposParametros(tiposParametros);
         simbolo.setAmbito(this.contexto.ambitoActual().obtenerAmbito());
 
-
         // declarar la funcion como metodo en el ambito
         this.contexto.ambitoActual().declararMetodo(simbolo);
 
@@ -772,9 +767,6 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
 
         }
 
-
-
-
         // segunda pasada: analizar cuerpos de funciones
         if (nodo.getSeccionFunciones() != null && nodo.getSeccionFunciones() instanceof SeccionFunciones) {
 
@@ -1006,7 +998,6 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
                 }
 
                 declararVariableSeguro(simple, simple.getNombre(), tipo, CategoriaSimbolo.PARAMETRO, null);
-
 
             } else if (p instanceof ParamArray) {
 
@@ -1378,7 +1369,6 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
 
                 }
 
-
             }
 
         }
@@ -1400,7 +1390,6 @@ public class AnalizadorSemanticoY implements YAstVisitor<Object> {
 
             return null;
         }
-
 
         // construir el tipo matriz de dos dimensiones
         Tipo tipoMatriz = new Tipo(tipoBase.getNombre(), tipoBase.esPrimitivo(), 2, tipoBase, new ArrayList<>(), null);

@@ -11,8 +11,10 @@ public class PasoParaExpr extends NodoASTY {
      * Crear un paso de para con expresion.
      */
     public PasoParaExpr(NodoASTY expresion, int linea, int columna) {
+
         super(linea, columna);
         this.expresion = expresion;
+
     }
 
     public NodoASTY getExpresion() {

@@ -8,8 +8,10 @@ public class StmtCondicional extends NodoASTZetariano {
     private final NodoASTZetariano condicional;
 
     public StmtCondicional(NodoASTZetariano condicional, int linea, int columna) {
+
         super(linea, columna);
         this.condicional = condicional;
+
     }
 
     public NodoASTZetariano getCondicional() {

@@ -47,8 +47,10 @@ public class TraductorC {
      * Crear un traductor de cuartetas a maquina Heap Stack.
      */
     public TraductorC() {
+
         // iniciar sin contexto hasta traducir
         this.ctx = null;
+
     }
 
     /**
@@ -446,11 +448,8 @@ public class TraductorC {
 
         // iniciar punteros solo una vez en main
         if ("main".equals(this.funcionActual)) {
-
-            // this.cuerpo.append("    stackpointer = 0;\n    heappointer = 0;\n    framepointer = 0;\n    framestackpointer = 0;\n");
             // reservar la base cero del heap para el nulo
             this.cuerpo.append("    stackpointer = 0;\n    heappointer = 1;\n    framepointer = 0;\n    framestackpointer = 0;\n");
-
         }
 
         // armar el prologo con reserva de locales
@@ -641,7 +640,34 @@ public class TraductorC {
 
         // agregar el leer si se uso
         if (ctx.builtinsUsados.contains("leer")) {
-            salida.append("char* leer(void) { static char buf[256]; int c; while ((c = getchar()) == '\\n' || c == '\\r'); if (c == EOF) { buf[0] = '\\0'; } else { ungetc(c, stdin); if (!fgets(buf, sizeof(buf), stdin)) buf[0] = '\\0'; } buf[strcspn(buf, \"\\r\\n\")] = '\\0'; char* s = malloc(strlen(buf) + 1); strcpy(s, buf); return s; }\n");
+
+            // abrir la funcion y reservar el buffer estatico
+            salida.append("char* leer(void) { ");
+            salida.append("static char buf[256]; ");
+
+            // declarar el caracter en curso
+            salida.append("int c; ");
+
+            // saltar blancos pendientes de lecturas previas
+            salida.append("while ((c = getchar()) == '\\n' || c == '\\r'); ");
+
+            // devolver vacio si se acabo la entrada
+            salida.append("if (c == EOF) { buf[0] = '\\0'; } ");
+
+            // devolver el caracter y leer la linea completa
+            salida.append("else { ungetc(c, stdin); if (!fgets(buf, sizeof(buf), stdin)) buf[0] = '\\0'; } ");
+
+            // quitar el salto final de la linea leida
+            salida.append("buf[strcspn(buf, \"\\r\\n\")] = '\\0'; ");
+
+            // copiar el buffer a memoria nueva para devolver
+            salida.append("char* s = malloc(strlen(buf) + 1); ");
+            salida.append("strcpy(s, buf); ");
+            salida.append("return s; ");
+
+            // cerrar la funcion del builtin
+            salida.append("}\n");
+
         }
 
         // separar la cabecera del cuerpo con linea en blanco
