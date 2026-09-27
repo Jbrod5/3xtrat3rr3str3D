@@ -2,34 +2,35 @@ package org.jrg.service.compiler.cuartetaC.implementacion;
 
 import org.jrg.service.compiler.cuartetaC.ContextoTraduccion;
 import org.jrg.service.compiler.cuartetaC.CuartetaC;
+import org.jrg.service.compiler.cuartetaC.SlotHS;
 
-// traducir una negacion logica a C
+// negar un booleano con resultado booleano
 public class CuartetaNegacion extends CuartetaC {
 
     /**
-     * Crear una cuarteta de negacion con operador explicito.
+     * Crear una negacion con operador explicito.
      */
     public CuartetaNegacion(String operador, String arg1, String arg2, String resultado,
-                             String tipoArg1, String tipoArg2, String tipoResultado) {
-        // usar el constructor base
+                      String tipoArg1, String tipoArg2, String tipoResultado) {
+        // delegar al constructor de la clase base
         super(operador, arg1, arg2, resultado, tipoArg1, tipoArg2, tipoResultado);
     }
 
     /**
-     * Crear una cuarteta de negacion con operador fijo.
-     */
-    public CuartetaNegacion(String arg1, String arg2, String resultado,
-                             String tipoArg1, String tipoArg2, String tipoResultado) {
-        // usar el base con operador fijo
-        super("!", arg1, arg2, resultado, tipoArg1, tipoArg2, tipoResultado);
-    }
-
-    /**
-     * Obtener la linea de codigo C para la cuarteta.
+     * Sacar las lineas de codigo de la cuarteta.
      */
     @Override
     public String obtenerCodigoC(ContextoTraduccion ctx) {
-        // construir la negacion con resultado booleano
-        return ctx.ladoIzquierdo(resultado, "bool") + " = !" + ctx.crearValor(arg1).obtenerCodigoC(ctx) + ";";
+        // omitir destinos sin nombre valido
+        if (resultado == null || resultado.isEmpty() || resultado.equals("_")) {
+            return "";
+        }
+        // declarar el destino siempre booleano
+        SlotHS slot = ctx.declararSlot(resultado, "booleano");
+        // resolver el operando a expresion
+        String valor = ctx.expresionOperando(arg1);
+        // negar con registro y guardar el booleano
+        String destino = slot.getArreglo() + "[fp + " + slot.getIndice() + "]";
+        return "AX_BOOLEAN = !" + valor + ";\n    " + destino + " = AX_BOOLEAN;";
     }
 }

@@ -3,33 +3,23 @@ package org.jrg.service.compiler.cuartetaC.implementacion;
 import org.jrg.service.compiler.cuartetaC.ContextoTraduccion;
 import org.jrg.service.compiler.cuartetaC.CuartetaC;
 
-// traducir un salto incondicional a C
+// saltar siempre a una etiqueta
 public class CuartetaGoto extends CuartetaC {
 
     /**
-     * Crear una cuarteta de salto con operador explicito.
+     * Crear un salto con operador explicito.
      */
     public CuartetaGoto(String operador, String arg1, String arg2, String resultado,
-                         String tipoArg1, String tipoArg2, String tipoResultado) {
-        // va al base
+                  String tipoArg1, String tipoArg2, String tipoResultado) {
         super(operador, arg1, arg2, resultado, tipoArg1, tipoArg2, tipoResultado);
     }
 
     /**
-     * Crear una cuarteta de salto con operador fijo.
-     */
-    public CuartetaGoto(String arg1, String arg2, String resultado,
-                         String tipoArg1, String tipoArg2, String tipoResultado) {
-        // cae al base con operador fijo
-        super("goto", arg1, arg2, resultado, tipoArg1, tipoArg2, tipoResultado);
-    }
-
-    /**
-     * Obtener la linea de codigo C para la cuarteta.
+     * Sacar las lineas de codigo de la cuarteta.
      */
     @Override
     public String obtenerCodigoC(ContextoTraduccion ctx) {
-        // construir el salto hacia la etiqueta destino
+        // saltar a la etiqueta del primer argumento
         return "goto " + arg1 + ";";
     }
 }

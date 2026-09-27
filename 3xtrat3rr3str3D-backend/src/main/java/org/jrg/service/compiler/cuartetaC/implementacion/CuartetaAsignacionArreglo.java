@@ -3,33 +3,33 @@ package org.jrg.service.compiler.cuartetaC.implementacion;
 import org.jrg.service.compiler.cuartetaC.ContextoTraduccion;
 import org.jrg.service.compiler.cuartetaC.CuartetaC;
 
-// traducir una asignacion a arreglo a C
+// escribir un elemento por indice desde la base del arreglo
 public class CuartetaAsignacionArreglo extends CuartetaC {
 
     /**
-     * Crear una cuarteta de asignacion a arreglo con operador explicito.
+     * Crear una asignacion a arreglo con operador explicito.
      */
     public CuartetaAsignacionArreglo(String operador, String arg1, String arg2, String resultado,
-                                      String tipoArg1, String tipoArg2, String tipoResultado) {
-        // va al base
+                               String tipoArg1, String tipoArg2, String tipoResultado) {
         super(operador, arg1, arg2, resultado, tipoArg1, tipoArg2, tipoResultado);
     }
 
     /**
-     * Crear una cuarteta de asignacion a arreglo con operador fijo.
-     */
-    public CuartetaAsignacionArreglo(String arg1, String arg2, String resultado,
-                                      String tipoArg1, String tipoArg2, String tipoResultado) {
-        // cae al base con operador fijo
-        super("[]=", arg1, arg2, resultado, tipoArg1, tipoArg2, tipoResultado);
-    }
-
-    /**
-     * Obtener la linea de codigo C para la cuarteta.
+     * Sacar las lineas de codigo de la cuarteta.
      */
     @Override
     public String obtenerCodigoC(ContextoTraduccion ctx) {
-        // construir la escritura del arreglo con indice y valor traducidos
-        return ctx.accesoCampo(arg1) + "[" + ctx.crearValor(arg2).obtenerCodigoC(ctx) + "] = " + ctx.crearValor(resultado).obtenerCodigoC(ctx) + ";";
+        // resolver el struct base de los elementos si hay
+        String baseElem = ctx.mapaBases.get(arg1);
+        // elegir arreglo de heap segun el base o entero por defecto
+        String arregloElem = "heapinteger";
+        if (baseElem != null && baseElem.isEmpty() == false && baseElem.equals("_") == false) {
+            arregloElem = ctx.arregloHeapPara(baseElem);
+        }
+        // escribir en el heap con base mas indice
+        String base = ctx.expresionOperando(arg1);
+        String indice = ctx.expresionOperando(arg2);
+        String valor = ctx.expresionOperando(resultado);
+        return arregloElem + "[" + base + " + " + indice + "] = " + valor + ";";
     }
 }

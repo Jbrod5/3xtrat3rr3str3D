@@ -1,31 +1,25 @@
 package org.jrg.service.compiler;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-
 import org.jrg.model.resultado.CuartetaResultado;
 import org.jrg.service.compiler.cuartetaC.ContextoTraduccion;
 import org.jrg.service.compiler.cuartetaC.CuartetaC;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaAritmetica;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaAsignacionSimple;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaAsignacionArreglo;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaAsignacionMiembro;
 import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaAccesoArreglo;
 import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaAccesoMiembro;
 import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaAlloc;
-import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaAritmetica;
-import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaAsignacionArreglo;
-import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaAsignacionLiteral;
-import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaAsignacionMiembro;
-import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaAsignacionSimple;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaLlamada;
 import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaComparacion;
 import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaConcatenacion;
 import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaEtiqueta;
-import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaFuncBegin;
-import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaFuncEnd;
 import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaGoto;
 import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaHalt;
 import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaIfFalse;
-import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaLlamada;
 import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaLogica;
 import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaNegacion;
 import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaNew;
@@ -33,17 +27,24 @@ import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaParametro;
 import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaPrint;
 import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaRead;
 import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaRetorno;
-import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaStructDef;
 import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaUminus;
 
-// armar el C final a partir de las cuartetas
+// armar la traduccion de cuartetas a maquina Heap Stack
 public class TraductorC {
 
-    // estado compartido de la traduccion en curso
     private ContextoTraduccion ctx;
+    private StringBuilder cuerpo;
+    private List<String> prototipos;
+    private List<CuartetaResultado> preMain;
+    private String funcionActual;
+    private List<CuartetaResultado> crudasFuncion;
+    private List<String> nombresParams;
+    private List<String> tiposParams;
+    private boolean preMainColocado;
+    private boolean hayMain;
 
     /**
-     * Crear un traductor de cuartetas a codigo C.
+     * Crear un traductor de cuartetas a maquina Heap Stack.
      */
     public TraductorC() {
         // iniciar sin contexto hasta traducir
@@ -51,21 +52,51 @@ public class TraductorC {
     }
 
     /**
-     * Traducir una lista de cuartetas a codigo C.
+     * Traducir una lista de cuartetas a maquina Heap Stack.
      */
     public String traducir(List<CuartetaResultado> cuartetas) {
         // crear un contexto fresco para esta traduccion
         this.ctx = new ContextoTraduccion();
         // devolver un programa minimo si no hay cuartetas
         if (cuartetas == null || cuartetas.isEmpty()) {
-            return encabezado() + "int main(void) {\n    return 0;\n}\n";
+            return encabezado() + "int main(void) {\n    sptr = 0;\n    hptr = 0;\n    fp = 0;\n    return 0;\n}\n";
         }
-        // preprocesar definiciones de structs y sus temporales
+        // preprocesar definiciones de structs para offsets
         ctx.preprocesarStructs(cuartetas);
-        // buscar clases de Zetariano por nombre de funcion
-        ctx.detectarClases(cuartetas);
-        // acumular el cuerpo de las funciones
-        StringBuilder cuerpo = new StringBuilder();
+        // prepasar funciones conocidas y retornos para llamadas adelantadas
+        for (int i = 0; i < cuartetas.size(); i++) {
+            CuartetaResultado c = cuartetas.get(i);
+            // omitir cuartetas nulas
+            if (c == null) {
+                continue;
+            }
+            // registrar cada inicio de funcion
+            if ("func_begin".equals(c.getOperador())) {
+                if (c.getArg1() != null && c.getArg1().isEmpty() == false) {
+                    if (ctx.funcionesConocidas.contains(c.getArg1()) == false) {
+                        ctx.funcionesConocidas.add(c.getArg1());
+                    }
+                    ctx.retornosFuncion.put(c.getArg1(), c.getResultado());
+                }
+            }
+        }
+        // iniciar los acumuladores
+        this.cuerpo = new StringBuilder();
+        this.prototipos = new ArrayList<>();
+        this.preMain = new ArrayList<>();
+        this.funcionActual = "";
+        this.crudasFuncion = new ArrayList<>();
+        this.nombresParams = new ArrayList<>();
+        this.tiposParams = new ArrayList<>();
+        this.preMainColocado = false;
+        // detectar si el programa trae main para las globales
+        this.hayMain = false;
+        for (int i = 0; i < cuartetas.size(); i++) {
+            CuartetaResultado c = cuartetas.get(i);
+            if (c != null && "func_begin".equals(c.getOperador()) && "main".equals(c.getArg1())) {
+                this.hayMain = true;
+            }
+        }
         // recorrer cada cuarteta de la lista
         for (int i = 0; i < cuartetas.size(); i++) {
             CuartetaResultado c = cuartetas.get(i);
@@ -84,28 +115,28 @@ public class TraductorC {
                 continue;
             }
             if ("func_end".equals(operador)) {
-                terminarFuncion(cuerpo);
+                terminarFuncion();
                 continue;
             }
-            // registrar globales fuera de funciones
-            if (ctx.dentroDeFuncion == false) {
-                procesarLineaGlobal(c);
+            // guardar previas fuera de funciones para la siguiente
+            if (this.funcionActual.isEmpty()) {
+                this.preMain.add(c);
                 continue;
             }
             // guardar la cuarteta cruda para traducir al cerrar
-            ctx.crudasFuncion.add(c);
+            this.crudasFuncion.add(c);
         }
         // cerrar la funcion si falto su marcador de fin
-        if (ctx.bufferFuncion != null) {
-            terminarFuncion(cuerpo);
+        if (this.funcionActual.isEmpty() == false) {
+            terminarFuncion();
         }
-        // unir todo en el programa final
-        return ensamblar(cuerpo.toString());
+        // ensamblar el programa completo
+        return ensamblar();
     }
 
-    // armar la cuarteta segun el operador :D
+    // crear la cuarteta correcta segun el operador
     private CuartetaC crearCuarteta(CuartetaResultado c) {
-        // extraer el operador y los campos de la cuarteta
+        // extraer el operador de la cuarteta
         String op = c.getOperador();
         String a1 = c.getArg1();
         String a2 = c.getArg2();
@@ -113,50 +144,38 @@ public class TraductorC {
         String t1 = c.getTipoArg1();
         String t2 = c.getTipoArg2();
         String tr = c.getTipoResultado();
-        // acumular params sin generar linea
-        if ("param".equals(op)) {
-            return new CuartetaParametro(op, a1, a2, res, t1, t2, tr);
-        }
-        // ver llamadas a funcion y a metodo
-        if ("call".equals(op) || "call_method".equals(op)) {
-            return new CuartetaLlamada(op, a1, a2, res, t1, t2, tr);
-        }
-        // ver carga de literal
-        if ("=".equals(op)) {
-            return new CuartetaAsignacionLiteral(op, a1, a2, res, t1, t2, tr);
-        }
-        // ver asignacion simple
-        if (":=".equals(op)) {
+        // asignaciones con el mismo molde
+        if (":=".equals(op) || "=".equals(op)) {
             return new CuartetaAsignacionSimple(op, a1, a2, res, t1, t2, tr);
         }
-        // sumar segun sea texto o numero
+        // suma con concat cuando hay texto en medio
         if ("+".equals(op)) {
-            if (ctx.esTipoTexto(tr)) {
+            if (esTexto(a1, t1) || esTexto(a2, t2)) {
                 return new CuartetaConcatenacion(op, a1, a2, res, t1, t2, tr);
             }
             return new CuartetaAritmetica(op, a1, a2, res, t1, t2, tr);
         }
-        // ver el resto de cuentas aritmeticas
+        // resta multiplicacion division y modulo numericos
         if ("-".equals(op) || "*".equals(op) || "/".equals(op) || "%".equals(op)) {
             return new CuartetaAritmetica(op, a1, a2, res, t1, t2, tr);
         }
-        // ver comparaciones
+        // comparaciones a booleano
         if ("==".equals(op) || "!=".equals(op) || "<".equals(op) || ">".equals(op) || "<=".equals(op) || ">=".equals(op)) {
             return new CuartetaComparacion(op, a1, a2, res, t1, t2, tr);
         }
-        // ver && y ||
+        // operadores logicos binarios
         if ("&&".equals(op) || "||".equals(op)) {
             return new CuartetaLogica(op, a1, a2, res, t1, t2, tr);
         }
-        // ver negacion con !
+        // negacion logica
         if ("!".equals(op)) {
             return new CuartetaNegacion(op, a1, a2, res, t1, t2, tr);
         }
-        // ver menos unario con su codigo
+        // menos unario con opcode propio
         if ("uminus".equals(op)) {
             return new CuartetaUminus(op, a1, a2, res, t1, t2, tr);
         }
-        // ver etiquetas y saltos
+        // etiquetas y saltos
         if ("label".equals(op)) {
             return new CuartetaEtiqueta(op, a1, a2, res, t1, t2, tr);
         }
@@ -166,372 +185,331 @@ public class TraductorC {
         if ("if_false".equals(op)) {
             return new CuartetaIfFalse(op, a1, a2, res, t1, t2, tr);
         }
-        // ver retorno
+        // retorno y halt
         if ("return".equals(op)) {
             return new CuartetaRetorno(op, a1, a2, res, t1, t2, tr);
         }
-        // ver impresion
-        if ("print".equals(op)) {
-            return new CuartetaPrint(op, a1, a2, res, t1, t2, tr);
-        }
-        // ver lectura
-        if ("read".equals(op)) {
-            return new CuartetaRead(op, a1, a2, res, t1, t2, tr);
-        }
-        // ver acceso a campo
-        if (".".equals(op)) {
-            return new CuartetaAccesoMiembro(op, a1, a2, res, t1, t2, tr);
-        }
-        // ver asignacion a campo
-        if (".,=".equals(op)) {
-            return new CuartetaAsignacionMiembro(op, a1, a2, res, t1, t2, tr);
-        }
-        // ver acceso a arreglo
-        if ("=[]".equals(op)) {
-            return new CuartetaAccesoArreglo(op, a1, a2, res, t1, t2, tr);
-        }
-        // ver asignacion a arreglo
-        if ("[]=".equals(op)) {
-            return new CuartetaAsignacionArreglo(op, a1, a2, res, t1, t2, tr);
-        }
-        // ver reserva con malloc
-        if ("alloc".equals(op)) {
-            return new CuartetaAlloc(op, a1, a2, res, t1, t2, tr);
-        }
-        // ver new de objeto y de struct
-        if ("new".equals(op) || "new_struct".equals(op)) {
-            return new CuartetaNew(op, a1, a2, res, t1, t2, tr);
-        }
-        // ver halt
         if ("halt".equals(op)) {
             return new CuartetaHalt(op, a1, a2, res, t1, t2, tr);
         }
-        // ver marcadores que se arman aparte
-        if ("func_begin".equals(op)) {
-            return new CuartetaFuncBegin(op, a1, a2, res, t1, t2, tr);
+        // impresion y lectura
+        if ("print".equals(op)) {
+            return new CuartetaPrint(op, a1, a2, res, t1, t2, tr);
         }
-        if ("func_end".equals(op)) {
-            return new CuartetaFuncEnd(op, a1, a2, res, t1, t2, tr);
+        // acumular params sin generar linea
+        if ("param".equals(op)) {
+            return new CuartetaParametro(op, a1, a2, res, t1, t2, tr);
         }
-        if ("struct_def".equals(op)) {
-            return new CuartetaStructDef(op, a1, a2, res, t1, t2, tr);
+        // llamadas con marco de pila
+        if ("call".equals(op) || "call_method".equals(op)) {
+            return new CuartetaLlamada(op, a1, a2, res, t1, t2, tr);
         }
-        // devolver nulo para operadores desconocidos
+        // reserva de arreglos en heap
+        if ("alloc".equals(op)) {
+            return new CuartetaAlloc(op, a1, a2, res, t1, t2, tr);
+        }
+        // instanciacion de objetos y structs en heap
+        if ("new".equals(op) || "new_struct".equals(op)) {
+            return new CuartetaNew(op, a1, a2, res, t1, t2, tr);
+        }
+        // acceso y escritura de miembros por offset
+        if (".".equals(op)) {
+            return new CuartetaAccesoMiembro(op, a1, a2, res, t1, t2, tr);
+        }
+        if (".,=".equals(op)) {
+            return new CuartetaAsignacionMiembro(op, a1, a2, res, t1, t2, tr);
+        }
+        // acceso y escritura de arreglos por indice
+        if ("=[]".equals(op)) {
+            return new CuartetaAccesoArreglo(op, a1, a2, res, t1, t2, tr);
+        }
+        if ("[]=".equals(op)) {
+            return new CuartetaAsignacionArreglo(op, a1, a2, res, t1, t2, tr);
+        }
+        if ("read".equals(op)) {
+            return new CuartetaRead(op, a1, a2, res, t1, t2, tr);
+        }
+        // operadores que falten salen comentados
         return null;
     }
 
-    // generar los includes del programa
+    // verificar si un operando trae texto para concatenar
+    private boolean esTexto(String valor, String tipo) {
+        // aceptar literales entre comillas
+        if (valor != null && valor.startsWith("\"")) {
+            return true;
+        }
+        // aceptar tipos de texto de los tres lenguajes
+        if ("cadena".equals(tipo) || "textum".equals(tipo) || "String".equals(tipo) || "char*".equals(tipo)) {
+            return true;
+        }
+        // aceptar slots ya vistos como texto
+        if (valor != null) {
+            String arreglo = ctx.arregloDe(valor);
+            if ("stackstring".equals(arreglo)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // preparar la funcion con sus params
+    private void iniciarFuncion(CuartetaResultado c) {
+        // guardar el nombre de la funcion actual
+        this.funcionActual = c.getArg1();
+        // espejar el nombre en el contexto para retornos y llamadas
+        ctx.funcionActual = this.funcionActual;
+        // recordar retorno y nombre para llamadas futuras
+        if (this.funcionActual != null && this.funcionActual.isEmpty() == false) {
+            ctx.retornosFuncion.put(this.funcionActual, c.getResultado());
+            if (ctx.funcionesConocidas.contains(this.funcionActual) == false) {
+                ctx.funcionesConocidas.add(this.funcionActual);
+            }
+        }
+        // detectar la clase desde el prefijo con struct propio
+        ctx.nombreClaseActual = "";
+        if (this.funcionActual != null) {
+            int guion = this.funcionActual.indexOf('_');
+            if (guion > 0) {
+                String posible = this.funcionActual.substring(0, guion);
+                if (ctx.structs.containsKey(posible)) {
+                    ctx.nombreClaseActual = posible;
+                }
+            }
+        }
+        // limpiar params anteriores
+        this.nombresParams = new ArrayList<>();
+        this.tiposParams = new ArrayList<>();
+        // agregar this primero cuando es metodo de clase
+        if (ctx.nombreClaseActual.isEmpty() == false) {
+            this.nombresParams.add("this");
+            this.tiposParams.add(ctx.nombreClaseActual);
+        }
+        // partir los params por coma cuando existan
+        String texto = c.getArg2();
+        if (texto != null && texto.equals("_") == false && texto.isEmpty() == false) {
+            String[] partes = texto.split(",");
+            for (int i = 0; i < partes.length; i++) {
+                String parte = partes[i].trim();
+                int dosPuntos = parte.indexOf(':');
+                // usar formato nombre tipo cuando trae dos puntos
+                if (dosPuntos > 0) {
+                    this.nombresParams.add(parte.substring(0, dosPuntos).trim());
+                    this.tiposParams.add(parte.substring(dosPuntos + 1).trim());
+                } else {
+                    // numerar cuando solo trae tipos
+                    this.nombresParams.add("p" + (i + 1));
+                    this.tiposParams.add(parte);
+                }
+            }
+        }
+        // limpiar las crudas de la funcion anterior
+        this.crudasFuncion = new ArrayList<>();
+        // agregar el prototipo si no existe
+        String firma = firma(this.funcionActual);
+        if (this.prototipos.contains(firma) == false) {
+            this.prototipos.add(firma);
+        }
+    }
+
+    // construir la firma void con el nombre real
+    private String firma(String nombre) {
+        // forzar int en main aunque el marcador diga void
+        if ("main".equals(nombre)) {
+            return "int main(void)";
+        }
+        return "void " + nombre + "(void)";
+    }
+
+    // cerrar la funcion traduciendo sus crudas al cuerpo
+    private void terminarFuncion() {
+        // registrar los params en los slots de entrada
+        ctx.iniciarFuncion(this.nombresParams.size());
+        for (int i = 0; i < this.nombresParams.size(); i++) {
+            ctx.registrarParam(this.nombresParams.get(i), this.tiposParams.get(i));
+        }
+        // juntar previas globales al main o a la primera funcion
+        List<CuartetaResultado> todas = new ArrayList<>();
+        boolean esMain = "main".equals(this.funcionActual);
+        if (esMain || (this.hayMain == false && this.preMainColocado == false)) {
+            todas.addAll(this.preMain);
+            this.preMain = new ArrayList<>();
+            this.preMainColocado = true;
+        }
+        todas.addAll(this.crudasFuncion);
+        // precontar locales para reservar pila en el prologo
+        precontarLocales(todas);
+        // abrir la funcion con su marco
+        this.cuerpo.append(firma(this.funcionActual)).append(" {\n");
+        // iniciar punteros solo una vez en main
+        if ("main".equals(this.funcionActual)) {
+            this.cuerpo.append("    sptr = 0;\n    hptr = 0;\n    fp = 0;\n    fptr = 0;\n");
+        }
+        // armar el prologo con reserva de locales
+        this.cuerpo.append("    fpstack[fptr] = fp;\n    fptr = fptr + 1;\n");
+        this.cuerpo.append("    fp = sptr - ").append(String.valueOf(this.nombresParams.size())).append(";\n");
+        this.cuerpo.append("    sptr = sptr + ").append(String.valueOf(ctx.cuentaLocales)).append(";\n");
+        // traducir cada cruda en orden
+        for (int i = 0; i < todas.size(); i++) {
+            CuartetaC cuarteta = crearCuarteta(todas.get(i));
+            // marcar operadores pendientes con comentario
+            String linea = null;
+            if (cuarteta != null) {
+                linea = cuarteta.obtenerCodigoC(ctx);
+            } else {
+                linea = "// pendiente: " + todas.get(i).getOperador();
+            }
+            // omitir lineas vacias
+            if (linea == null || linea.isEmpty()) {
+                continue;
+            }
+            // agregar labels sin indentacion al cuerpo
+            if (linea.endsWith(":;")) {
+                this.cuerpo.append(linea).append("\n");
+            } else {
+                this.cuerpo.append("    ").append(linea).append("\n");
+            }
+        }
+        // cerrar con epilogo que limpia el marco
+        if ("main".equals(this.funcionActual)) {
+            this.cuerpo.append("    sptr = fp;\n    fptr = fptr - 1;\n    fp = fpstack[fptr];\n    return 0;\n}");
+        } else {
+            this.cuerpo.append("    sptr = fp;\n    fptr = fptr - 1;\n    fp = fpstack[fptr];\n    return;\n}");
+        }
+        // separar funciones con linea en blanco
+        this.cuerpo.append("\n");
+        // limpiar la funcion actual
+        this.funcionActual = "";
+        this.crudasFuncion = new ArrayList<>();
+    }
+
+    // contar locales y temporales antes de reservar
+    private void precontarLocales(List<CuartetaResultado> crudas) {
+        // recorrer cada cuarteta buscando destinos con tipo
+        for (int i = 0; i < crudas.size(); i++) {
+            CuartetaResultado c = crudas.get(i);
+            if (c == null) {
+                continue;
+            }
+            // omitir marcadores sin destino real
+            String op = c.getOperador();
+            if ("func_begin".equals(op) || "func_end".equals(op) || "struct_def".equals(op)) {
+                continue;
+            }
+            // registrar el destino con su tipo
+            String tipo = c.getTipoResultado();
+            if ("read".equals(op)) {
+                tipo = "entero";
+            }
+            registrarNombre(c.getResultado(), tipo);
+        }
+    }
+
+    // registrar un nombre si parece variable o temporal
+    private void registrarNombre(String nombre, String tipo) {
+        // omitir nulos vacios y guiones
+        if (nombre == null || nombre.isEmpty() || nombre.equals("_")) {
+            return;
+        }
+        // omitir etiquetas y numeros
+        if (ctx.esEtiqueta(nombre)) {
+            return;
+        }
+        if (nombre.length() > 0 && Character.isDigit(nombre.charAt(0))) {
+            return;
+        }
+        // omitir cadenas y booleanos literales
+        if (nombre.startsWith("\"") || nombre.startsWith("'")) {
+            return;
+        }
+        if (nombre.equals("verum") || nombre.equals("verdadero") || nombre.equals("true") || nombre.equals("falsus") || nombre.equals("falso") || nombre.equals("false")) {
+            return;
+        }
+        // omitir nulos
+        if (nombre.equals("null") || nombre.equals("NULL")) {
+            return;
+        }
+        // omitir params y repetidos guardando el orden
+        if (ctx.slots.containsKey(nombre)) {
+            return;
+        }
+        if (ctx.ordenLocales.contains(nombre)) {
+            return;
+        }
+        // omitir campos de la clase actual que van al heap
+        if (ctx.nombreClaseActual != null && ctx.nombreClaseActual.isEmpty() == false) {
+            Map<String, String> campos = ctx.structs.get(ctx.nombreClaseActual);
+            if (campos != null && campos.containsKey(nombre)) {
+                return;
+            }
+        }
+        // anotar el nombre para declarar despues
+        ctx.ordenLocales.add(nombre);
+        if (tipo == null) {
+            tipo = "_";
+        }
+        // declarar el slot con su tipo
+        ctx.declararSlot(nombre, tipo);
+    }
+
+    // crear el encabezado con registros y arreglos
     private String encabezado() {
-        // concatenar los includes necesarios
+        // acumular los includes y el estado global
         StringBuilder sb = new StringBuilder();
         sb.append("#include <stdio.h>\n");
         sb.append("#include <stdlib.h>\n");
         sb.append("#include <string.h>\n");
         sb.append("#include <stdbool.h>\n");
+        sb.append("int sptr = 0;\n");
+        sb.append("int hptr = 0;\n");
+        sb.append("int fp = 0;\n");
+        sb.append("int fpstack[65536];\n");
+        sb.append("int fptr = 0;\n");
+        sb.append("int stackinteger[65536];\n");
+        sb.append("char *stackstring[65536];\n");
+        sb.append("float stackfloat[65536];\n");
+        sb.append("char stackchar[65536];\n");
+        sb.append("int stackboolean[65536];\n");
+        sb.append("int heapinteger[65536];\n");
+        sb.append("char *heapstring[65536];\n");
+        sb.append("float heapfloat[65536];\n");
+        sb.append("char heapchar[65536];\n");
+        sb.append("int heapboolean[65536];\n");
+        sb.append("int AX_INT, BX_INT, CX_INT;\n");
+        sb.append("char *AX_STRING, *BX_STRING, *CX_STRING;\n");
+        sb.append("float AX_FLOAT, BX_FLOAT, CX_FLOAT;\n");
+        sb.append("char AX_CHAR, BX_CHAR, CX_CHAR;\n");
+        sb.append("int AX_BOOLEAN, BX_BOOLEAN, CX_BOOLEAN;\n");
         return sb.toString();
     }
 
-    // unir includes, builtins, prototipos, globales y cuerpo
-    private String ensamblar(String cuerpo) {
-        // crear el acumulador de salida
+    // ensamblar tabla de cadenas mas prototipos mas cuerpo
+    private String ensamblar() {
+        // acumular la salida completa
         StringBuilder salida = new StringBuilder();
-        // agregar los includes
         salida.append(encabezado());
-        // agregar las definiciones de builtins usados
-        for (int i = 0; i < ctx.builtinsUsados.size(); i++) {
-            salida.append(ctx.definicionBuiltin(ctx.builtinsUsados.get(i)));
+        // agregar la tabla de cadenas
+        for (Map.Entry<String, String> entrada : ctx.tablaCadenas.entrySet()) {
+            salida.append("char *").append(entrada.getValue()).append(" = ").append(entrada.getKey()).append(";\n");
         }
-        // agregar las definiciones de structs
-        for (int i = 0; i < ctx.ordenStructs.size(); i++) {
-            String nombreStruct = ctx.ordenStructs.get(i);
-            salida.append("struct ").append(nombreStruct).append(" {\n");
-            // agregar cada campo en su orden a la salida
-            List<String> orden = ctx.ordenCampos.get(nombreStruct);
-            if (orden != null) {
-                Map<String, String> campos = ctx.structs.get(nombreStruct);
-                for (int j = 0; j < orden.size(); j++) {
-                    String campo = orden.get(j);
-                    String tipoFuente = campos.get(campo);
-                    if (tipoFuente == null) {
-                        tipoFuente = "_";
-                    }
-                    // sacar los corchetes para ver si es arreglo
-                    String baseFuente = tipoFuente;
-                    boolean esArreglo = false;
-                    if (baseFuente.endsWith("[]")) {
-                        esArreglo = true;
-                        baseFuente = baseFuente.substring(0, baseFuente.length() - 2);
-                    }
-                    String tipoC = ctx.mapearTipoConClases(baseFuente);
-                    // los arreglos salen punteros para poder asignarlos
-                    // String tipoCViejo = ctx.mapearTipo(campos.get(campo));
-                    // if (tipoCViejo.endsWith("[]")) {
-                    //     String baseVieja = tipoCViejo.substring(0, tipoCViejo.length() - 2);
-                    //     salida.append("    ").append(baseVieja).append(" ").append(campo).append("[];\n");
-                    // } else {
-                    //     salida.append("    ").append(tipoCViejo).append(" ").append(campo).append(";\n");
-                    // }
-                    if (esArreglo) {
-                        salida.append("    ").append(tipoC).append("* ").append(campo).append(";\n");
-                    } else if (ctx.clases.contains(baseFuente)) {
-                        // las clases van puntero para vivir en heap
-                        salida.append("    ").append(tipoC).append(" ").append(campo).append(";\n");
-                    } else if (ctx.structs.containsKey(baseFuente)) {
-                        // los structs por valor con su nombre
-                        salida.append("    ").append("struct ").append(baseFuente).append(" ").append(campo).append(";\n");
-                    } else {
-                        salida.append("    ").append(tipoC).append(" ").append(campo).append(";\n");
-                    }
-                }
-            }
-            salida.append("};\n");
-        }
-        // agregar los prototipos de funciones
-        for (int i = 0; i < ctx.prototipos.size(); i++) {
-            salida.append(ctx.prototipos.get(i)).append(";\n");
-        }
-        // agregar las variables globales
-        for (Map.Entry<String, String> entrada : ctx.globales.entrySet()) {
-            salida.append(entrada.getValue()).append(" ").append(entrada.getKey()).append(";\n");
+        // agregar el leer si se uso
+        if (ctx.builtinsUsados.contains("leer")) {
+            salida.append("char* leer(void) { static char buf[256]; int c; while ((c = getchar()) == '\\n' || c == '\\r'); if (c == EOF) { buf[0] = '\\0'; } else { ungetc(c, stdin); if (!fgets(buf, sizeof(buf), stdin)) buf[0] = '\\0'; } buf[strcspn(buf, \"\\r\\n\")] = '\\0'; char* s = malloc(strlen(buf) + 1); strcpy(s, buf); return s; }\n");
         }
         // separar la cabecera del cuerpo con linea en blanco
-        if (ctx.builtinsUsados.isEmpty() == false || ctx.ordenStructs.isEmpty() == false || ctx.prototipos.isEmpty() == false || ctx.globales.isEmpty() == false) {
+        if (ctx.tablaCadenas.isEmpty() == false || this.prototipos.isEmpty() == false) {
+            salida.append("\n");
+        }
+        // agregar los prototipos
+        for (int i = 0; i < this.prototipos.size(); i++) {
+            salida.append(this.prototipos.get(i)).append(";\n");
+        }
+        // separar prototipos del cuerpo con linea en blanco
+        if (this.prototipos.isEmpty() == false) {
             salida.append("\n");
         }
         // agregar el cuerpo de las funciones
-        salida.append(cuerpo);
+        salida.append(this.cuerpo.toString());
         return salida.toString();
-    }
-
-    // iniciar el buffer de una funcion sin agregar la firma aun
-    private void iniciarFuncion(CuartetaResultado c) {
-        // marcar que ya se entro a una funcion
-        ctx.dentroDeFuncion = true;
-        // guardar el nombre de la funcion actual
-        ctx.funcionActual = c.getArg1();
-        // sacar la clase actual desde el inicio del nombre
-        String claseDetectada = ctx.claseDeFuncion(c.getArg1());
-        ctx.nombreClaseActual = "";
-        if (claseDetectada != null) {
-            ctx.nombreClaseActual = claseDetectada;
-        }
-        // guardar los tipos y el retorno del marcador
-        ctx.tiposParamsFuncion = c.getArg2();
-        ctx.tipoRetornoFuncion = c.getResultado();
-        // registrar el retorno conocido por nombre
-        if (c.getArg1() != null) {
-            ctx.retornosFuncion.put(c.getArg1(), c.getResultado());
-        }
-        // reiniciar las declaraciones con las globales
-        ctx.declaradas = new HashSet<>();
-        for (String global : ctx.globales.keySet()) {
-            ctx.declaradas.add(global);
-        }
-        // reiniciar los tipos conocidos con las globales
-        ctx.tiposDeclarados = new HashMap<>();
-        for (Map.Entry<String, String> entrada : ctx.globales.entrySet()) {
-            ctx.tiposDeclarados.put(entrada.getKey(), entrada.getValue());
-        }
-        // reiniciar el mapa de structs por ambito de funcion
-        ctx.structDeNombre = new HashMap<>();
-        // reiniciar los punteros locales de la funcion
-        ctx.punteros.clear();
-        // conservar los params pendientes porque preMain los necesita
-        // this.paramsPendientes = new ArrayList<>();
-        // this.tiposParamsPendientes = new ArrayList<>();
-        // crear el buffer del cuerpo y las listas de apoyo
-        ctx.bufferFuncion = new StringBuilder();
-        ctx.crudasFuncion = new ArrayList<>();
-        ctx.llamadasFuncion = new HashSet<>();
-        ctx.tiposParamsActuales = new HashMap<>();
-    }
-
-    // cerrar la funcion agregando la firma con nombres reales
-    private void terminarFuncion(StringBuilder cuerpo) {
-        // juntar los nombres llamados en el cuerpo
-        for (int i = 0; i < ctx.crudasFuncion.size(); i++) {
-            CuartetaResultado c = ctx.crudasFuncion.get(i);
-            // omitir cuartetas nulas
-            if (c == null) {
-                continue;
-            }
-            // guardar nombres de funciones y metodos llamados
-            if ("call".equals(c.getOperador()) || "call_method".equals(c.getOperador())) {
-                if (c.getArg1() != null) {
-                    ctx.llamadasFuncion.add(c.getArg1());
-                }
-            }
-        }
-        // juntar los posibles params en orden
-        List<String> identificadores = new ArrayList<>();
-        for (int i = 0; i < ctx.crudasFuncion.size(); i++) {
-            ctx.recolectarIdentificadores(ctx.crudasFuncion.get(i), identificadores);
-        }
-        // contar los parametros desde los tipos del marcador
-        int cantidadParams = ctx.contarParametros(ctx.tiposParamsFuncion);
-        // construir nombres y tipos de params en orden
-        List<String> nombresParams = new ArrayList<>();
-        List<String> tiposParamsC = new ArrayList<>();
-        // usar formato nuevo con nombres cuando trae dos puntos
-        if (ctx.contieneNombres(ctx.tiposParamsFuncion)) {
-            ctx.parsearParamsConNombres(ctx.tiposParamsFuncion, nombresParams, tiposParamsC);
-        } else {
-            // dividir los tipos por coma cuando existan
-            String[] partesTipos = ctx.dividirTipos(ctx.tiposParamsFuncion);
-            for (int i = 0; i < cantidadParams; i++) {
-                // extraer el tipo del parametro actual
-                String tipoParam = "int";
-                if (i < partesTipos.length) {
-                    tipoParam = ctx.mapearTipo(partesTipos[i].trim());
-                }
-                // usar el identificador real si se logro recoger
-                String nombreParam = "p" + (i + 1);
-                if (i < identificadores.size()) {
-                    nombreParam = identificadores.get(i);
-                }
-                nombresParams.add(nombreParam);
-                tiposParamsC.add(tipoParam);
-            }
-        }
-        // guardar los tipos por nombre para los builtins
-        for (int i = 0; i < nombresParams.size(); i++) {
-            ctx.tiposParamsActuales.put(nombresParams.get(i), tiposParamsC.get(i));
-        }
-        // agregar this como primer parametro en metodos de clase
-        String claseMetodo = ctx.claseDeFuncion(ctx.funcionActual);
-        if (claseMetodo != null) {
-            nombresParams.add(0, "this");
-            tiposParamsC.add(0, "struct " + claseMetodo + "*");
-            ctx.tiposParamsActuales.put("this", "struct " + claseMetodo + "*");
-        }
-        // marcar los params como declarados para no redeclararlos
-        for (int i = 0; i < nombresParams.size(); i++) {
-            ctx.declaradas.add(nombresParams.get(i));
-            ctx.tiposDeclarados.put(nombresParams.get(i), tiposParamsC.get(i));
-        }
-        // construir la firma con los nombres reales
-        String firma = ctx.firmaConListas(ctx.funcionActual, ctx.tipoRetornoFuncion, nombresParams, tiposParamsC);
-        // separar funciones con linea en blanco
-        if (ctx.primeraFuncionAgregada) {
-            cuerpo.append("\n");
-        }
-        ctx.primeraFuncionAgregada = true;
-        // agregar el prototipo si no existe
-        if (ctx.prototipos.contains(firma) == false) {
-            ctx.prototipos.add(firma);
-        }
-        // agregar la firma con llave de apertura al cuerpo
-        cuerpo.append(firma).append(" {\n");
-        // agregar las cuartetas previas traducidas al cuerpo
-        traducirRaws(ctx.preMain);
-        ctx.preMain = new ArrayList<>();
-        // limpiar params de preMain para no contaminar el cuerpo
-        ctx.limpiarParams();
-        traducirRaws(ctx.crudasFuncion);
-        // vaciar el cuerpo acumulado
-        cuerpo.append(ctx.bufferFuncion.toString());
-        // agregar retorno en main
-        if ("main".equals(ctx.funcionActual)) {
-            cuerpo.append("    return 0;\n}");
-        } else {
-            cuerpo.append("}");
-        }
-        // limpiar el estado de la funcion actual
-        ctx.funcionActual = "";
-        ctx.nombreClaseActual = "";
-        ctx.dentroDeFuncion = false;
-        ctx.bufferFuncion = null;
-        ctx.crudasFuncion = new ArrayList<>();
-        ctx.llamadasFuncion = new HashSet<>();
-        // agregar salto de linea final
-        cuerpo.append("\n");
-    }
-
-    // traducir una lista de cuartetas crudas al buffer de la funcion
-    private void traducirRaws(List<CuartetaResultado> raws) {
-        // recorrer cada cuarteta de la lista
-        for (int i = 0; i < raws.size(); i++) {
-            CuartetaResultado c = raws.get(i);
-            // omitir cuartetas nulas
-            if (c == null) {
-                continue;
-            }
-            // crear la cuarteta concreta segun el operador
-            CuartetaC cuarteta = crearCuarteta(c);
-            // marcar operadores desconocidos con comentario
-            String linea = null;
-            if (cuarteta != null) {
-                linea = cuarteta.obtenerCodigoC(ctx);
-            } else {
-                linea = "// cuarteta no soportada: " + c.getOperador();
-            }
-            // omitir lineas vacias como param
-            if (linea == null || linea.isEmpty()) {
-                continue;
-            }
-            // agregar labels sin indentacion al buffer
-            if (linea.endsWith(":;")) {
-                ctx.bufferFuncion.append(linea).append("\n");
-            } else {
-                ctx.bufferFuncion.append("    ").append(linea).append("\n");
-            }
-        }
-    }
-
-    // procesar una cuarteta fuera de funciones
-    private void procesarLineaGlobal(CuartetaResultado c) {
-        String operador = c.getOperador();
-        // marcar objetos creados con new para el heap
-        if ("new".equals(operador)) {
-            if (c.getArg1() != null && c.getResultado() != null) {
-                if (ctx.clases.contains(c.getArg1()) || ctx.structs.containsKey(c.getArg1())) {
-                    ctx.structDeNombre.put(c.getResultado(), c.getArg1());
-                    ctx.punteros.add(c.getResultado());
-                }
-            }
-            // guardar la cuarteta para agregarla al cuerpo despues
-            ctx.preMain.add(c);
-            return;
-        }
-        // mapear el resultado de new_struct a su struct
-        if ("new_struct".equals(operador)) {
-            if (c.getArg1() != null && ctx.structs.containsKey(c.getArg1()) && c.getResultado() != null) {
-                ctx.structDeNombre.put(c.getResultado(), c.getArg1());
-            }
-            // guardar la cuarteta para agregarla al cuerpo despues
-            ctx.preMain.add(c);
-            return;
-        }
-        // registrar destinos de asignacion como globales
-        if (":=".equals(operador)) {
-            // pasar el struct del valor al destino
-            if (c.getArg1() != null && c.getResultado() != null) {
-                String structOrigen = ctx.structDeNombre.get(c.getArg1());
-                if (structOrigen != null) {
-                    ctx.structDeNombre.put(c.getResultado(), structOrigen);
-                }
-            }
-            String destino = c.getResultado();
-            // ignorar destinos temporales o vacios
-            if (destino == null || destino.equals("_") || ctx.esTemporal(destino)) {
-                // guardar la cuarteta para agregarla al cuerpo despues
-                ctx.preMain.add(c);
-                return;
-            }
-            // registrar la global con su tipo si es nueva
-            if (ctx.globales.containsKey(destino) == false) {
-                // usar el tipo declarado de la global cuando viene en la cuarteta
-                // ctx.globales.put(destino, ctx.tipoGlobalPara(c.getArg1(), c.getTipoArg1()));
-                String tipoValorGlobal = c.getTipoArg1();
-                if (c.getTipoResultado() != null && c.getTipoResultado().equals("_") == false && c.getTipoResultado().isEmpty() == false) {
-                    tipoValorGlobal = c.getTipoResultado();
-                }
-                ctx.globales.put(destino, ctx.tipoGlobalPara(c.getArg1(), tipoValorGlobal));
-                ctx.declaradas.add(destino);
-            }
-        }
-        // guardar la cuarteta para agregarla al cuerpo en la siguiente funcion
-        ctx.preMain.add(c);
-        // omitir cualquier agregado directo fuera de funciones
     }
 }

@@ -1,21 +1,28 @@
 package org.jrg.service.compiler.cuartetaC;
 
-// clase base abstracta para la traduccion de cuartetas a codigo C
+// clase base abstracta para la traduccion de cuartetas a maquina Heap Stack
 public abstract class CuartetaC {
 
+    // operador de la cuarteta
     protected final String operador;
+    // primer argumento de la cuarteta
     protected final String arg1;
+    // segundo argumento de la cuarteta
     protected final String arg2;
+    // resultado de la cuarteta
     protected final String resultado;
+    // tipo del primer argumento
     protected final String tipoArg1;
+    // tipo del segundo argumento
     protected final String tipoArg2;
+    // tipo del resultado
     protected final String tipoResultado;
 
     /**
      * Crear una cuarteta con sus campos y sus tipos.
      */
     public CuartetaC(String operador, String arg1, String arg2, String resultado,
-                     String tipoArg1, String tipoArg2, String tipoResultado) {
+                  String tipoArg1, String tipoArg2, String tipoResultado) {
         // asignar los valores recibidos
         this.operador = operador;
         this.arg1 = arg1;
@@ -27,56 +34,35 @@ public abstract class CuartetaC {
     }
 
     /**
-     * Obtener la linea de codigo C para la cuarteta.
+     * Sacar las lineas de codigo de la cuarteta.
      */
     public abstract String obtenerCodigoC(ContextoTraduccion ctx);
 
     /**
-     * Obtener el operador de la cuarteta.
+     * Obtener el operador para clasificar.
      */
     public String getOperador() {
         return operador;
     }
 
     /**
-     * Obtener el primer argumento de la cuarteta.
+     * Obtener el primer argumento para inspeccionar.
      */
     public String getArg1() {
         return arg1;
     }
 
     /**
-     * Obtener el segundo argumento de la cuarteta.
+     * Obtener el segundo argumento para inspeccionar.
      */
     public String getArg2() {
         return arg2;
     }
 
     /**
-     * Obtener el resultado de la cuarteta.
+     * Obtener el resultado para inspeccionar.
      */
     public String getResultado() {
         return resultado;
-    }
-
-    /**
-     * Obtener el tipo del primer argumento.
-     */
-    public String getTipoArg1() {
-        return tipoArg1;
-    }
-
-    /**
-     * Obtener el tipo del segundo argumento.
-     */
-    public String getTipoArg2() {
-        return tipoArg2;
-    }
-
-    /**
-     * Obtener el tipo del resultado.
-     */
-    public String getTipoResultado() {
-        return tipoResultado;
     }
 }

@@ -19,7 +19,7 @@ programa
     ;
 
 seccion_estructuras
-    // permitir lineas en blanco entre el tag y las definiciones
+    // permitir lineas en blanco entre el tag y las definiciones :D
     // seccion_estructuras
     //     : ESTRUCTURAS_TAG definicion_struct*
     //     ;
@@ -72,10 +72,9 @@ atributo_struct
     // entero edad
     // cadena nombre
     // MiEstructura miEstructura
-    // tipo_dato tambien acepta el nombre de otra estructura, asi se anidan estructuras
-    : tipo_dato IDENTIFICADOR NEWLINE                                             # atributoSimple
+    // tipo_dato tambien acepta el nombre de otra estructura, asi se anidan estructuras :D
+    : tipo_dato IDENTIFICADOR NEWLINE                                              # atributoSimple
     // entero miArray[10]
-    // el tamano del arreglo debe ser una constante entera
     | tipo_dato IDENTIFICADOR CORCHETE_IZQ NUMERO_ENTERO CORCHETE_DER NEWLINE      # atributoArray
     ;
 
@@ -106,7 +105,7 @@ parametro
     // los arreglos siempre se pasan por referencia
     | CORCHETE_IZQ CORCHETE_DER tipo_dato IDENTIFICADOR                    # paramArray
     // {} MiEstructura miEstructura
-    // las estructuras siempre se pasan por referencia
+    // las estructuras siempre se pasan por referenciaaaa
     | LLAVE_IZQ LLAVE_DER IDENTIFICADOR IDENTIFICADOR                      # paramEstructura
     ;
 
@@ -158,13 +157,13 @@ declaracion_variable
     // caracter inicial = 'A'
     // Persona alumno1
     // Punto p1 = {10, 20, 85.5}
-    : tipo_dato IDENTIFICADOR (ASIGNACION expresion)?                                                          # declConTipoYValor
+    : tipo_dato IDENTIFICADOR (ASIGNACION expresion)?                                                                                    # declConTipoYValor
     // entero numeros[10]
-    | tipo_dato IDENTIFICADOR CORCHETE_IZQ expresion CORCHETE_DER                                              # declArraySinValores
+    | tipo_dato IDENTIFICADOR CORCHETE_IZQ expresion CORCHETE_DER                                                                        # declArraySinValores
     // entero numeros[5] = {10, 20, 30, 40, 50}
-    | tipo_dato IDENTIFICADOR CORCHETE_IZQ expresion CORCHETE_DER ASIGNACION LLAVE_IZQ lista_expresiones LLAVE_DER    # declArrayConValores
+    | tipo_dato IDENTIFICADOR CORCHETE_IZQ expresion CORCHETE_DER ASIGNACION LLAVE_IZQ lista_expresiones LLAVE_DER                       # declArrayConValores
     // entero matriz[3][3]
-    | tipo_dato IDENTIFICADOR CORCHETE_IZQ expresion CORCHETE_DER CORCHETE_IZQ expresion CORCHETE_DER          # declMatriz
+    | tipo_dato IDENTIFICADOR CORCHETE_IZQ expresion CORCHETE_DER CORCHETE_IZQ expresion CORCHETE_DER                                    # declMatriz
     // entero matriz[3][2] = {{1, 2}, {3, 4}, {5, 6}}
     | tipo_dato IDENTIFICADOR CORCHETE_IZQ expresion CORCHETE_DER CORCHETE_IZQ expresion CORCHETE_DER ASIGNACION LLAVE_IZQ fila_matriz (COMA fila_matriz)* LLAVE_DER   # declMatrizConValores
     ;
@@ -209,7 +208,6 @@ condicional
     //     imprimir("Codigo si tiene exactamente 18")
     // contrario
     //     imprimir("Codigo si es menor de edad")
-    // tanto "sino" como "contrario" son opcionales, "sino" puede repetirse varias veces
     : SI PAR_IZQ expresion PAR_DER ENTONCES bloque
       (SINO PAR_IZQ expresion PAR_DER ENTONCES bloque)*
       (CONTRARIO bloque)?                                                 # statementSi
@@ -234,7 +232,6 @@ seleccion
     //         x = 30
     //         romper
     // }
-    // a diferencia de si/sino/contrario, elegir siempre usa llaves
     :  ELEGIR PAR_IZQ expresion PAR_DER DOS_PUNTOS NEWLINE INDENT caso_seleccion+ caso_defecto? DEDENT   # statementElegir
     ;
 
@@ -268,15 +265,14 @@ ciclo
     //     contador++
     //     si(contador == 2) entonces
     //         continuar
-    | MIENTRAS PAR_IZQ expresion PAR_DER HACER bloque                                         # cicloMientras
+    | MIENTRAS PAR_IZQ expresion PAR_DER HACER bloque                                                   # cicloMientras
     // hacer:
     //     intentos++
     //     si(intentos == 4) entonces
     //         romper
     // mientras(intentos < 10)
     // | HACER DOS_PUNTOS bloque MIENTRAS PAR_IZQ expresion PAR_DER                                         # cicloHacer
-    // el salto final consume su linea para no dejar un NEWLINE colgado que rompe el bloque que sigue
-    | HACER DOS_PUNTOS bloque MIENTRAS PAR_IZQ expresion PAR_DER NEWLINE                               # cicloHacer
+    | HACER DOS_PUNTOS bloque MIENTRAS PAR_IZQ expresion PAR_DER NEWLINE                                # cicloHacer
     ;
 
 init_para
@@ -319,7 +315,7 @@ expresion
 
     // {10, 20, 30, 40, 50}
     // lista de valores usada para inicializar arreglos y estructuras
-    | LLAVE_IZQ lista_expresiones LLAVE_DER                                  # exprListaLiteral
+    | LLAVE_IZQ lista_expresiones LLAVE_DER                                 # exprListaLiteral
 
     // -3
     | RESTA expresion                                                       # exprNegativa
@@ -333,7 +329,6 @@ expresion
 
     // edad > 18
     // edad <= 18
-    // existen seis operadores relacionales en este lenguaje
     | expresion (IGUAL_QUE | DIFERENTE_QUE | MAYOR_QUE | MENOR_QUE | MAYOR_IGUAL | MENOR_IGUAL) expresion   # exprRelacional
 
     // a > 5 && b < 10
@@ -341,7 +336,7 @@ expresion
     // a > 20 || b > 0
     | expresion OR expresion                                                 # exprOr
 
-    | valor_primitivo                                                       # exprPrimitivo
+    | valor_primitivo                                                        # exprPrimitivo
     ;
 
 valor_primitivo
@@ -482,14 +477,12 @@ COMENTARIO_LINEA
     : '//' ~[\r\n]* -> channel(HIDDEN)
     ;
 
-// NEWLINE marca el final de cada instruccion y alimenta el calculo de
-// INDENT y DEDENT en la capa previa al lexer
+// NEWLINE marca el final de cada instruccion y alimenta el calculo de INDENT y DEDENT en la capa previa al lexer
 NEWLINE
     : ('\r'? '\n')+
     ;
 
-// solo se descartan los espacios horizontales, los saltos de linea
-// se conservan porque son significativos para la indentacion
+// solo se descartan los espacios horizontales, los saltos de linea se conservan porque sirven para la indentacion :D
 ESPACIOS_BLANCO
     : [ \t]+ -> skip
     ;

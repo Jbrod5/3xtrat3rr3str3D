@@ -2,150 +2,149 @@ package org.jrg.service.compiler.cuartetaC.implementacion;
 
 import org.jrg.service.compiler.cuartetaC.ContextoTraduccion;
 import org.jrg.service.compiler.cuartetaC.CuartetaC;
+import org.jrg.service.compiler.cuartetaC.SlotHS;
 
-// traducir llamadas a funcion y a metodo a C
+// pasar args por pila llamar y recoger retorno en AX
 public class CuartetaLlamada extends CuartetaC {
 
     /**
-     * Crear una cuarteta de llamada con operador explicito.
+     * Crear una llamada con operador explicito.
      */
     public CuartetaLlamada(String operador, String arg1, String arg2, String resultado,
-                            String tipoArg1, String tipoArg2, String tipoResultado) {
+                  String tipoArg1, String tipoArg2, String tipoResultado) {
         // va al base
         super(operador, arg1, arg2, resultado, tipoArg1, tipoArg2, tipoResultado);
     }
 
     /**
-     * Crear una cuarteta de llamada con operador call por defecto.
-     */
-    public CuartetaLlamada(String arg1, String arg2, String resultado,
-                            String tipoArg1, String tipoArg2, String tipoResultado) {
-        // cae al base con operador fijo
-        super("call", arg1, arg2, resultado, tipoArg1, tipoArg2, tipoResultado);
-    }
-
-    /**
-     * Obtener la linea de codigo C para la cuarteta.
+     * Sacar las lineas de codigo de la cuarteta.
      */
     @Override
     public String obtenerCodigoC(ContextoTraduccion ctx) {
-        // traducir llamadas a metodo con receptor como primer arg
-        if ("call_method".equals(operador)) {
-            String metodo = arg1;
-            // resolver la clase desde el tipo del objeto receptor
-            String receptorTipo = null;
-            if (ctx.paramsPendientes.isEmpty() == false && ctx.tiposParamsPendientes.isEmpty() == false) {
-                receptorTipo = ctx.tiposParamsPendientes.get(0);
-            }
-            // usar la clase del objeto cuando el param trae desconocido
-            if (receptorTipo == null || ctx.clases.contains(receptorTipo) == false) {
-                if (ctx.paramsPendientes.isEmpty() == false) {
-                    String claseObjeto = ctx.claseDeObjeto(ctx.paramsPendientes.get(0));
-                    if (claseObjeto != null) {
-                        receptorTipo = claseObjeto;
-                    }
-                }
-            }
-            // calificar el metodo con la clase del receptor
-            String nombreLlamada = metodo;
-            if (receptorTipo != null && ctx.clases.contains(receptorTipo) && metodo != null && metodo.indexOf('_') < 0) {
-                nombreLlamada = receptorTipo + "_" + metodo;
-            }
-            // poner _N sin contar el receptor si hay sobrecarga
-            int numeroReales = ctx.paramsPendientes.size() - 1;
-            if (numeroReales < 0) {
-                numeroReales = 0;
-            }
-            if (numeroReales > 0 && nombreLlamada.equals(metodo) == false) {
-                nombreLlamada = nombreLlamada + "_" + numeroReales;
-            }
-            String argsMetodo = ctx.unirParams();
-            ctx.limpiarParams();
-            // agregar llamada directa para metodos void conocidos al cuerpo
-            String retornoConocido = ctx.retornosFuncion.get(nombreLlamada);
-            if ("void".equals(retornoConocido)) {
-                return nombreLlamada + "(" + argsMetodo + ");";
-            }
-            // usar el retorno conocido cuando trae tipo valido
-            String tipoCall = ctx.mapearTipo(tipoResultado);
-            if (retornoConocido != null && retornoConocido.isEmpty() == false && retornoConocido.equals("_") == false) {
-                tipoCall = ctx.mapearTipoConClases(retornoConocido);
-            }
-            return ctx.ladoIzquierdo(resultado, tipoCall) + " = " + nombreLlamada + "(" + argsMetodo + ");";
-        }
-        // traducir llamadas a funcion o builtin
-        return traducirLlamada(ctx);
-    }
-
-    // traducir una llamada a funcion o builtin
-    private String traducirLlamada(ContextoTraduccion ctx) {
         // copiar el nombre para operar sin mutar el campo
         String nombre = arg1;
-        // unir los params pendientes separados por coma
-        String args = ctx.unirParams();
-        // resolver builtins imprimir println y print por tipo
+        // atender impresion con su forma de maquina
         if ("imprimir".equals(nombre) || "println".equals(nombre) || "print".equals(nombre)) {
-            String variante = ctx.varianteBuiltin(nombre);
+            String salida = "";
+            if (ctx.paramsPendientes.isEmpty()) {
+                salida = "printf(\"\\n\");\n    fflush(stdout);";
+            } else {
+                // resolver el unico argumento pendiente
+                String valor = ctx.expresionOperando(ctx.paramsPendientes.get(0));
+                String tipo0 = ctx.tiposParamsPendientes.isEmpty() ? "_" : ctx.tiposParamsPendientes.get(0);
+                String arreglo = ctx.arregloDe(ctx.paramsPendientes.get(0));
+                if (arreglo == null) {
+                    arreglo = ctx.arregloPara(tipo0);
+                }
+                String formato = "%d";
+                String reg = "AX_INT";
+                if ("stackstring".equals(arreglo)) {
+                    formato = "%s";
+                    reg = "AX_STRING";
+                } else if ("stackfloat".equals(arreglo)) {
+                    formato = "%f";
+                    reg = "AX_FLOAT";
+                } else if ("stackchar".equals(arreglo)) {
+                    formato = "%c";
+                    reg = "AX_CHAR";
+                } else if ("stackboolean".equals(arreglo)) {
+                    formato = "%d";
+                    reg = "AX_BOOLEAN";
+                }
+                salida = reg + " = " + valor + ";\n    printf(\"" + formato + "\\n\", " + reg + ");\n    fflush(stdout);";
+            }
             ctx.limpiarParams();
-            return variante + "(" + args + ");";
+            return salida;
         }
-        // registrar leer y readln para que salga su definicion
+        // atender leer y readln con su builtin
         if ("leer".equals(nombre) || "readln".equals(nombre)) {
             if (ctx.builtinsUsados.contains("leer") == false) {
                 ctx.builtinsUsados.add("leer");
             }
             ctx.limpiarParams();
             // leer siempre devuelve texto
-            return ctx.ladoIzquierdo(resultado, "char*") + " = leer();";
+            SlotHS slot = ctx.redeclararSlot(resultado, "cadena");
+            String destino = slot.getArreglo() + "[fp + " + slot.getIndice() + "]";
+            return destino + " = leer();";
         }
-        // contar args para el nombre con numero antes de limpiar
-        int numeroArgs = ctx.paramsPendientes.size();
-        ctx.limpiarParams();
+        // pasar cada pendiente empujando la pila
+        StringBuilder lineas = new StringBuilder();
         // calificar llamadas a metodos de la clase actual sin receptor
         String nombreLlamada = nombre;
         boolean calificado = false;
-        if (nombre != null && nombre.indexOf('_') < 0) {
-            String claseActual = ctx.claseDeFuncion(ctx.funcionActual);
-            if (claseActual != null) {
-                String candidato = claseActual + "_" + nombre;
-                if (numeroArgs > 0) {
-                    candidato = candidato + "_" + numeroArgs;
-                }
-                if (ctx.funcionesConocidas.contains(candidato)) {
-                    nombreLlamada = candidato;
-                    calificado = true;
-                }
+        if ("call".equals(operador) && nombre != null && nombre.indexOf('_') < 0 && ctx.nombreClaseActual.isEmpty() == false) {
+            String candidato = ctx.nombreClaseActual + "_" + nombre;
+            int numeroArgs = ctx.paramsPendientes.size();
+            if (numeroArgs > 0) {
+                candidato = candidato + "_" + numeroArgs;
+            }
+            if (ctx.funcionesConocidas.contains(candidato)) {
+                nombreLlamada = candidato;
+                calificado = true;
             }
         }
-        // agregar el receptor implicito cuando se califico a metodo
+        // pasar el this primero cuando se califico a metodo
         if (calificado) {
-            if (args.isEmpty()) {
-                args = "this";
-            } else {
-                args = "this, " + args;
+            String baseThis = ctx.expresionOperando("this");
+            lineas.append("sptr = sptr + 1;\n    ");
+            lineas.append("stackinteger[sptr] = ").append(baseThis).append(";\n    ");
+        }
+        for (int i = 0; i < ctx.paramsPendientes.size(); i++) {
+            String valor = ctx.expresionOperando(ctx.paramsPendientes.get(i));
+            String tipoP = ctx.tiposParamsPendientes.get(i);
+            String arreglo = ctx.arregloDe(ctx.paramsPendientes.get(i));
+            if (arreglo == null) {
+                arreglo = ctx.arregloPara(tipoP);
+            }
+            lineas.append("sptr = sptr + 1;\n    ");
+            lineas.append(arreglo).append("[sptr] = ").append(valor).append(";\n    ");
+        }
+        // calificar con el receptor cuando trae metodo
+        if ("call_method".equals(operador)) {
+            String receptorTipo = null;
+            if (ctx.tiposParamsPendientes.isEmpty() == false) {
+                receptorTipo = ctx.tiposParamsPendientes.get(0);
+            }
+            // buscar el struct base del receptor cuando el tipo viene vacio
+            if ((receptorTipo == null || ctx.structs.containsKey(receptorTipo) == false) && ctx.paramsPendientes.isEmpty() == false) {
+                String baseObj = ctx.mapaBases.get(ctx.paramsPendientes.get(0));
+                if (baseObj != null && ctx.structs.containsKey(baseObj)) {
+                    receptorTipo = baseObj;
+                }
+            }
+            if (receptorTipo != null && ctx.structs.containsKey(receptorTipo)) {
+                nombreLlamada = receptorTipo + "_" + nombre;
             }
         }
-        // detectar llamadas sin retorno por el marcador
-        boolean esVoid = "void".equals(tipoResultado);
-        // detectar llamadas a funciones void ya definidas
-        if (esVoid == false) {
-            String retornoConocido = ctx.retornosFuncion.get(nombreLlamada);
-            boolean tipoDesconocido = tipoResultado == null || tipoResultado.equals("_");
-            if ("void".equals(retornoConocido) && tipoDesconocido) {
-                esVoid = true;
+        // contar args reales sin receptor para el nombre con numero
+        int numeroReales = ctx.paramsPendientes.size();
+        if ("call_method".equals(operador) && numeroReales > 0) {
+            numeroReales = numeroReales - 1;
+        }
+        if (numeroReales > 0 && nombreLlamada.equals(nombre) == false) {
+            String conNumero = nombreLlamada + "_" + numeroReales;
+            if (ctx.funcionesConocidas.contains(conNumero)) {
+                nombreLlamada = conNumero;
             }
         }
-        // agregar llamada sin retorno para void al cuerpo
-        if (esVoid) {
-            return nombreLlamada + "(" + args + ");";
+        // limpiar los pendientes antes de seguir
+        ctx.limpiarParams();
+        // llamar sin guardar cuando no hay destino
+        if (resultado == null || resultado.isEmpty() || resultado.equals("_")) {
+            lineas.append(nombreLlamada).append("();");
+            return lineas.toString();
         }
-        // usar el retorno conocido cuando trae tipo valido
-        String tipo = ctx.mapearTipo(tipoResultado);
-        String retornoConocido = ctx.retornosFuncion.get(nombreLlamada);
-        if (retornoConocido != null && retornoConocido.isEmpty() == false && retornoConocido.equals("_") == false) {
-            tipo = ctx.mapearTipoConClases(retornoConocido);
+        // declarar el destino con el retorno conocido si hay
+        String tipoRet = tipoResultado;
+        String conocido = ctx.retornosFuncion.get(nombreLlamada);
+        if (conocido != null && conocido.isEmpty() == false && conocido.equals("_") == false) {
+            tipoRet = conocido;
         }
-        // declarar el destino con el tipo del retorno
-        return ctx.prefijoDeclaracion(resultado, tipo) + " = " + nombreLlamada + "(" + args + ");";
+        SlotHS slot = ctx.redeclararSlot(resultado, tipoRet);
+        // llamar y recoger el retorno desde AX
+        String reg = ctx.registroPara(slot.getArreglo());
+        lineas.append(nombreLlamada).append("();\n    ");
+        lineas.append(slot.getArreglo()).append("[fp + ").append(String.valueOf(slot.getIndice())).append("] = ").append(reg).append(";");
+        return lineas.toString();
     }
 }

@@ -2,42 +2,51 @@ package org.jrg.service.compiler.cuartetaC.implementacion;
 
 import org.jrg.service.compiler.cuartetaC.ContextoTraduccion;
 import org.jrg.service.compiler.cuartetaC.CuartetaC;
+import org.jrg.service.compiler.cuartetaC.SlotHS;
 
-// traducir un acceso a miembro con flecha para punteros a C
+// leer un campo por offset desde la base del objeto
 public class CuartetaAccesoMiembro extends CuartetaC {
 
     /**
-     * Crear una cuarteta de acceso a miembro con operador explicito.
+     * Crear un acceso a miembro con operador explicito.
      */
     public CuartetaAccesoMiembro(String operador, String arg1, String arg2, String resultado,
-                                  String tipoArg1, String tipoArg2, String tipoResultado) {
+                           String tipoArg1, String tipoArg2, String tipoResultado) {
         // va al base
         super(operador, arg1, arg2, resultado, tipoArg1, tipoArg2, tipoResultado);
     }
 
     /**
-     * Crear una cuarteta de acceso a miembro con operador fijo.
-     */
-    public CuartetaAccesoMiembro(String arg1, String arg2, String resultado,
-                                  String tipoArg1, String tipoArg2, String tipoResultado) {
-        // cae al base con operador fijo
-        super(".", arg1, arg2, resultado, tipoArg1, tipoArg2, tipoResultado);
-    }
-
-    /**
-     * Obtener la linea de codigo C para la cuarteta.
+     * Sacar las lineas de codigo de la cuarteta.
      */
     @Override
     public String obtenerCodigoC(ContextoTraduccion ctx) {
-        // usar punto por defecto para structs por valor
-        String acceso = ".";
-        // usar flecha cuando el objeto es puntero a heap
-        if (ctx.esPuntero(arg1)) {
-            acceso = "->";
+        // omitir destinos sin nombre valido
+        if (resultado == null || resultado.isEmpty() || resultado.equals("_")) {
+            return "";
         }
-        // resolver el tipo del miembro desde la clase del objeto
-        String tipo = ctx.tipoMiembro(arg1, arg2, tipoResultado);
-        // construir la lectura del miembro con su acceso
-        return ctx.ladoIzquierdo(resultado, tipo) + " = " + ctx.crearValor(arg1).obtenerCodigoC(ctx) + acceso + arg2 + ";";
+        // resolver el struct duenio del objeto
+        String structNombre = ctx.baseDe(arg1);
+        // buscar el tipo fuente del campo
+        String tipoFuente = null;
+        int offset = -1;
+        if (structNombre != null && arg2 != null) {
+            offset = ctx.offsetDe(structNombre, arg2);
+            if (offset >= 0 && ctx.structs.get(structNombre) != null) {
+                tipoFuente = ctx.structs.get(structNombre).get(arg2);
+            }
+        }
+        // marcar sin layout cuando no se conoce el campo
+        if (offset < 0) {
+            SlotHS slotMal = ctx.redeclararSlot(resultado, "entero");
+            String destinoMal = slotMal.getArreglo() + "[fp + " + slotMal.getIndice() + "]";
+            return "// sin layout para " + arg2 + ";\n    " + destinoMal + " = 0;";
+        }
+        // declarar el destino con el tipo del campo
+        SlotHS slot = ctx.redeclararSlot(resultado, tipoFuente);
+        // leer del heap con base mas offset
+        String base = ctx.expresionOperando(arg1);
+        String destino = slot.getArreglo() + "[fp + " + slot.getIndice() + "]";
+        return destino + " = " + ctx.arregloHeapPara(tipoFuente) + "[" + base + " + " + offset + "];";
     }
 }

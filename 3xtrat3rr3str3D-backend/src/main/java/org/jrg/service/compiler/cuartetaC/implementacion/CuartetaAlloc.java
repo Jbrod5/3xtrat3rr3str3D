@@ -2,45 +2,38 @@ package org.jrg.service.compiler.cuartetaC.implementacion;
 
 import org.jrg.service.compiler.cuartetaC.ContextoTraduccion;
 import org.jrg.service.compiler.cuartetaC.CuartetaC;
+import org.jrg.service.compiler.cuartetaC.SlotHS;
 
-// traducir una reserva de memoria a C
+// reservar un bloque en heap con base en hptr
 public class CuartetaAlloc extends CuartetaC {
 
     /**
-     * Crear una cuarteta de reserva con operador explicito.
+     * Crear una reserva con operador explicito.
      */
     public CuartetaAlloc(String operador, String arg1, String arg2, String resultado,
-                          String tipoArg1, String tipoArg2, String tipoResultado) {
-        // usar el constructor base
+                   String tipoArg1, String tipoArg2, String tipoResultado) {
         super(operador, arg1, arg2, resultado, tipoArg1, tipoArg2, tipoResultado);
     }
 
     /**
-     * Crear una cuarteta de reserva con operador fijo.
-     */
-    public CuartetaAlloc(String arg1, String arg2, String resultado,
-                          String tipoArg1, String tipoArg2, String tipoResultado) {
-        super("alloc", arg1, arg2, resultado, tipoArg1, tipoArg2, tipoResultado);
-    }
-
-    /**
-     * Obtener la linea de codigo C para la cuarteta.
+     * Sacar las lineas de codigo de la cuarteta.
      */
     @Override
     public String obtenerCodigoC(ContextoTraduccion ctx) {
-        // mapear el tipo base del arreglo a C
-        // String tipo = ctx.mapearTipo(arg1);
-        // usar clases para que los arreglos de objetos salgan punteros
-        String tipo = ctx.mapearTipoConClases(arg1);
-        // marcar el arreglo como duenio del struct base
-        if (arg1 != null && resultado != null && ctx.structs.containsKey(arg1)) {
-            ctx.structDeNombre.put(resultado, arg1);
+        // omitir destinos sin nombre valido
+        if (resultado == null || resultado.isEmpty() || resultado.equals("_")) {
+            return "";
         }
-        // marcar puntero cuando el base es una clase en heap
-        if (arg1 != null && resultado != null && ctx.clases.contains(arg1)) {
-            ctx.punteros.add(resultado);
+        // resolver la dimension a expresion
+        String dim = ctx.expresionOperando(arg2);
+        // declarar el destino como base entera
+        SlotHS slot = ctx.declararSlot(resultado, "entero");
+        // recordar el struct base del arreglo si trae
+        if (arg1 != null && arg1.isEmpty() == false && arg1.equals("_") == false) {
+            ctx.mapaBases.put(resultado, arg1);
         }
-        // construir la reserva con malloc y dimension protegida
-        return ctx.prefijoDeclaracion(resultado, tipo + "*") + " = malloc(sizeof(" + tipo + ") * " + ctx.expresionDimension(arg2) + ");";
+        // tomar la base actual y avanzar el puntero
+        String destino = slot.getArreglo() + "[fp + " + slot.getIndice() + "]";
+        return destino + " = hptr;\n    hptr = hptr + " + dim + ";";
     }
 }

@@ -33,7 +33,6 @@ seccion_global_variables
     // VARIABILES >
     //     esto edad : numerus 20;
     //     esto cifrado : falsus;
-    // la seccion completa es opcional
     : VARIABILES MAYOR_QUE declaracion_variable*
     ;
 
@@ -101,7 +100,7 @@ expresion
     | variable_asignable DECREMENTO                                # exprPostDecremento
 
     // {"Valeria", 25, {"Avenida Central", 500}}
-    // lista de valores usada para inicializar estructuras y objetos
+    // lista de valores usada para inicializar estructuras y objetosss
     | LLAVE_IZQ lista_expresiones LLAVE_DER                        # exprListaLiteral
 
     // -3
@@ -148,7 +147,6 @@ lista_expresiones
 lista_atributos_instancia
     // "Valeria", 25, {"Avenida Central", 500}
     // nombre: "Valeria", edad: 25
-    // un mismo literal de instancia puede mezclar campos con nombre y campos por posicion
     : atributo_instancia (COMA atributo_instancia)* COMA?
     ;
 
@@ -172,7 +170,6 @@ declaracion_variable
     // esto mi_direccion : Direccion {"Calle Real", 42};
     // esto ciudadano : Persona {"Valeria", 25, {"Avenida Central", 500}};
     // esto ciudadano2 : Persona {nombre: "Valeria", edad: 25};
-    // los valores pueden ir por posicion o indicando el nombre del campo, incluso mezclados
     | ESTO IDENTIFICADOR DOS_PUNTOS IDENTIFICADOR LLAVE_IZQ lista_atributos_instancia LLAVE_DER PUNTO_Y_COMA                          # declEstructuraConValores
 
     // esto edad : numerus 20;
@@ -190,7 +187,7 @@ declaracion_variable
     | SERIES IDENTIFICADOR CORCHETE_IZQ expresion CORCHETE_DER DOS_PUNTOS tipo_dato LLAVE_IZQ lista_expresiones LLAVE_DER PUNTO_Y_COMA   # declArrayConDatos
 
     // series resistencia[3] : Persona;
-    // arreglo de estructuras u objetos importados, sin inicializar
+    // arreglo de estructuras u objetos importados sin inicializar
     | SERIES IDENTIFICADOR CORCHETE_IZQ expresion CORCHETE_DER DOS_PUNTOS IDENTIFICADOR PUNTO_Y_COMA                                 # declArrayEstructura
 
     // series matriz[2][3] : numerus;
@@ -298,7 +295,6 @@ instruccion_impresion
     // >> "Hola comandante!" ;
     // >> "Bienvenido" >> comandante ;
     // : IMPRIMIR elemento_imprimir (IMPRIMIR elemento_imprimir)* PUNTO_Y_COMA                 # impresionEncadenada
-    // el punto y coma al final de imprimir es opcional
     : IMPRIMIR elemento_imprimir (IMPRIMIR elemento_imprimir)* PUNTO_Y_COMA?               # impresionEncadenada
     ;
 

@@ -3,33 +3,26 @@ package org.jrg.service.compiler.cuartetaC.implementacion;
 import org.jrg.service.compiler.cuartetaC.ContextoTraduccion;
 import org.jrg.service.compiler.cuartetaC.CuartetaC;
 
-// traducir un salto condicional a C
+// saltar a una etiqueta si la condicion es falsa
 public class CuartetaIfFalse extends CuartetaC {
 
     /**
-     * Crear una cuarteta de salto condicional con operador explicito.
+     * Crear un salto condicional con operador explicito.
      */
     public CuartetaIfFalse(String operador, String arg1, String arg2, String resultado,
-                            String tipoArg1, String tipoArg2, String tipoResultado) {
-        // usar el constructor base
+                     String tipoArg1, String tipoArg2, String tipoResultado) {
+        // va al base
         super(operador, arg1, arg2, resultado, tipoArg1, tipoArg2, tipoResultado);
     }
 
     /**
-     * Crear una cuarteta de salto condicional con operador fijo.
-     */
-    public CuartetaIfFalse(String arg1, String arg2, String resultado,
-                            String tipoArg1, String tipoArg2, String tipoResultado) {
-        // usar el base con operador fijo
-        super("if_false", arg1, arg2, resultado, tipoArg1, tipoArg2, tipoResultado);
-    }
-
-    /**
-     * Obtener la linea de codigo C para la cuarteta.
+     * Sacar las lineas de codigo de la cuarteta.
      */
     @Override
     public String obtenerCodigoC(ContextoTraduccion ctx) {
-        // construir el salto cuando la condicion es falsa
-        return "if (!" + ctx.crearValor(arg1).obtenerCodigoC(ctx) + ") goto " + arg2 + ";";
+        // resolver la condicion a expresion
+        String cond = ctx.expresionOperando(arg1);
+        // saltar a la etiqueta si es falsa
+        return "AX_BOOLEAN = " + cond + ";\n    if (!AX_BOOLEAN) goto " + arg2 + ";";
     }
 }

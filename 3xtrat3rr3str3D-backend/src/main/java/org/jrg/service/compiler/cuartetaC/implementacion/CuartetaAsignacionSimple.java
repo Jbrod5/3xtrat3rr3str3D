@@ -1,92 +1,85 @@
 package org.jrg.service.compiler.cuartetaC.implementacion;
 
+import java.util.Map;
 import org.jrg.service.compiler.cuartetaC.ContextoTraduccion;
 import org.jrg.service.compiler.cuartetaC.CuartetaC;
+import org.jrg.service.compiler.cuartetaC.SlotHS;
 
-// traducir una asignacion simple a C
+// guardar un valor en el slot del destino
 public class CuartetaAsignacionSimple extends CuartetaC {
 
     /**
-     * Crear una cuarteta de asignacion simple con operador explicito.
+     * Crear una asignacion con operador explicito.
      */
     public CuartetaAsignacionSimple(String operador, String arg1, String arg2, String resultado,
-                                     String tipoArg1, String tipoArg2, String tipoResultado) {
+                        String tipoArg1, String tipoArg2, String tipoResultado) {
         // va al base
         super(operador, arg1, arg2, resultado, tipoArg1, tipoArg2, tipoResultado);
     }
 
     /**
-     * Crear una cuarteta de asignacion simple con operador fijo.
-     */
-    public CuartetaAsignacionSimple(String arg1, String arg2, String resultado,
-                                     String tipoArg1, String tipoArg2, String tipoResultado) {
-        // cae al base con operador fijo
-        super(":=", arg1, arg2, resultado, tipoArg1, tipoArg2, tipoResultado);
-    }
-
-    /**
-     * Obtener la linea de codigo C para la cuarteta.
+     * Sacar las lineas de codigo de la cuarteta.
      */
     @Override
     public String obtenerCodigoC(ContextoTraduccion ctx) {
-        // copiar el destino para operar sin mutar el campo
-        String destino = resultado;
-        // iniciar la linea sin declaracion por defecto
-        String linea = "";
+        // omitir destinos sin nombre valido
+        if (resultado == null || resultado.isEmpty() || resultado.equals("_")) {
+            return "";
+        }
+        // pasar el struct base a la variable para accesos encadenados
+        if (arg1 != null && resultado.contains(".") == false) {
+            String baseOrigen = ctx.mapaBases.get(arg1);
+            if (baseOrigen != null) {
+                ctx.mapaBases.put(resultado, baseOrigen);
+            }
+        }
         // escribir en miembro con punto cuando el destino trae objeto
-        if (destino != null && destino.contains(".")) {
-            int corte = destino.indexOf('.');
-            String objetoDest = destino.substring(0, corte).trim();
-            String campoDest = destino.substring(corte + 1).trim();
-            String accesoDest = ".";
-            if (ctx.esPuntero(objetoDest)) {
-                accesoDest = "->";
-            }
-            // declarar el objeto si aun no existe y no es campo ni this
-            String declObj = "";
-            if (ctx.esPuntero(objetoDest) == false && "this".equals(objetoDest) == false && ctx.declaradas.contains(objetoDest) == false && ctx.globales.containsKey(objetoDest) == false && ctx.esCampoActual(objetoDest) == false) {
-                String structAdivinado = ctx.structPorCampo(campoDest);
-                if (structAdivinado != null) {
-                    declObj = "struct " + structAdivinado + " " + objetoDest + ";\n    ";
-                    ctx.declaradas.add(objetoDest);
-                    ctx.tiposDeclarados.put(objetoDest, "struct " + structAdivinado);
-                    ctx.structDeNombre.put(objetoDest, structAdivinado);
+        if (resultado.contains(".")) {
+            int corte = resultado.indexOf('.');
+            String objetoDest = resultado.substring(0, corte).trim();
+            String campoDest = resultado.substring(corte + 1).trim();
+            // resolver el struct duenio del objeto
+            String structDest = ctx.baseDe(objetoDest);
+            // buscar el tipo fuente del campo
+            String tipoFuente = null;
+            int offset = -1;
+            if (structDest != null) {
+                offset = ctx.offsetDe(structDest, campoDest);
+                if (offset >= 0 && ctx.structs.get(structDest) != null) {
+                    tipoFuente = ctx.structs.get(structDest).get(campoDest);
                 }
             }
-            return declObj + ctx.crearValor(objetoDest).obtenerCodigoC(ctx) + accesoDest + campoDest + " = " + ctx.crearValor(arg1).obtenerCodigoC(ctx) + ";";
+            // marcar sin layout cuando no se conoce el campo
+            if (offset < 0) {
+                return "// sin layout para " + campoDest + ";";
+            }
+            // escribir en el heap con base mas offset
+            String base = ctx.expresionOperando(objetoDest);
+            String valor = ctx.expresionOperando(arg1);
+            return ctx.arregloHeapPara(tipoFuente) + "[" + base + " + " + offset + "] = " + valor + ";";
         }
-        // pasar el struct del valor al destino
-        if (arg1 != null && destino != null) {
-            String structOrigen = ctx.structDeNombre.get(arg1);
-            if (structOrigen != null) {
-                ctx.structDeNombre.put(destino, structOrigen);
-                // pasar la marca de puntero si viene de heap
-                if (ctx.punteros.contains(arg1)) {
-                    ctx.punteros.add(destino);
+        // escribir en el heap cuando el destino es campo sin slot
+        if (ctx.slots.containsKey(resultado) == false && ctx.nombreClaseActual != null && ctx.nombreClaseActual.isEmpty() == false) {
+            Map<String, String> campos = ctx.structs.get(ctx.nombreClaseActual);
+            if (campos != null && campos.containsKey(resultado)) {
+                String tipoCampo = campos.get(resultado);
+                int off = ctx.offsetDe(ctx.nombreClaseActual, resultado);
+                if (off >= 0) {
+                    // resolver la base del this actual
+                    String valor = ctx.expresionOperando("this");
+                    return ctx.arregloHeapPara(tipoCampo) + "[" + valor + " + " + off + "] = " + ctx.expresionOperando(arg1) + ";";
                 }
             }
         }
-        // escribir en el campo con this sin declarar nada
-        if (ctx.esCampoActual(destino)) {
-            return "this->" + destino + " = " + ctx.crearValor(arg1).obtenerCodigoC(ctx) + ";";
+        // declarar el destino con el tipo del resultado si trae
+        String tipoDestino = tipoResultado;
+        if (tipoDestino == null || tipoDestino.isEmpty() || tipoDestino.equals("_")) {
+            tipoDestino = tipoArg1;
         }
-        // declarar la variable si aun no existe
-        if (destino != null && ctx.declaradas.contains(destino) == false) {
-            // usar el tipo declarado cuando la cuarteta lo trae
-            // String tipo = ctx.tipoDestinoPara(destino, arg1, tipoArg1);
-            String tipoValorDestino = tipoArg1;
-            if (tipoResultado != null && tipoResultado.equals("_") == false && tipoResultado.isEmpty() == false) {
-                tipoValorDestino = tipoResultado;
-            }
-            String tipo = ctx.tipoDestinoPara(destino, arg1, tipoValorDestino);
-            linea = tipo + " " + destino + ";\n    ";
-            ctx.declaradas.add(destino);
-            ctx.tiposDeclarados.put(destino, tipo);
-        }
-        // omitir asignaciones sin destino valido
-        if (destino == null) {
-            return linea;
-        }
-        return linea + destino + " = " + ctx.crearValor(arg1).obtenerCodigoC(ctx) + ";";
+        SlotHS slot = ctx.declararSlot(resultado, tipoDestino);
+        // resolver el valor del origen
+        String valor = ctx.expresionOperando(arg1);
+        // guardar en su arreglo con su direccion
+        return slot.getArreglo() + "[fp + " + slot.getIndice() + "] = " + valor + ";";
     }
 }

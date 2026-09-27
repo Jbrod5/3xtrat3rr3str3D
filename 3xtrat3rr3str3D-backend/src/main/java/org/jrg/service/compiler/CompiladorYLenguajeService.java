@@ -344,4 +344,5 @@ public class CompiladorYLenguajeService {
         }
         return construirResultado(recolectorPedido, arboles.get(indicePedido), "", "", simbolos, tipos, new ArrayList<>(), cuartetas, codigoC, resultadoGcc);
     }
+
 }

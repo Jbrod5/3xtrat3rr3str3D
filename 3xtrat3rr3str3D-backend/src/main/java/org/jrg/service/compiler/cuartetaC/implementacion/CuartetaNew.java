@@ -2,81 +2,77 @@ package org.jrg.service.compiler.cuartetaC.implementacion;
 
 import org.jrg.service.compiler.cuartetaC.ContextoTraduccion;
 import org.jrg.service.compiler.cuartetaC.CuartetaC;
+import org.jrg.service.compiler.cuartetaC.SlotHS;
 
-// traducir instanciacion de objetos y structs a C
+// instanciar un struct u objeto con campos en heap
 public class CuartetaNew extends CuartetaC {
 
     /**
-     * Crear una cuarteta de instanciacion con operador explicito.
+     * Crear una instanciacion con operador explicito.
      */
     public CuartetaNew(String operador, String arg1, String arg2, String resultado,
-                        String tipoArg1, String tipoArg2, String tipoResultado) {
+                 String tipoArg1, String tipoArg2, String tipoResultado) {
         // va al base
         super(operador, arg1, arg2, resultado, tipoArg1, tipoArg2, tipoResultado);
     }
 
     /**
-     * Crear una cuarteta de instanciacion con operador new por defecto.
-     */
-    public CuartetaNew(String arg1, String arg2, String resultado,
-                        String tipoArg1, String tipoArg2, String tipoResultado) {
-        // cae al base con operador fijo
-        super("new", arg1, arg2, resultado, tipoArg1, tipoArg2, tipoResultado);
-    }
-
-    /**
-     * Obtener la linea de codigo C para la cuarteta.
+     * Sacar las lineas de codigo de la cuarteta.
      */
     @Override
     public String obtenerCodigoC(ContextoTraduccion ctx) {
-        // traducir instanciacion de objeto en heap con malloc
-        if ("new".equals(operador)) {
-            String nombreClase = arg1;
-            String destinoNew = resultado;
-            // reservar heap solo para tipos con struct conocido
-            if (nombreClase != null && (ctx.clases.contains(nombreClase) || ctx.structs.containsKey(nombreClase))) {
-                // contar args antes de limpiar para el nombre con numero
-                int numeroArgs = ctx.paramsPendientes.size();
-                String argsNew = ctx.unirParams();
-                ctx.limpiarParams();
-                // marcar el destino como puntero a la clase
-                if (destinoNew != null) {
-                    ctx.structDeNombre.put(destinoNew, nombreClase);
-                    ctx.punteros.add(destinoNew);
-                }
-                String lineaNew = ctx.ladoIzquierdo(destinoNew, "struct " + nombreClase + "*") + " = malloc(sizeof(struct " + nombreClase + "));";
-                // llamar al constructor cuando existe en las cuartetas
-                String ctor = nombreClase + "_" + nombreClase;
-                // agregar sufijo con el conteo para constructores sobrecargados
-                if (numeroArgs > 0) {
-                    ctor = ctor + "_" + numeroArgs;
-                }
-                if (ctx.funcionesConocidas.contains(ctor)) {
-                    lineaNew = lineaNew + "\n    " + ctor + "(" + destinoNew;
-                    if (argsNew.isEmpty() == false) {
-                        lineaNew = lineaNew + ", " + argsNew;
-                    }
-                    lineaNew = lineaNew + ");";
-                }
-                return lineaNew;
-            }
-            // usar marcador cuando el tipo es desconocido
+        // omitir destinos sin nombre valido
+        if (resultado == null || resultado.isEmpty() || resultado.equals("_")) {
             ctx.limpiarParams();
-            String tipoNew = ctx.mapearTipo(arg1);
-            return ctx.ladoIzquierdo(resultado, tipoNew) + " = 0;";
+            return "";
         }
-        // traducir instanciacion de struct con su tipo real
-        ctx.limpiarParams();
-        // usar struct cuando el tipo esta definido
-        if (arg1 != null && ctx.structs.containsKey(arg1)) {
-            // mapear el resultado a su struct
-            if (resultado != null) {
-                ctx.structDeNombre.put(resultado, arg1);
+        // contar campos del struct o usar uno por defecto
+        int campos = 1;
+        if (arg1 != null && ctx.ordenCampos.containsKey(arg1)) {
+            campos = ctx.ordenCampos.get(arg1).size();
+            if (campos <= 0) {
+                campos = 1;
             }
-            return ctx.prefijoDeclaracion(resultado, "struct " + arg1) + ";";
         }
-        // usar marcador cuando el tipo es desconocido
-        String tipo = ctx.mapearTipo(arg1);
-        return ctx.prefijoDeclaracion(resultado, tipo) + " = 0;";
+        // declarar el destino como base entera
+        SlotHS slot = ctx.declararSlot(resultado, "entero");
+        // recordar el struct duenio del objeto
+        if (arg1 != null && arg1.isEmpty() == false && arg1.equals("_") == false) {
+            ctx.mapaBases.put(resultado, arg1);
+        }
+        // tomar la base actual y avanzar por los campos
+        String destino = slot.getArreglo() + "[fp + " + slot.getIndice() + "]";
+        StringBuilder lineas = new StringBuilder();
+        lineas.append(destino).append(" = hptr;\n    ");
+        lineas.append("hptr = hptr + ").append(String.valueOf(campos)).append(";");
+        // llamar al constructor solo con new de clase conocida
+        if ("new".equals(operador) && arg1 != null && ctx.structs.containsKey(arg1)) {
+            // armar el nombre con conteo de params reales
+            int numeroArgs = ctx.paramsPendientes.size();
+            String ctor = arg1 + "_" + arg1;
+            if (numeroArgs > 0) {
+                ctor = ctor + "_" + numeroArgs;
+            }
+            if (ctx.funcionesConocidas.contains(ctor)) {
+                // pasar la base como this primero
+                lineas.append("\n    sptr = sptr + 1;\n    ");
+                lineas.append("stackinteger[sptr] = ").append(destino).append(";");
+                // pasar cada pendiente empujando la pila
+                for (int i = 0; i < ctx.paramsPendientes.size(); i++) {
+                    String valor = ctx.expresionOperando(ctx.paramsPendientes.get(i));
+                    String tipoP = ctx.tiposParamsPendientes.get(i);
+                    String arreglo = ctx.arregloDe(ctx.paramsPendientes.get(i));
+                    if (arreglo == null) {
+                        arreglo = ctx.arregloPara(tipoP);
+                    }
+                    lineas.append("\n    sptr = sptr + 1;\n    ");
+                    lineas.append(arreglo).append("[sptr] = ").append(valor).append(";");
+                }
+                lineas.append("\n    ").append(ctor).append("();");
+            }
+        }
+        // limpiar los pendientes en cualquier caso
+        ctx.limpiarParams();
+        return lineas.toString();
     }
 }

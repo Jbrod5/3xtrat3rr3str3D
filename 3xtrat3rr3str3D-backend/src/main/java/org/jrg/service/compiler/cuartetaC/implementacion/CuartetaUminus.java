@@ -2,36 +2,36 @@ package org.jrg.service.compiler.cuartetaC.implementacion;
 
 import org.jrg.service.compiler.cuartetaC.ContextoTraduccion;
 import org.jrg.service.compiler.cuartetaC.CuartetaC;
+import org.jrg.service.compiler.cuartetaC.SlotHS;
 
-// traducir un menos unario con opcode propio a C
+// negar un numero con su mismo tipo
 public class CuartetaUminus extends CuartetaC {
 
     /**
-     * Crear una cuarteta de menos unario con operador explicito.
+     * Crear un menos unario con operador explicito.
      */
     public CuartetaUminus(String operador, String arg1, String arg2, String resultado,
-                           String tipoArg1, String tipoArg2, String tipoResultado) {
-        // va al base
+                    String tipoArg1, String tipoArg2, String tipoResultado) {
+        // delegar al constructor de la clase base
         super(operador, arg1, arg2, resultado, tipoArg1, tipoArg2, tipoResultado);
     }
 
     /**
-     * Crear una cuarteta de menos unario con operador fijo.
-     */
-    public CuartetaUminus(String arg1, String arg2, String resultado,
-                           String tipoArg1, String tipoArg2, String tipoResultado) {
-        // usar el constructor base con opcode uminus
-        super("uminus", arg1, arg2, resultado, tipoArg1, tipoArg2, tipoResultado);
-    }
-
-    /**
-     * Obtener la linea de codigo C para la cuarteta.
+     * Sacar las lineas de codigo de la cuarteta.
      */
     @Override
     public String obtenerCodigoC(ContextoTraduccion ctx) {
-        // mapear el tipo del resultado a C
-        String tipoUni = ctx.mapearTipo(tipoResultado);
-        // construir la negacion aritmetica del valor
-        return ctx.ladoIzquierdo(resultado, tipoUni) + " = -" + ctx.crearValor(arg1).obtenerCodigoC(ctx) + ";";
+        // omitir destinos sin nombre valido
+        if (resultado == null || resultado.isEmpty() || resultado.equals("_")) {
+            return "";
+        }
+        // declarar el destino con el tipo del resultado
+        SlotHS slot = ctx.declararSlot(resultado, tipoResultado);
+        // resolver el operando a expresion
+        String valor = ctx.expresionOperando(arg1);
+        // negar con registro y guardar en su arreglo
+        String reg = ctx.registroPara(slot.getArreglo());
+        String destino = slot.getArreglo() + "[fp + " + slot.getIndice() + "]";
+        return reg + " = -" + valor + ";\n    " + destino + " = " + reg + ";";
     }
 }

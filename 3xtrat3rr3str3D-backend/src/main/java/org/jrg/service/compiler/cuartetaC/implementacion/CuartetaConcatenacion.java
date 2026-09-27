@@ -2,42 +2,72 @@ package org.jrg.service.compiler.cuartetaC.implementacion;
 
 import org.jrg.service.compiler.cuartetaC.ContextoTraduccion;
 import org.jrg.service.compiler.cuartetaC.CuartetaC;
+import org.jrg.service.compiler.cuartetaC.SlotHS;
 
-// traducir una concatenacion de strings con malloc strcpy strcat
+// concatenar dos textos con reserva en heap
 public class CuartetaConcatenacion extends CuartetaC {
 
     /**
-     * Crear una cuarteta de concatenacion con operador explicito.
+     * Crear una concatenacion con operador explicito.
      */
     public CuartetaConcatenacion(String operador, String arg1, String arg2, String resultado,
-                                  String tipoArg1, String tipoArg2, String tipoResultado) {
-        // usar el constructor base
+                    String tipoArg1, String tipoArg2, String tipoResultado) {
+        // delegar al constructor de la clase base
         super(operador, arg1, arg2, resultado, tipoArg1, tipoArg2, tipoResultado);
     }
 
     /**
-     * Crear una cuarteta de concatenacion con operador suma fijo.
-     */
-    public CuartetaConcatenacion(String arg1, String arg2, String resultado,
-                                  String tipoArg1, String tipoArg2, String tipoResultado) {
-        // usar el base con operador fijo
-        super("+", arg1, arg2, resultado, tipoArg1, tipoArg2, tipoResultado);
-    }
-
-    /**
-     * Obtener la linea de codigo C para la cuarteta.
+     * Sacar las lineas de codigo de la cuarteta.
      */
     @Override
     public String obtenerCodigoC(ContextoTraduccion ctx) {
-        // convertir operandos numericos a string antes de concatenar
-        StringBuilder previasConcat = new StringBuilder();
-        // preparar el primer operando con posible conversion
-        String primero = ctx.prepararOperandoParaConcat(arg1, tipoArg1, previasConcat);
-        // preparar el segundo operando con posible conversion
-        String segundo = ctx.prepararOperandoParaConcat(arg2, tipoArg2, previasConcat);
-        // declarar el temporal solo la primera vez
-        String prefijo = ctx.prefijoDeclaracion(resultado, "char*");
-        // agregar conversiones previas mas reserva copia y concatenado al cuerpo
-        return previasConcat.toString() + prefijo + " = malloc(strlen(" + primero + ") + strlen(" + segundo + ") + 1);\n    strcpy(" + resultado + ", " + primero + ");\n    strcat(" + resultado + ", " + segundo + ");";
+        // omitir destinos sin nombre valido
+        if (resultado == null || resultado.isEmpty() || resultado.equals("_")) {
+            return "";
+        }
+        // preparar los operandos convirtiendo numericos
+        StringBuilder previas = new StringBuilder();
+        String primero = preparar(ctx, arg1, tipoArg1, previas);
+        String segundo = preparar(ctx, arg2, tipoArg2, previas);
+        // declarar el temporal siempre texto
+        SlotHS slot = ctx.declararSlot(resultado, "cadena");
+        String destino = slot.getArreglo() + "[fp + " + slot.getIndice() + "]";
+        // agregar reserva copia y concatenado al cuerpo
+        previas.append(destino).append(" = malloc(strlen(").append(primero).append(") + strlen(").append(segundo).append(") + 1);\n    ");
+        previas.append("strcpy(").append(destino).append(", ").append(primero).append(");\n    ");
+        previas.append("strcat(").append(destino).append(", ").append(segundo).append(");");
+        return previas.toString();
+    }
+
+    // preparar un operando convirtiendo numericos a texto
+    private String preparar(ContextoTraduccion ctx, String valor, String tipo, StringBuilder previas) {
+        // resolver el valor a expresion
+        String texto = ctx.expresionOperando(valor);
+        // averiguar el arreglo real del operando
+        String arreglo = ctx.arregloDe(valor);
+        if (arreglo == null) {
+            arreglo = ctx.arregloPara(tipo);
+        }
+        // elegir el formato segun el arreglo
+        String formato = null;
+        if ("stackinteger".equals(arreglo) || "heapinteger".equals(arreglo)) {
+            formato = "%d";
+        } else if ("stackfloat".equals(arreglo) || "heapfloat".equals(arreglo)) {
+            formato = "%f";
+        } else if ("stackchar".equals(arreglo) || "heapchar".equals(arreglo)) {
+            formato = "%c";
+        } else if ("stackboolean".equals(arreglo) || "heapboolean".equals(arreglo)) {
+            formato = "%d";
+        }
+        // devolver directo cuando ya es texto
+        if (formato == null) {
+            return texto;
+        }
+        // convertir con sprintf a temporal propio
+        String tempStr = "__strhs_" + ctx.contadorCadenas;
+        ctx.contadorCadenas = ctx.contadorCadenas + 1;
+        previas.append("char* ").append(tempStr).append(" = malloc(32);\n    ");
+        previas.append("sprintf(").append(tempStr).append(", \"").append(formato).append("\", ").append(texto).append(");\n    ");
+        return tempStr;
     }
 }

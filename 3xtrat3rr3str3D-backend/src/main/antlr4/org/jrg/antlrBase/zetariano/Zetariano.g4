@@ -12,7 +12,7 @@ grammar Zetariano;
 
 programa
     // public class Persona { ... }
-    // el archivo debe llamarse igual que la clase definida en el
+    // OJOO:  el archivo debe llamarse igual que la clase definida en el
     : definicion_clase EOF
     ;
 
@@ -21,7 +21,7 @@ definicion_clase
     ;
 
 miembro_clase
-    : atributo_clase        # miembroAtributo
+    : atributo_clase         # miembroAtributo
     | constructor            # miembroConstructor
     | metodo                 # miembroMetodo
     ;
@@ -49,7 +49,7 @@ atributo_clase
     // String nombre;
     // int edad;
     // public int edad;                  el modificador public es opcional en un atributo
-    : PUBLIC? tipo_dato IDENTIFICADOR PUNTO_Y_COMA                                  # atributoSimple
+    : PUBLIC? tipo_dato IDENTIFICADOR PUNTO_Y_COMA                                   # atributoSimple
     // int[] calificaciones;
     | PUBLIC? tipo_dato (CORCHETE_IZQ CORCHETE_DER)+ IDENTIFICADOR PUNTO_Y_COMA      # atributoArray
     ;
@@ -62,13 +62,12 @@ atributo_clase
 constructor
     // public Persona(String nombreParametro, int edadParametro) { ... }
     // public Persona() { ... }
-    // se permite sobrecargar el constructor con distintas listas de parametros
     : PUBLIC IDENTIFICADOR PAR_IZQ parametros? PAR_DER LLAVE_IZQ instruccion* LLAVE_DER    # defConstructor
     ;
 
 metodo
     // public void saludar() { ... }
-    : PUBLIC VOID IDENTIFICADOR PAR_IZQ parametros? PAR_DER LLAVE_IZQ instruccion* LLAVE_DER       # metodoSinRetorno
+    : PUBLIC VOID IDENTIFICADOR PAR_IZQ parametros? PAR_DER LLAVE_IZQ instruccion* LLAVE_DER        # metodoSinRetorno
     // public int calcularAnioNacimiento(int anioActual) { ... }
     | PUBLIC tipo_dato IDENTIFICADOR PAR_IZQ parametros? PAR_DER LLAVE_IZQ instruccion* LLAVE_DER   # metodoConRetorno
     ;
@@ -139,7 +138,7 @@ init_elemento
 
 asignacion
     // x = 5;
-    : variable_asignable ASIGNACION expresion PUNTO_Y_COMA                          # asignacionSimple
+    : variable_asignable ASIGNACION expresion PUNTO_Y_COMA                                # asignacionSimple
     // x += 3;
     // x -= 2;
     // x *= 2;
@@ -174,7 +173,7 @@ condicional
     ;
 
 bloque
-    // { ... }                            bloque con llaves
+    // { ... }                                    bloque con llaves
     : LLAVE_IZQ instruccion* LLAVE_DER
     // if (edad >= 18) println("Es adulto");      una sola instruccion sin llaves
     | instruccion
@@ -217,7 +216,7 @@ caso_default
 ciclo
     // for (int i = 0; i < 5; i++) { ... }
     // for ( ; ; ) { ... }                   todos los parametros son opcionales
-    : FOR PAR_IZQ init_for? PUNTO_Y_COMA expresion? PUNTO_Y_COMA paso_for? PAR_DER bloque      # cicloFor
+    : FOR PAR_IZQ init_for? PUNTO_Y_COMA expresion? PUNTO_Y_COMA paso_for? PAR_DER bloque       # cicloFor
     // while (contador < 3) { ... }
     | WHILE PAR_IZQ expresion PAR_DER bloque                                                    # cicloWhile
     // do { ... } while (intentos < 5);
@@ -247,7 +246,7 @@ expresion
     : PAR_IZQ expresion PAR_DER                                                    # exprParentesis
 
     // new Persona("Carlos", 25)
-    | NEW IDENTIFICADOR PAR_IZQ lista_expresiones? PAR_DER                          # exprInstanciaObjeto
+    | NEW IDENTIFICADOR PAR_IZQ lista_expresiones? PAR_DER                         # exprInstanciaObjeto
     // new int[5]
     // new int[3][3]
     | NEW tipo_dato (CORCHETE_IZQ expresion CORCHETE_DER)+                         # exprInstanciaArreglo
