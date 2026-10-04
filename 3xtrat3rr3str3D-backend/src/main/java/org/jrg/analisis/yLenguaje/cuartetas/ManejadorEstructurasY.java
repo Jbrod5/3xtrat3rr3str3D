@@ -8,6 +8,7 @@ import org.jrg.model.ast.yLenguaje.atributo_struct.AtributoSimple;
 import org.jrg.model.ast.yLenguaje.base.NodoASTY;
 import org.jrg.model.ast.yLenguaje.definicion_struct.DefEstructura;
 import org.jrg.model.cuarteta.Cuarteta;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaStructDef;
 
 // generar cuartetas de estructuras en el lenguaje Y
 public class ManejadorEstructurasY {
@@ -30,7 +31,7 @@ public class ManejadorEstructurasY {
         String campos = construirCamposStruct(nodo.getAtributos());
 
         // agregar la definicion del struct al inicio del programa a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta("struct_def", nodo.getNombre(), campos, "_", "_", "_", "_"));
+        ctx.getCuartetas().add(new CuartetaStructDef("struct_def", nodo.getNombre(), campos, "_", "_", "_", "_"));
 
         return null;
 

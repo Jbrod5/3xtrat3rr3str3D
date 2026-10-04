@@ -43,7 +43,6 @@ public class ColoresService {
 
     }
 
-    // compatibilidad con version anterior sin parametro lenguaje
     public List<Object> obtenerColores(String codigo) {
         return obtenerColores(codigo, "piglatin");
     }

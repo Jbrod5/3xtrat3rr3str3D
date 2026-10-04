@@ -1,11 +1,11 @@
 package org.jrg.service.compiler.cuartetaC.implementacion;
 
 import org.jrg.service.compiler.cuartetaC.ContextoTraduccion;
-import org.jrg.service.compiler.cuartetaC.CuartetaC;
+import org.jrg.model.cuarteta.Cuarteta;
 import org.jrg.service.compiler.cuartetaC.SlotHS;
 
 // leer un elemento por indice desde la base del arreglo
-public class CuartetaAccesoArreglo extends CuartetaC {
+public class CuartetaAccesoArreglo extends Cuarteta {
 
     /**
      * Crear un acceso a arreglo con operador explicito.
@@ -24,32 +24,31 @@ public class CuartetaAccesoArreglo extends CuartetaC {
     public String obtenerCodigoC(ContextoTraduccion ctx) {
 
         // omitir destinos sin nombre valido
-        if (resultado == null || resultado.isEmpty() || resultado.equals("_")) {
+        if (getResultado() == null || getResultado().isEmpty() || getResultado().equals("_")) {
             return "";
         }
 
-        // resolver el struct base de los elementos si hay
-        String baseElem = ctx.mapaBases.get(arg1);
-
-        // elegir arreglo de heap segun el base o entero por defecto
-        String arregloElem = "heapinteger";
-        String tipoSlot = "entero";
-        if (baseElem != null && baseElem.isEmpty() == false && baseElem.equals("_") == false) {
-            arregloElem = ctx.arregloHeapPara(baseElem);
-            tipoSlot = baseElem;
+        // resolver el tipo elemento por campo base registrada o entero
+        String tipoElem = ctx.tipoElementoDe(getArg1());
+        if (tipoElem == null || tipoElem.isEmpty()) {
+            tipoElem = "entero";
         }
 
-        // declarar el destino para el valor leido
-        SlotHS slot = ctx.redeclararSlot(resultado, tipoSlot);
+        // elegir arreglo de heap segun el elemento
+        String arregloElem = ctx.arregloHeapPara(tipoElem);
+        String tipoSlot = tipoElem;
 
-        // recordar el base para accesos encadenados
-        if (baseElem != null && baseElem.isEmpty() == false && baseElem.equals("_") == false) {
-            ctx.mapaBases.put(resultado, baseElem);
+        // declarar el destino para el valor leido
+        SlotHS slot = ctx.redeclararSlot(getResultado(), tipoSlot);
+
+        // recordar el elemento para accesos encadenados
+        if (tipoElem != null && tipoElem.isEmpty() == false) {
+            ctx.mapaBases.put(getResultado(), tipoElem);
         }
 
         // leer del heap con base mas indice
-        String base = ctx.expresionOperando(arg1);
-        String indice = ctx.expresionOperando(arg2);
+        String base = ctx.expresionOperando(getArg1());
+        String indice = ctx.expresionOperando(getArg2());
         String destino = slot.getArreglo() + "[framepointer + " + slot.getIndice() + "]";
         return destino + " = " + arregloElem + "[" + base + " + " + indice + "];";
 

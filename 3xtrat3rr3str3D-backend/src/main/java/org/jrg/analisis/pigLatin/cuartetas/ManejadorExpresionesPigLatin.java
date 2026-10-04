@@ -30,6 +30,18 @@ import org.jrg.model.ast.pigLatin.variable_asignable.ValorAsignableMiembroEstruc
 import org.jrg.model.ast.pigLatin.variable_asignable.ValorAsignableSimple;
 import org.jrg.model.base.TipoPrimitivo;
 import org.jrg.model.cuarteta.Cuarteta;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaComparacion;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaConcatenacion;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaUminus;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaParametro;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaNew;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaNegacion;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaLogica;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaLlamada;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaAsignacionSimple;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaAritmetica;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaAccesoMiembro;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaAccesoArreglo;
 
 // generar cuartetas de expresiones y asignables en Pig Latin
 public class ManejadorExpresionesPigLatin {
@@ -144,7 +156,7 @@ public class ManejadorExpresionesPigLatin {
 
         // agregar parametros a la lista de cuartetas
         for (int i = 0; i < args.size(); i++) {
-            ctx.getCuartetas().add(new Cuarteta("param", args.get(i), "_", "_", ctx.inferirTipoDe(args.get(i), ctx.getTiposConocidos()), "_", "_"));
+            ctx.getCuartetas().add(new CuartetaParametro("param", args.get(i), "_", "_", ctx.inferirTipoDe(args.get(i), ctx.getTiposConocidos()), "_", "_"));
         }
 
         // agregar instancia a la lista de cuartetas
@@ -152,7 +164,7 @@ public class ManejadorExpresionesPigLatin {
 
         // registrar el temporal con el tipo de la clase
         ctx.getTiposConocidos().put(temp, expr.getTipo());
-        ctx.getCuartetas().add(new Cuarteta("new", expr.getTipo(), String.valueOf(args.size()), temp, expr.getTipo(), "_", expr.getTipo()));
+        ctx.getCuartetas().add(new CuartetaNew("new", expr.getTipo(), String.valueOf(args.size()), temp, expr.getTipo(), "_", expr.getTipo()));
         return temp;
 
     }
@@ -186,12 +198,12 @@ public class ManejadorExpresionesPigLatin {
 
         // agregar parametros a la lista de cuartetas
         for (int i = 0; i < args.size(); i++) {
-            ctx.getCuartetas().add(new Cuarteta("param", args.get(i), "_", "_", ctx.inferirTipoDe(args.get(i), ctx.getTiposConocidos()), "_", "_"));
+            ctx.getCuartetas().add(new CuartetaParametro("param", args.get(i), "_", "_", ctx.inferirTipoDe(args.get(i), ctx.getTiposConocidos()), "_", "_"));
         }
 
         // agregar llamada a la lista de cuartetas
         String temp = ctx.getTemporales().nuevoTemporal();
-        ctx.getCuartetas().add(new Cuarteta("call", expr.getNombre(), String.valueOf(args.size()), temp, "_", "_", "_"));
+        ctx.getCuartetas().add(new CuartetaLlamada("call", expr.getNombre(), String.valueOf(args.size()), temp, "_", "_", "_"));
         return temp;
 
     }
@@ -235,16 +247,16 @@ public class ManejadorExpresionesPigLatin {
         }
 
         // agregar parametro del objeto a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta("param", textoObjeto, "_", "_", ctx.inferirTipoDe(obj, ctx.getTiposConocidos()), "_", "_"));
+        ctx.getCuartetas().add(new CuartetaParametro("param", textoObjeto, "_", "_", ctx.inferirTipoDe(obj, ctx.getTiposConocidos()), "_", "_"));
 
         // agregar parametros de argumentos a la lista de cuartetas
         for (int i = 0; i < args.size(); i++) {
-            ctx.getCuartetas().add(new Cuarteta("param", args.get(i), "_", "_", ctx.inferirTipoDe(args.get(i), ctx.getTiposConocidos()), "_", "_"));
+            ctx.getCuartetas().add(new CuartetaParametro("param", args.get(i), "_", "_", ctx.inferirTipoDe(args.get(i), ctx.getTiposConocidos()), "_", "_"));
         }
 
         // agregar la llamada al metodo a la lista de cuartetas
         String temp = ctx.getTemporales().nuevoTemporal();
-        ctx.getCuartetas().add(new Cuarteta("call_method", expr.getNombre(), String.valueOf(args.size() + 1), temp, "_", "_", "_"));
+        ctx.getCuartetas().add(new CuartetaLlamada("call_method", expr.getNombre(), String.valueOf(args.size() + 1), temp, "_", "_", "_"));
         return temp;
 
     }
@@ -277,7 +289,7 @@ public class ManejadorExpresionesPigLatin {
 
         // generar acceso a array con temporal
         String temp = ctx.getTemporales().nuevoTemporal();
-        ctx.getCuartetas().add(new Cuarteta("=[]", textoArray, textoIndice, temp, "_", "entero", "_"));
+        ctx.getCuartetas().add(new CuartetaAccesoArreglo("=[]", textoArray, textoIndice, temp, "_", "entero", "_"));
         return temp;
 
     }
@@ -299,7 +311,7 @@ public class ManejadorExpresionesPigLatin {
 
         // agregar acceso a miembro a la lista de cuartetas
         String temp = ctx.getTemporales().nuevoTemporal();
-        ctx.getCuartetas().add(new Cuarteta(".", textoObjeto, expr.getMiembro(), temp, "_", "_", "_"));
+        ctx.getCuartetas().add(new CuartetaAccesoMiembro(".", textoObjeto, expr.getMiembro(), temp, "_", "_", "_"));
         return temp;
 
     }
@@ -316,7 +328,7 @@ public class ManejadorExpresionesPigLatin {
             textoVar = var;
         }
 
-        ctx.getCuartetas().add(new Cuarteta("+", textoVar, "1", textoVar, ctx.inferirTipoDe(var, ctx.getTiposConocidos()), "entero", ctx.inferirTipoDe(var, ctx.getTiposConocidos())));
+        ctx.getCuartetas().add(new CuartetaAritmetica("+", textoVar, "1", textoVar, ctx.inferirTipoDe(var, ctx.getTiposConocidos()), "entero", ctx.inferirTipoDe(var, ctx.getTiposConocidos())));
 
         return var;
 
@@ -334,7 +346,7 @@ public class ManejadorExpresionesPigLatin {
             textoVar = var;
         }
 
-        ctx.getCuartetas().add(new Cuarteta("-", textoVar, "1", textoVar, ctx.inferirTipoDe(var, ctx.getTiposConocidos()), "entero", ctx.inferirTipoDe(var, ctx.getTiposConocidos())));
+        ctx.getCuartetas().add(new CuartetaAritmetica("-", textoVar, "1", textoVar, ctx.inferirTipoDe(var, ctx.getTiposConocidos()), "entero", ctx.inferirTipoDe(var, ctx.getTiposConocidos())));
 
         return var;
 
@@ -371,7 +383,7 @@ public class ManejadorExpresionesPigLatin {
         }
 
         // agregar menos unario con opcode propio a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta("uminus", textoVal, "_", temp, tipoNeg, "_", tipoNeg));
+        ctx.getCuartetas().add(new CuartetaUminus("uminus", textoVal, "_", temp, tipoNeg, "_", tipoNeg));
         return temp;
 
     }
@@ -397,7 +409,7 @@ public class ManejadorExpresionesPigLatin {
             textoVal = val;
         }
 
-        ctx.getCuartetas().add(new Cuarteta("!", textoVal, "_", temp, ctx.inferirTipoDe(val, ctx.getTiposConocidos()), "_", "booleano"));
+        ctx.getCuartetas().add(new CuartetaNegacion("!", textoVal, "_", temp, ctx.inferirTipoDe(val, ctx.getTiposConocidos()), "_", "booleano"));
         return temp;
 
     }
@@ -413,7 +425,7 @@ public class ManejadorExpresionesPigLatin {
             textoVar = var;
         }
 
-        ctx.getCuartetas().add(new Cuarteta("+", textoVar, "1", textoVar, ctx.inferirTipoDe(var, ctx.getTiposConocidos()), "entero", ctx.inferirTipoDe(var, ctx.getTiposConocidos())));
+        ctx.getCuartetas().add(new CuartetaAritmetica("+", textoVar, "1", textoVar, ctx.inferirTipoDe(var, ctx.getTiposConocidos()), "entero", ctx.inferirTipoDe(var, ctx.getTiposConocidos())));
         return var;
 
     }
@@ -429,7 +441,7 @@ public class ManejadorExpresionesPigLatin {
             textoVar = var;
         }
 
-        ctx.getCuartetas().add(new Cuarteta("-", textoVar, "1", textoVar, ctx.inferirTipoDe(var, ctx.getTiposConocidos()), "entero", ctx.inferirTipoDe(var, ctx.getTiposConocidos())));
+        ctx.getCuartetas().add(new CuartetaAritmetica("-", textoVar, "1", textoVar, ctx.inferirTipoDe(var, ctx.getTiposConocidos()), "entero", ctx.inferirTipoDe(var, ctx.getTiposConocidos())));
         return var;
 
     }
@@ -469,7 +481,7 @@ public class ManejadorExpresionesPigLatin {
             textoDer = der;
         }
 
-        ctx.getCuartetas().add(new Cuarteta(op, textoIzq, textoDer, temp, ctx.tipoAritmetico(izq), ctx.tipoAritmetico(der), tipoResMult));
+        ctx.getCuartetas().add(new CuartetaAritmetica(op, textoIzq, textoDer, temp, ctx.tipoAritmetico(izq), ctx.tipoAritmetico(der), tipoResMult));
         return temp;
 
     }
@@ -488,11 +500,13 @@ public class ManejadorExpresionesPigLatin {
         // adivinar que tipo sale de la cuenta
         String tipoResSuma = ctx.tipoResultadoAritmetico(izq, der);
 
+        // detectar texto en los lados para elegir concat
+        boolean izqEsCadena = ctx.esTipoCadena(tipoIzq);
+        boolean derEsCadena = ctx.esTipoCadena(tipoDer);
+
         // usar cadena cuando se concatena texto con mas
         if ("+".equals(expr.getOperador())) {
 
-            boolean izqEsCadena = ctx.esTipoCadena(tipoIzq);
-            boolean derEsCadena = ctx.esTipoCadena(tipoDer);
             if (izqEsCadena || derEsCadena) {
                 tipoResSuma = "cadena";
             }
@@ -501,7 +515,13 @@ public class ManejadorExpresionesPigLatin {
 
         // registrar el temporal con el tipo inferido
         ctx.getTiposConocidos().put(temp, tipoResSuma);
-        ctx.getCuartetas().add(new Cuarteta(expr.getOperador(), izq, der, temp, ctx.tipoAritmetico(izq), ctx.tipoAritmetico(der), tipoResSuma));
+
+        // usar concat cuando el mas junta texto
+        if ("+".equals(expr.getOperador()) && (izqEsCadena || derEsCadena)) {
+            ctx.getCuartetas().add(new CuartetaConcatenacion(expr.getOperador(), izq, der, temp, ctx.tipoAritmetico(izq), ctx.tipoAritmetico(der), tipoResSuma));
+        } else {
+            ctx.getCuartetas().add(new CuartetaAritmetica(expr.getOperador(), izq, der, temp, ctx.tipoAritmetico(izq), ctx.tipoAritmetico(der), tipoResSuma));
+        }
         return temp;
 
     }
@@ -515,7 +535,7 @@ public class ManejadorExpresionesPigLatin {
 
         // registrar el temporal como booleano
         ctx.getTiposConocidos().put(temp, "booleano");
-        ctx.getCuartetas().add(new Cuarteta(expr.getOperador(), izq, der, temp, ctx.inferirTipoDe(izq, ctx.getTiposConocidos()), ctx.inferirTipoDe(der, ctx.getTiposConocidos()), "booleano"));
+        ctx.getCuartetas().add(new CuartetaComparacion(expr.getOperador(), izq, der, temp, ctx.inferirTipoDe(izq, ctx.getTiposConocidos()), ctx.inferirTipoDe(der, ctx.getTiposConocidos()), "booleano"));
         return temp;
 
     }
@@ -529,7 +549,7 @@ public class ManejadorExpresionesPigLatin {
 
         // registrar el temporal como booleano
         ctx.getTiposConocidos().put(temp, "booleano");
-        ctx.getCuartetas().add(new Cuarteta("&&", izq, der, temp, ctx.inferirTipoDe(izq, ctx.getTiposConocidos()), ctx.inferirTipoDe(der, ctx.getTiposConocidos()), "booleano"));
+        ctx.getCuartetas().add(new CuartetaLogica("&&", izq, der, temp, ctx.inferirTipoDe(izq, ctx.getTiposConocidos()), ctx.inferirTipoDe(der, ctx.getTiposConocidos()), "booleano"));
         return temp;
 
     }
@@ -543,7 +563,7 @@ public class ManejadorExpresionesPigLatin {
 
         // registrar el temporal como booleano
         ctx.getTiposConocidos().put(temp, "booleano");
-        ctx.getCuartetas().add(new Cuarteta("||", izq, der, temp, ctx.inferirTipoDe(izq, ctx.getTiposConocidos()), ctx.inferirTipoDe(der, ctx.getTiposConocidos()), "booleano"));
+        ctx.getCuartetas().add(new CuartetaLogica("||", izq, der, temp, ctx.inferirTipoDe(izq, ctx.getTiposConocidos()), ctx.inferirTipoDe(der, ctx.getTiposConocidos()), "booleano"));
         return temp;
 
     }
@@ -568,7 +588,7 @@ public class ManejadorExpresionesPigLatin {
 
             // registrar el temporal con el tipo inferido
             ctx.getTiposConocidos().put(temp, tipoLiteral);
-            ctx.getCuartetas().add(new Cuarteta("=", vp.getValor(), "_", temp, tipoLiteral, "_", tipoLiteral));
+            ctx.getCuartetas().add(new CuartetaAsignacionSimple("=", vp.getValor(), "_", temp, tipoLiteral, "_", tipoLiteral));
             return temp;
 
         }

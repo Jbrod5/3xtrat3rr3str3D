@@ -91,6 +91,12 @@ public class ContextoSemanticoY {
         agregarTipoPrimitivo("caracter");
         agregarTipoPrimitivo("booleano");
 
+        // aceptar bool corto como el mismo booleano de siempre
+        Tipo mismoBooleano = this.tiposPrimitivos.get("booleano");
+        if (mismoBooleano != null) {
+            this.tiposPrimitivos.put("bool", mismoBooleano);
+        }
+
     }
 
     // crear un tipo primitivo y registrarlo en el ambito global
@@ -441,6 +447,15 @@ public class ContextoSemanticoY {
 
         // caracter se puede asignar a entero
         if (esEntero(esperado) && esCaracter(real)) {
+            return true;
+        }
+
+        // conversion implicita entre cadena y numero en ambos sentidos
+        if (esCadena(esperado) && esNumerico(real)) {
+            return true;
+        }
+
+        if (esNumerico(esperado) && esCadena(real)) {
             return true;
         }
 

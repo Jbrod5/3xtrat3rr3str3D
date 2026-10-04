@@ -3,6 +3,7 @@ package org.jrg.model.resultado;
 import java.util.ArrayList;
 import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.jrg.model.cuarteta.Cuarteta;
 import org.jrg.model.error.ErrorCompilacion;
 import org.jrg.model.semantico.Simbolo;
 import org.jrg.model.semantico.SimboloResultado;
@@ -27,6 +28,7 @@ public class ResultadoAnalisis {
     private final List<CuartetaResultado> cuartetas;
     private final String codigoC;
     private final ResultadoGcc resultadoGcc;
+    private List<Cuarteta> crudasTipadas;
 
     /**
      * Crear un resultado de analisis sin simbolos crudos.
@@ -223,6 +225,31 @@ public class ResultadoAnalisis {
      */
     public List<CuartetaResultado> getCuartetas() {
         return this.cuartetas;
+    }
+
+    /**
+     * Obtener las cuartetas tipadas sin pasar por JSON.
+     */
+    @JsonIgnore
+    public List<Cuarteta> getCrudasTipadas() {
+
+        // devolver lista vacia si nadie la marco
+        if (this.crudasTipadas == null) {
+            return new ArrayList<>();
+        }
+
+        return this.crudasTipadas;
+
+    }
+
+    /**
+     * Marcar las cuartetas tipadas para el traductor.
+     */
+    public void setCrudasTipadas(List<Cuarteta> crudasTipadas) {
+
+        // guardar la lista recibida
+        this.crudasTipadas = crudasTipadas;
+
     }
 
     /**

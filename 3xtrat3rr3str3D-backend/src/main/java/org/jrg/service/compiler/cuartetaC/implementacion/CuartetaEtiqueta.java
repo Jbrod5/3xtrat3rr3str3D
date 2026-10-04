@@ -1,10 +1,10 @@
 package org.jrg.service.compiler.cuartetaC.implementacion;
 
 import org.jrg.service.compiler.cuartetaC.ContextoTraduccion;
-import org.jrg.service.compiler.cuartetaC.CuartetaC;
+import org.jrg.model.cuarteta.Cuarteta;
 
 // marcar una etiqueta con punto y coma
-public class CuartetaEtiqueta extends CuartetaC {
+public class CuartetaEtiqueta extends Cuarteta {
 
     /**
      * Crear una etiqueta con operador explicito.
@@ -22,7 +22,7 @@ public class CuartetaEtiqueta extends CuartetaC {
     @Override
     public String obtenerCodigoC(ContextoTraduccion ctx) {
         // marcar la etiqueta con punto y coma por si queda sola
-        return arg1 + ":;";
+        return getArg1() + ":;";
     }
 
 }

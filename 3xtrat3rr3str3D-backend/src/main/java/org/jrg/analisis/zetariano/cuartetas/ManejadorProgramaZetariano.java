@@ -11,6 +11,7 @@ import org.jrg.model.ast.zetariano.ValorPrimitivo;
 import org.jrg.model.ast.zetariano.base.NodoASTZetariano;
 import org.jrg.model.base.TipoPrimitivo;
 import org.jrg.model.cuarteta.Cuarteta;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaAsignacionSimple;
 
 // generar cuartetas del programa y su base en Zetariano
 public class ManejadorProgramaZetariano {
@@ -117,7 +118,6 @@ public class ManejadorProgramaZetariano {
     // visitar el valor primitivo cargandolo en un temporal
     public String visitarValorPrimitivo(ValorPrimitivo nodo) {
 
-        // version anterior: no generaba nada y los case quedaban en 0
         // devolver el identificador directo sin crear temporal
         if (nodo.getTipoDato() == TipoPrimitivo.IDENTIFICADOR) {
             return nodo.getValor();
@@ -127,7 +127,7 @@ public class ManejadorProgramaZetariano {
         if (nodo.getTipoDato() == TipoPrimitivo.NULO) {
 
             String tempNulo = ctx.getTemporales().nuevoTemporal();
-            ctx.getCuartetas().add(new Cuarteta("=", "null", "_", tempNulo, "_", "_", "_"));
+            ctx.getCuartetas().add(new CuartetaAsignacionSimple("=", "null", "_", tempNulo, "_", "_", "_"));
             return tempNulo;
 
         }
@@ -140,7 +140,7 @@ public class ManejadorProgramaZetariano {
 
         // registrar el temporal con el tipo inferido
         ctx.getTiposConocidos().put(temp, tipoLiteral);
-        ctx.getCuartetas().add(new Cuarteta("=", nodo.getValor(), "_", temp, tipoLiteral, "_", tipoLiteral));
+        ctx.getCuartetas().add(new CuartetaAsignacionSimple("=", nodo.getValor(), "_", temp, tipoLiteral, "_", tipoLiteral));
         return temp;
 
     }

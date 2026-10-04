@@ -1,11 +1,11 @@
 package org.jrg.service.compiler.cuartetaC.implementacion;
 
 import org.jrg.service.compiler.cuartetaC.ContextoTraduccion;
-import org.jrg.service.compiler.cuartetaC.CuartetaC;
+import org.jrg.model.cuarteta.Cuarteta;
 import org.jrg.service.compiler.cuartetaC.SlotHS;
 
 // comparar dos valores con resultado booleano
-public class CuartetaComparacion extends CuartetaC {
+public class CuartetaComparacion extends Cuarteta {
 
     /**
      * Crear una comparacion con operador explicito.
@@ -23,20 +23,20 @@ public class CuartetaComparacion extends CuartetaC {
     public String obtenerCodigoC(ContextoTraduccion ctx) {
 
         // omitir destinos sin nombre valido
-        if (resultado == null || resultado.isEmpty() || resultado.equals("_")) {
+        if (getResultado() == null || getResultado().isEmpty() || getResultado().equals("_")) {
             return "";
         }
 
         // declarar el destino siempre booleano
-        SlotHS slot = ctx.declararSlot(resultado, "booleano");
+        SlotHS slot = ctx.declararSlot(getResultado(), "booleano");
 
         // resolver los operandos a expresiones
-        String primero = ctx.expresionOperando(arg1);
-        String segundo = ctx.expresionOperando(arg2);
+        String primero = ctx.expresionOperando(getArg1());
+        String segundo = ctx.expresionOperando(getArg2());
 
         // comparar con registros y guardar el booleano
         String destino = slot.getArreglo() + "[framepointer + " + slot.getIndice() + "]";
-        return "AX_BOOLEAN = (" + primero + " " + operador + " " + segundo + ");\n    " + destino + " = AX_BOOLEAN;";
+        return "AX_BOOLEAN = (" + primero + " " + getOperador() + " " + segundo + ");\n    " + destino + " = AX_BOOLEAN;";
 
     }
 

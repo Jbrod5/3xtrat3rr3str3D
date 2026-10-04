@@ -358,13 +358,49 @@ public class AnalizadorSemanticoPigLatin implements LatinusAstVisitor<Object> {
         Simbolo existente = this.contexto.ambitoActual().buscarSimbolo(nombre);
 
         // verificar si ya existe
-        if (existente != null) {
+        // if (existente != null) {
+        // solo choca si vive en el mismo espacio de nombres de valores
+        // funciones metodos tipos y campos de otros archivos no bloquean variables
+        if (existente != null && esEspacioDeValores(existente.getCategoria())) {
             this.contexto.agregarError(nodo, "la variable '" + nombre + "' ya esta declarada en un ambito padre");
             return false;
         }
 
         // declarar la variable en el contexto
         return this.contexto.declarar(nodo, nombre, tipo, categoria, tamano);
+
+    }
+
+    // verificar si una categoria comparte el espacio de nombres de valores
+    private boolean esEspacioDeValores(CategoriaSimbolo categoria) {
+
+        // sin categoria no bloquear por seguridad
+        if (categoria == null) {
+            return false;
+        }
+
+        // solo variables objetos arreglos constantes y parametros chocan entre si
+        if (categoria == CategoriaSimbolo.VARIABLE) {
+            return true;
+        }
+
+        if (categoria == CategoriaSimbolo.OBJETO) {
+            return true;
+        }
+
+        if (categoria == CategoriaSimbolo.ARREGLO) {
+            return true;
+        }
+
+        if (categoria == CategoriaSimbolo.CONSTANTE) {
+            return true;
+        }
+
+        if (categoria == CategoriaSimbolo.PARAMETRO) {
+            return true;
+        }
+
+        return false;
 
     }
 

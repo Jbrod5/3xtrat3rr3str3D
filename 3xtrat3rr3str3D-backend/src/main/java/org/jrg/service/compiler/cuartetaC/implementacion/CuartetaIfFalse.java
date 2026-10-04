@@ -1,10 +1,10 @@
 package org.jrg.service.compiler.cuartetaC.implementacion;
 
 import org.jrg.service.compiler.cuartetaC.ContextoTraduccion;
-import org.jrg.service.compiler.cuartetaC.CuartetaC;
+import org.jrg.model.cuarteta.Cuarteta;
 
 // saltar a una etiqueta si la condicion es falsa
-public class CuartetaIfFalse extends CuartetaC {
+public class CuartetaIfFalse extends Cuarteta {
 
     /**
      * Crear un salto condicional con operador explicito.
@@ -23,10 +23,10 @@ public class CuartetaIfFalse extends CuartetaC {
     public String obtenerCodigoC(ContextoTraduccion ctx) {
 
         // resolver la condicion a expresion
-        String cond = ctx.expresionOperando(arg1);
+        String cond = ctx.expresionOperando(getArg1());
 
         // saltar a la etiqueta si es falsa
-        return "AX_BOOLEAN = " + cond + ";\n    if (!AX_BOOLEAN) goto " + arg2 + ";";
+        return "AX_BOOLEAN = " + cond + ";\n    if (!AX_BOOLEAN) goto " + getArg2() + ";";
 
     }
 

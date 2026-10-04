@@ -1,11 +1,11 @@
 package org.jrg.service.compiler.cuartetaC.implementacion;
 
 import org.jrg.service.compiler.cuartetaC.ContextoTraduccion;
-import org.jrg.service.compiler.cuartetaC.CuartetaC;
+import org.jrg.model.cuarteta.Cuarteta;
 import org.jrg.service.compiler.cuartetaC.SlotHS;
 
 // imprimir un valor con formato segun su arreglo
-public class CuartetaPrint extends CuartetaC {
+public class CuartetaPrint extends Cuarteta {
 
     /**
      * Crear una impresion con operador explicito.
@@ -24,15 +24,15 @@ public class CuartetaPrint extends CuartetaC {
     public String obtenerCodigoC(ContextoTraduccion ctx) {
 
         // resolver el valor a imprimir
-        String valor = ctx.expresionOperando(arg1);
+        String valor = ctx.expresionOperando(getArg1());
 
         // elegir formato por la forma del valor primero
         String formato = null;
         String reg = null;
-        if (arg1 != null && arg1.startsWith("\"")) {
+        if (getArg1() != null && getArg1().startsWith("\"")) {
             formato = "%s";
             reg = "AX_STRING";
-        } else if (arg1 != null && arg1.startsWith("'")) {
+        } else if (getArg1() != null && getArg1().startsWith("'")) {
             formato = "%c";
             reg = "AX_CHAR";
         }
@@ -40,9 +40,9 @@ public class CuartetaPrint extends CuartetaC {
         // elegir formato segun el arreglo del slot si no hay forma
         if (formato == null) {
 
-            String arreglo = ctx.arregloDe(arg1);
+            String arreglo = ctx.arregloDe(getArg1());
             if (arreglo == null) {
-                arreglo = ctx.arregloPara(tipoArg1);
+                arreglo = ctx.arregloPara(getTipoArg1());
             }
 
             formato = "%d";

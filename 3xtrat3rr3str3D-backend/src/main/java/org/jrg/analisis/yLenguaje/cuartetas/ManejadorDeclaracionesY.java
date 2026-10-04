@@ -20,6 +20,12 @@ import org.jrg.model.ast.yLenguaje.variable_asignable.VarArray;
 import org.jrg.model.ast.yLenguaje.variable_asignable.VarMiembro;
 import org.jrg.model.ast.yLenguaje.variable_asignable.VarSimple;
 import org.jrg.model.cuarteta.Cuarteta;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaRetorno;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaGoto;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaAsignacionSimple;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaAsignacionArreglo;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaAritmetica;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaAlloc;
 
 // generar cuartetas de declaraciones y asignables en el lenguaje Y
 public class ManejadorDeclaracionesY {
@@ -79,11 +85,11 @@ public class ManejadorDeclaracionesY {
             }
 
             // agregar el retorno con valor a la lista de cuartetas
-            ctx.getCuartetas().add(new Cuarteta("return", valor, "_", "_", ctx.inferirTipoDe(valor, ctx.getTiposConocidos()), "_", "_"));
+            ctx.getCuartetas().add(new CuartetaRetorno("return", valor, "_", "_", ctx.inferirTipoDe(valor, ctx.getTiposConocidos()), "_", "_"));
 
         } else {
             // agregar el retorno sin valor a la lista de cuartetas
-            ctx.getCuartetas().add(new Cuarteta("return", "_", "_", "_", "_", "_", "_"));
+            ctx.getCuartetas().add(new CuartetaRetorno("return", "_", "_", "_", "_", "_", "_"));
         }
 
         return null;
@@ -95,7 +101,7 @@ public class ManejadorDeclaracionesY {
 
         // agregar salto a la etiqueta de continuar si existe a la lista de cuartetas
         if (ctx.getEtiquetaContinueActual() != null) {
-            ctx.getCuartetas().add(new Cuarteta("goto", ctx.getEtiquetaContinueActual(), "_", "_", "_", "_", "_"));
+            ctx.getCuartetas().add(new CuartetaGoto("goto", ctx.getEtiquetaContinueActual(), "_", "_", "_", "_", "_"));
         }
 
         return null;
@@ -107,7 +113,7 @@ public class ManejadorDeclaracionesY {
 
         // agregar salto a la etiqueta de romper si existe a la lista de cuartetas
         if (ctx.getEtiquetaBreakActual() != null) {
-            ctx.getCuartetas().add(new Cuarteta("goto", ctx.getEtiquetaBreakActual(), "_", "_", "_", "_", "_"));
+            ctx.getCuartetas().add(new CuartetaGoto("goto", ctx.getEtiquetaBreakActual(), "_", "_", "_", "_", "_"));
         }
 
         return null;
@@ -153,7 +159,7 @@ public class ManejadorDeclaracionesY {
 
             }
 
-            ctx.getCuartetas().add(new Cuarteta(":=", valor, "_", nodo.getNombre(), ctx.inferirTipoDe(valor, ctx.getTiposConocidos()), "_", tipoResY));
+            ctx.getCuartetas().add(new CuartetaAsignacionSimple(":=", valor, "_", nodo.getNombre(), ctx.inferirTipoDe(valor, ctx.getTiposConocidos()), "_", tipoResY));
 
         }
 
@@ -176,7 +182,7 @@ public class ManejadorDeclaracionesY {
         }
 
         // agregar la reserva de memoria a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta("alloc", tamano, "_", nodo.getNombre(), ctx.inferirTipoDe(tamano, ctx.getTiposConocidos()), "_", "_"));
+        ctx.getCuartetas().add(new CuartetaAlloc("alloc", tamano, "_", nodo.getNombre(), ctx.inferirTipoDe(tamano, ctx.getTiposConocidos()), "_", "_"));
 
         return null;
 
@@ -196,7 +202,7 @@ public class ManejadorDeclaracionesY {
         }
 
         // agregar la reserva de memoria a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta("alloc", tamano, "_", nodo.getNombre(), ctx.inferirTipoDe(tamano, ctx.getTiposConocidos()), "_", "_"));
+        ctx.getCuartetas().add(new CuartetaAlloc("alloc", tamano, "_", nodo.getNombre(), ctx.inferirTipoDe(tamano, ctx.getTiposConocidos()), "_", "_"));
 
         // obtener la lista de valores iniciales
         NodoASTY lista = nodo.getListaValores();
@@ -220,7 +226,7 @@ public class ManejadorDeclaracionesY {
                     }
 
                     // agregar la asignacion a la posicion actual a la lista de cuartetas
-                    ctx.getCuartetas().add(new Cuarteta("[]=", nodo.getNombre(), String.valueOf(i), valor, "_", "entero", "_"));
+                    ctx.getCuartetas().add(new CuartetaAsignacionArreglo("[]=", nodo.getNombre(), String.valueOf(i), valor, "_", "entero", "_"));
 
                 }
 
@@ -268,10 +274,10 @@ public class ManejadorDeclaracionesY {
 
         // multiplicar filas por columnas en un temporal
         String tempTotal = ctx.getTemporales().nuevoTemporal();
-        ctx.getCuartetas().add(new Cuarteta("*", filas, columnas, tempTotal, ctx.tipoAritmetico(filas), ctx.tipoAritmetico(columnas), ctx.tipoResultadoAritmetico(filas, columnas)));
+        ctx.getCuartetas().add(new CuartetaAritmetica("*", filas, columnas, tempTotal, ctx.tipoAritmetico(filas), ctx.tipoAritmetico(columnas), ctx.tipoResultadoAritmetico(filas, columnas)));
 
         // agregar la reserva de memoria con el total a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta("alloc", tipoBase, tempTotal, nodo.getNombre(), tipoBase, "entero", tipoBase));
+        ctx.getCuartetas().add(new CuartetaAlloc("alloc", tipoBase, tempTotal, nodo.getNombre(), tipoBase, "entero", tipoBase));
 
         return null;
 
@@ -305,10 +311,10 @@ public class ManejadorDeclaracionesY {
 
         // multiplicar filas por columnas en un temporal
         String tempTotal = ctx.getTemporales().nuevoTemporal();
-        ctx.getCuartetas().add(new Cuarteta("*", filas, columnas, tempTotal, ctx.tipoAritmetico(filas), ctx.tipoAritmetico(columnas), ctx.tipoResultadoAritmetico(filas, columnas)));
+        ctx.getCuartetas().add(new CuartetaAritmetica("*", filas, columnas, tempTotal, ctx.tipoAritmetico(filas), ctx.tipoAritmetico(columnas), ctx.tipoResultadoAritmetico(filas, columnas)));
 
         // agregar la reserva de memoria con el total a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta("alloc", tipoBase, tempTotal, nodo.getNombre(), tipoBase, "entero", tipoBase));
+        ctx.getCuartetas().add(new CuartetaAlloc("alloc", tipoBase, tempTotal, nodo.getNombre(), tipoBase, "entero", tipoBase));
 
         // recorrer cada fila con sus valores
         if (nodo.getFilas() != null) {
@@ -334,12 +340,12 @@ public class ManejadorDeclaracionesY {
 
                     // calcular el indice lineal como fila por columnas mas columna
                     String tempFila = ctx.getTemporales().nuevoTemporal();
-                    ctx.getCuartetas().add(new Cuarteta("*", String.valueOf(f), columnas, tempFila, "entero", ctx.tipoAritmetico(columnas), ctx.tipoResultadoAritmetico(String.valueOf(f), columnas)));
+                    ctx.getCuartetas().add(new CuartetaAritmetica("*", String.valueOf(f), columnas, tempFila, "entero", ctx.tipoAritmetico(columnas), ctx.tipoResultadoAritmetico(String.valueOf(f), columnas)));
                     String tempIndice = ctx.getTemporales().nuevoTemporal();
-                    ctx.getCuartetas().add(new Cuarteta("+", tempFila, String.valueOf(c), tempIndice, ctx.tipoAritmetico(tempFila), "entero", ctx.tipoResultadoAritmetico(tempFila, String.valueOf(c))));
+                    ctx.getCuartetas().add(new CuartetaAritmetica("+", tempFila, String.valueOf(c), tempIndice, ctx.tipoAritmetico(tempFila), "entero", ctx.tipoResultadoAritmetico(tempFila, String.valueOf(c))));
 
                     // agregar la asignacion a la posicion actual a la lista de cuartetas
-                    ctx.getCuartetas().add(new Cuarteta("[]=", nodo.getNombre(), tempIndice, val, "_", "entero", "_"));
+                    ctx.getCuartetas().add(new CuartetaAsignacionArreglo("[]=", nodo.getNombre(), tempIndice, val, "_", "entero", "_"));
 
                 }
 

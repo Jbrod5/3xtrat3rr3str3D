@@ -6,6 +6,7 @@ import java.util.List;
 import org.jrg.model.ast.zetariano.ListaExpresiones;
 import org.jrg.model.ast.zetariano.TipoDato;
 import org.jrg.model.ast.zetariano.ValorPrimitivo;
+import org.jrg.model.ast.zetariano.base.NodoASTZetariano;
 import org.jrg.model.ast.zetariano.expresion.ExprAccesoArray;
 import org.jrg.model.ast.zetariano.expresion.ExprAccesoMiembro;
 import org.jrg.model.ast.zetariano.expresion.ExprAnd;
@@ -24,8 +25,28 @@ import org.jrg.model.ast.zetariano.expresion.ExprPrimitivo;
 import org.jrg.model.ast.zetariano.expresion.ExprRelacional;
 import org.jrg.model.ast.zetariano.expresion.ExprSumaResta;
 import org.jrg.model.ast.zetariano.expresion.ExprTernario;
+import org.jrg.model.ast.zetariano.base.NodoASTZetariano;
+import org.jrg.model.ast.zetariano.variable_asignable.VarArray;
+import org.jrg.model.ast.zetariano.variable_asignable.VarMiembro;
 import org.jrg.model.base.TipoPrimitivo;
 import org.jrg.model.cuarteta.Cuarteta;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaConcatenacion;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaUminus;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaParametro;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaNew;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaNegacion;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaLogica;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaLlamada;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaIfFalse;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaGoto;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaEtiqueta;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaComparacion;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaAsignacionSimple;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaAsignacionArreglo;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaAritmetica;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaAlloc;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaAccesoMiembro;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaAccesoArreglo;
 
 // generar cuartetas de expresiones en Zetariano
 public class ManejadorExpresionesZetariano {
@@ -87,7 +108,7 @@ public class ManejadorExpresionesZetariano {
 
         // agregar un param por cada argumento a la lista de cuartetas
         for (int i = 0; i < argumentos.size(); i++) {
-            ctx.getCuartetas().add(new Cuarteta("param", argumentos.get(i), "_", "_", ctx.inferirTipoDe(argumentos.get(i), ctx.getTiposConocidos()), "_", "_"));
+            ctx.getCuartetas().add(new CuartetaParametro("param", argumentos.get(i), "_", "_", ctx.inferirTipoDe(argumentos.get(i), ctx.getTiposConocidos()), "_", "_"));
         }
 
         // agregar la instancia y guardar el resultado en un temporal a la lista de cuartetas
@@ -95,7 +116,7 @@ public class ManejadorExpresionesZetariano {
 
         // registrar el temporal con el tipo de la clase
         ctx.getTiposConocidos().put(temp, nodo.getNombreClase());
-        ctx.getCuartetas().add(new Cuarteta("new", nodo.getNombreClase(), String.valueOf(argumentos.size()), temp, nodo.getNombreClase(), "_", nodo.getNombreClase()));
+        ctx.getCuartetas().add(new CuartetaNew("new", nodo.getNombreClase(), String.valueOf(argumentos.size()), temp, nodo.getNombreClase(), "_", nodo.getNombreClase()));
 
         return temp;
 
@@ -132,7 +153,7 @@ public class ManejadorExpresionesZetariano {
 
                     // multiplicar el acumulado por la dimension actual
                     String tempMul = ctx.getTemporales().nuevoTemporal();
-                    ctx.getCuartetas().add(new Cuarteta("*", dimension, valorDimension, tempMul, ctx.tipoAritmetico(dimension), ctx.tipoAritmetico(valorDimension), ctx.tipoResultadoAritmetico(dimension, valorDimension)));
+                    ctx.getCuartetas().add(new CuartetaAritmetica("*", dimension, valorDimension, tempMul, ctx.tipoAritmetico(dimension), ctx.tipoAritmetico(valorDimension), ctx.tipoResultadoAritmetico(dimension, valorDimension)));
                     dimension = tempMul;
 
                 }
@@ -144,11 +165,80 @@ public class ManejadorExpresionesZetariano {
         // agregar la reserva de memoria con temporal a la lista de cuartetas
         String temp = ctx.getTemporales().nuevoTemporal();
 
+        // reservar filas anidadas cuando hay dos dimensiones
+        if (nodo.getDimensiones() != null && nodo.getDimensiones().size() == 2) {
+            return reservarAnidado(tipoBase, nodo.getDimensiones());
+        }
+
         // registrar el temporal con el tipo base
         ctx.getTiposConocidos().put(temp, tipoBase);
-        ctx.getCuartetas().add(new Cuarteta("alloc", tipoBase, dimension, temp, tipoBase, "entero", tipoBase));
+        ctx.getCuartetas().add(new CuartetaAlloc("alloc", tipoBase, dimension, temp, tipoBase, "entero", tipoBase));
 
         return temp;
+
+    }
+
+    // reservar un arreglo de dos dimensiones como filas anidadas
+    private String reservarAnidado(String tipoBase, List<NodoASTZetariano> dimensiones) {
+
+        // evaluar la dimension externa una sola vez
+        String dimExterna = "_";
+        if (dimensiones.get(0) != null) {
+            dimExterna = dimensiones.get(0).accept(generador);
+        }
+
+        if (dimExterna == null) {
+            dimExterna = "_";
+        }
+
+        // evaluar la dimension interna una sola vez
+        String dimInterna = "_";
+        if (dimensiones.get(1) != null) {
+            dimInterna = dimensiones.get(1).accept(generador);
+        }
+
+        if (dimInterna == null) {
+            dimInterna = "_";
+        }
+
+        // reservar el arreglo externo de bases enteras
+        String tempExterno = ctx.getTemporales().nuevoTemporal();
+        ctx.getTiposConocidos().put(tempExterno, "entero");
+        ctx.getCuartetas().add(new CuartetaAlloc("alloc", "entero", dimExterna, tempExterno, "entero", "entero", "entero"));
+
+        // preparar el contador del ciclo de filas
+        String tempContador = ctx.getTemporales().nuevoTemporal();
+        ctx.getTiposConocidos().put(tempContador, "entero");
+        ctx.getCuartetas().add(new CuartetaAsignacionSimple("=", "0", "_", tempContador, "entero", "_", "entero"));
+
+        // crear las etiquetas del ciclo de filas
+        String etiquetaInicio = ctx.getTemporales().nuevaEtiqueta();
+        String etiquetaFin = ctx.getTemporales().nuevaEtiqueta();
+        ctx.getCuartetas().add(new CuartetaEtiqueta("label", etiquetaInicio, "_", "_", "_", "_", "_"));
+
+        // comparar el contador contra la dimension externa
+        String tempCondicion = ctx.getTemporales().nuevoTemporal();
+        ctx.getTiposConocidos().put(tempCondicion, "booleano");
+        ctx.getCuartetas().add(new CuartetaComparacion("<", tempContador, dimExterna, tempCondicion, "entero", "entero", "booleano"));
+        ctx.getCuartetas().add(new CuartetaIfFalse("if_false", tempCondicion, etiquetaFin, "_", "booleano", "_", "_"));
+
+        // reservar una fila con el tipo base
+        String tempFila = ctx.getTemporales().nuevoTemporal();
+        ctx.getTiposConocidos().put(tempFila, tipoBase);
+        ctx.getCuartetas().add(new CuartetaAlloc("alloc", tipoBase, dimInterna, tempFila, tipoBase, "entero", tipoBase));
+
+        // guardar la fila en el arreglo externo
+        ctx.getCuartetas().add(new CuartetaAsignacionArreglo("[]=", tempExterno, tempContador, tempFila, "_", "entero", "_"));
+
+        // avanzar el contador y repetir
+        String tempSiguiente = ctx.getTemporales().nuevoTemporal();
+        ctx.getTiposConocidos().put(tempSiguiente, "entero");
+        ctx.getCuartetas().add(new CuartetaAritmetica("+", tempContador, "1", tempSiguiente, "entero", "entero", "entero"));
+        ctx.getCuartetas().add(new CuartetaAsignacionSimple("=", tempSiguiente, "_", tempContador, "entero", "_", "entero"));
+        ctx.getCuartetas().add(new CuartetaGoto("goto", etiquetaInicio, "_", "_", "_", "_", "_"));
+        ctx.getCuartetas().add(new CuartetaEtiqueta("label", etiquetaFin, "_", "_", "_", "_", "_"));
+
+        return tempExterno;
 
     }
 
@@ -187,12 +277,12 @@ public class ManejadorExpresionesZetariano {
 
         // agregar un param por cada argumento a la lista de cuartetas
         for (int i = 0; i < argumentos.size(); i++) {
-            ctx.getCuartetas().add(new Cuarteta("param", argumentos.get(i), "_", "_", ctx.inferirTipoDe(argumentos.get(i), ctx.getTiposConocidos()), "_", "_"));
+            ctx.getCuartetas().add(new CuartetaParametro("param", argumentos.get(i), "_", "_", ctx.inferirTipoDe(argumentos.get(i), ctx.getTiposConocidos()), "_", "_"));
         }
 
         // agregar la llamada y guardar el resultado en un temporal a la lista de cuartetas
         String temp = ctx.getTemporales().nuevoTemporal();
-        ctx.getCuartetas().add(new Cuarteta("call", nodo.getNombre(), String.valueOf(argumentos.size()), temp, "_", "_", "_"));
+        ctx.getCuartetas().add(new CuartetaLlamada("call", nodo.getNombre(), String.valueOf(argumentos.size()), temp, "_", "_", "_"));
 
         return temp;
 
@@ -240,16 +330,16 @@ public class ManejadorExpresionesZetariano {
         }
 
         // agregar el param del objeto primero a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta("param", objeto, "_", "_", ctx.inferirTipoDe(objeto, ctx.getTiposConocidos()), "_", "_"));
+        ctx.getCuartetas().add(new CuartetaParametro("param", objeto, "_", "_", ctx.inferirTipoDe(objeto, ctx.getTiposConocidos()), "_", "_"));
 
         // agregar un param por cada argumento a la lista de cuartetas
         for (int i = 0; i < argumentos.size(); i++) {
-            ctx.getCuartetas().add(new Cuarteta("param", argumentos.get(i), "_", "_", ctx.inferirTipoDe(argumentos.get(i), ctx.getTiposConocidos()), "_", "_"));
+            ctx.getCuartetas().add(new CuartetaParametro("param", argumentos.get(i), "_", "_", ctx.inferirTipoDe(argumentos.get(i), ctx.getTiposConocidos()), "_", "_"));
         }
 
         // agregar la llamada al metodo y guardar el resultado en un temporal a la lista de cuartetas
         String temp = ctx.getTemporales().nuevoTemporal();
-        ctx.getCuartetas().add(new Cuarteta("call_method", nodo.getNombre(), String.valueOf(argumentos.size() + 1), temp, "_", "_", "_"));
+        ctx.getCuartetas().add(new CuartetaLlamada("call_method", nodo.getNombre(), String.valueOf(argumentos.size() + 1), temp, "_", "_", "_"));
 
         return temp;
 
@@ -260,7 +350,9 @@ public class ManejadorExpresionesZetariano {
 
         // evaluar el objeto del acceso
         String objeto = "_";
-        if (nodo.getObjeto() != null) {
+        if (nodo.getObjeto() instanceof VarArray || nodo.getObjeto() instanceof VarMiembro) {
+            objeto = materializarBase(nodo.getObjeto());
+        } else if (nodo.getObjeto() != null) {
             objeto = nodo.getObjeto().accept(generador);
         }
 
@@ -281,7 +373,7 @@ public class ManejadorExpresionesZetariano {
 
         // generar el acceso a arreglo con temporal
         String temp = ctx.getTemporales().nuevoTemporal();
-        ctx.getCuartetas().add(new Cuarteta("=[]", objeto, indice, temp, "_", "entero", "_"));
+        ctx.getCuartetas().add(new CuartetaAccesoArreglo("=[]", objeto, indice, temp, "_", "entero", "_"));
 
         return temp;
 
@@ -292,7 +384,9 @@ public class ManejadorExpresionesZetariano {
 
         // evaluar el objeto del acceso
         String objeto = "_";
-        if (nodo.getObjeto() != null) {
+        if (nodo.getObjeto() instanceof VarArray || nodo.getObjeto() instanceof VarMiembro) {
+            objeto = materializarBase(nodo.getObjeto());
+        } else if (nodo.getObjeto() != null) {
             objeto = nodo.getObjeto().accept(generador);
         }
 
@@ -302,7 +396,7 @@ public class ManejadorExpresionesZetariano {
 
         // agregar el acceso a miembro con temporal a la lista de cuartetas
         String temp = ctx.getTemporales().nuevoTemporal();
-        ctx.getCuartetas().add(new Cuarteta(".", objeto, nodo.getMiembro(), temp, "_", "_", "_"));
+        ctx.getCuartetas().add(new CuartetaAccesoMiembro(".", objeto, nodo.getMiembro(), temp, "_", "_", "_"));
 
         return temp;
 
@@ -322,7 +416,7 @@ public class ManejadorExpresionesZetariano {
         }
 
         // agregar el incremento sobre la misma variable a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta("+", variable, "1", variable, ctx.inferirTipoDe(variable, ctx.getTiposConocidos()), "entero", ctx.inferirTipoDe(variable, ctx.getTiposConocidos())));
+        ctx.getCuartetas().add(new CuartetaAritmetica("+", variable, "1", variable, ctx.inferirTipoDe(variable, ctx.getTiposConocidos()), "entero", ctx.inferirTipoDe(variable, ctx.getTiposConocidos())));
 
         return variable;
 
@@ -343,7 +437,7 @@ public class ManejadorExpresionesZetariano {
         }
 
         // agregar el decremento sobre la misma variable a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta("-", variable, "1", variable, ctx.inferirTipoDe(variable, ctx.getTiposConocidos()), "entero", ctx.inferirTipoDe(variable, ctx.getTiposConocidos())));
+        ctx.getCuartetas().add(new CuartetaAritmetica("-", variable, "1", variable, ctx.inferirTipoDe(variable, ctx.getTiposConocidos()), "entero", ctx.inferirTipoDe(variable, ctx.getTiposConocidos())));
 
         return variable;
 
@@ -372,7 +466,7 @@ public class ManejadorExpresionesZetariano {
         ctx.getTiposConocidos().put(temp, tipoNeg);
 
         // agregar menos unario con opcode propio a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta("uminus", valor, "_", temp, tipoNeg, "_", tipoNeg));
+        ctx.getCuartetas().add(new CuartetaUminus("uminus", valor, "_", temp, tipoNeg, "_", tipoNeg));
 
         return temp;
 
@@ -396,7 +490,7 @@ public class ManejadorExpresionesZetariano {
 
         // registrar el temporal como booleano
         ctx.getTiposConocidos().put(temp, "booleano");
-        ctx.getCuartetas().add(new Cuarteta("!", valor, "_", temp, ctx.inferirTipoDe(valor, ctx.getTiposConocidos()), "_", "booleano"));
+        ctx.getCuartetas().add(new CuartetaNegacion("!", valor, "_", temp, ctx.inferirTipoDe(valor, ctx.getTiposConocidos()), "_", "booleano"));
 
         return temp;
 
@@ -434,7 +528,7 @@ public class ManejadorExpresionesZetariano {
 
         // registrar el temporal con el tipo inferido
         ctx.getTiposConocidos().put(temp, tipoResMult);
-        ctx.getCuartetas().add(new Cuarteta(nodo.getOperador(), izquierdo, derecho, temp, ctx.tipoAritmetico(izquierdo), ctx.tipoAritmetico(derecho), tipoResMult));
+        ctx.getCuartetas().add(new CuartetaAritmetica(nodo.getOperador(), izquierdo, derecho, temp, ctx.tipoAritmetico(izquierdo), ctx.tipoAritmetico(derecho), tipoResMult));
 
         return temp;
 
@@ -473,11 +567,13 @@ public class ManejadorExpresionesZetariano {
         // adivinar que tipo sale de la cuenta
         String tipoResSuma = ctx.tipoResultadoAritmetico(izquierdo, derecho);
 
+        // detectar texto en los lados para elegir concat
+        boolean izqEsCadenaSuma = ctx.esTipoCadena(tipoIzqSuma);
+        boolean derEsCadenaSuma = ctx.esTipoCadena(tipoDerSuma);
+
         // usar cadena cuando se concatena texto con mas
         if ("+".equals(nodo.getOperador())) {
 
-            boolean izqEsCadenaSuma = ctx.esTipoCadena(tipoIzqSuma);
-            boolean derEsCadenaSuma = ctx.esTipoCadena(tipoDerSuma);
             if (izqEsCadenaSuma || derEsCadenaSuma) {
                 tipoResSuma = "cadena";
             }
@@ -486,7 +582,13 @@ public class ManejadorExpresionesZetariano {
 
         // registrar el temporal con el tipo inferido
         ctx.getTiposConocidos().put(temp, tipoResSuma);
-        ctx.getCuartetas().add(new Cuarteta(nodo.getOperador(), izquierdo, derecho, temp, ctx.tipoAritmetico(izquierdo), ctx.tipoAritmetico(derecho), tipoResSuma));
+
+        // usar concat cuando el mas junta texto
+        if ("+".equals(nodo.getOperador()) && (izqEsCadenaSuma || derEsCadenaSuma)) {
+            ctx.getCuartetas().add(new CuartetaConcatenacion(nodo.getOperador(), izquierdo, derecho, temp, ctx.tipoAritmetico(izquierdo), ctx.tipoAritmetico(derecho), tipoResSuma));
+        } else {
+            ctx.getCuartetas().add(new CuartetaAritmetica(nodo.getOperador(), izquierdo, derecho, temp, ctx.tipoAritmetico(izquierdo), ctx.tipoAritmetico(derecho), tipoResSuma));
+        }
 
         return temp;
 
@@ -521,7 +623,7 @@ public class ManejadorExpresionesZetariano {
 
         // registrar el temporal como booleano
         ctx.getTiposConocidos().put(temp, "booleano");
-        ctx.getCuartetas().add(new Cuarteta(nodo.getOperador(), izquierdo, derecho, temp, ctx.inferirTipoDe(izquierdo, ctx.getTiposConocidos()), ctx.inferirTipoDe(derecho, ctx.getTiposConocidos()), "booleano"));
+        ctx.getCuartetas().add(new CuartetaComparacion(nodo.getOperador(), izquierdo, derecho, temp, ctx.inferirTipoDe(izquierdo, ctx.getTiposConocidos()), ctx.inferirTipoDe(derecho, ctx.getTiposConocidos()), "booleano"));
 
         return temp;
 
@@ -555,7 +657,7 @@ public class ManejadorExpresionesZetariano {
 
         // registrar el temporal como booleano
         ctx.getTiposConocidos().put(temp, "booleano");
-        ctx.getCuartetas().add(new Cuarteta("&&", izquierdo, derecho, temp, ctx.inferirTipoDe(izquierdo, ctx.getTiposConocidos()), ctx.inferirTipoDe(derecho, ctx.getTiposConocidos()), "booleano"));
+        ctx.getCuartetas().add(new CuartetaLogica("&&", izquierdo, derecho, temp, ctx.inferirTipoDe(izquierdo, ctx.getTiposConocidos()), ctx.inferirTipoDe(derecho, ctx.getTiposConocidos()), "booleano"));
 
         return temp;
 
@@ -590,7 +692,7 @@ public class ManejadorExpresionesZetariano {
 
         // registrar el temporal como booleano
         ctx.getTiposConocidos().put(temp, "booleano");
-        ctx.getCuartetas().add(new Cuarteta("||", izquierdo, derecho, temp, ctx.inferirTipoDe(izquierdo, ctx.getTiposConocidos()), ctx.inferirTipoDe(derecho, ctx.getTiposConocidos()), "booleano"));
+        ctx.getCuartetas().add(new CuartetaLogica("||", izquierdo, derecho, temp, ctx.inferirTipoDe(izquierdo, ctx.getTiposConocidos()), ctx.inferirTipoDe(derecho, ctx.getTiposConocidos()), "booleano"));
 
         return temp;
 
@@ -619,7 +721,7 @@ public class ManejadorExpresionesZetariano {
         String lFin = ctx.getTemporales().nuevaEtiqueta();
 
         // agregar el salto a la rama falsa si la condicion es falsa a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta("if_false", condicion, lFalso, "_", "booleano", "_", "_"));
+        ctx.getCuartetas().add(new CuartetaIfFalse("if_false", condicion, lFalso, "_", "booleano", "_", "_"));
 
         // evaluar el valor verdadero
         String verdadero = "_";
@@ -636,13 +738,13 @@ public class ManejadorExpresionesZetariano {
         String tipoVerdadero = ctx.inferirTipoDe(verdadero, ctx.getTiposConocidos());
 
         // agregar la asignacion del valor verdadero a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta(":=", verdadero, "_", temp, tipoVerdadero, "_", "_"));
+        ctx.getCuartetas().add(new CuartetaAsignacionSimple(":=", verdadero, "_", temp, tipoVerdadero, "_", "_"));
 
         // agregar el salto al final a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta("goto", lFin, "_", "_", "_", "_", "_"));
+        ctx.getCuartetas().add(new CuartetaGoto("goto", lFin, "_", "_", "_", "_", "_"));
 
         // agregar la etiqueta de la rama falsa a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta("label", lFalso, "_", "_", "_", "_", "_"));
+        ctx.getCuartetas().add(new CuartetaEtiqueta("label", lFalso, "_", "_", "_", "_", "_"));
 
         // evaluar el valor falso
         String falso = "_";
@@ -658,10 +760,10 @@ public class ManejadorExpresionesZetariano {
         String tipoFalso = ctx.inferirTipoDe(falso, ctx.getTiposConocidos());
 
         // agregar la asignacion del valor falso a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta(":=", falso, "_", temp, tipoFalso, "_", "_"));
+        ctx.getCuartetas().add(new CuartetaAsignacionSimple(":=", falso, "_", temp, tipoFalso, "_", "_"));
 
         // agregar la etiqueta final a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta("label", lFin, "_", "_", "_", "_", "_"));
+        ctx.getCuartetas().add(new CuartetaEtiqueta("label", lFin, "_", "_", "_", "_", "_"));
 
         // registrar el temporal con el tipo comun de las ramas
         if (tipoVerdadero.equals(tipoFalso)) {
@@ -690,7 +792,7 @@ public class ManejadorExpresionesZetariano {
             if (primitivo.getTipoDato() == TipoPrimitivo.NULO) {
 
                 String tempNulo = ctx.getTemporales().nuevoTemporal();
-                ctx.getCuartetas().add(new Cuarteta("=", "null", "_", tempNulo, "_", "_", "_"));
+                ctx.getCuartetas().add(new CuartetaAsignacionSimple("=", "null", "_", tempNulo, "_", "_", "_"));
 
                 return tempNulo;
 
@@ -704,13 +806,76 @@ public class ManejadorExpresionesZetariano {
 
             // registrar el temporal con el tipo inferido
             ctx.getTiposConocidos().put(temp, tipoLiteral);
-            ctx.getCuartetas().add(new Cuarteta("=", primitivo.getValor(), "_", temp, tipoLiteral, "_", tipoLiteral));
+            ctx.getCuartetas().add(new CuartetaAsignacionSimple("=", primitivo.getValor(), "_", temp, tipoLiteral, "_", tipoLiteral));
 
             return temp;
 
         }
 
         return null;
+
+    }
+
+    // materializar una base compuesta en un temporal listo para usar
+    private String materializarBase(NodoASTZetariano nodo) {
+
+        // verificar si el nodo es nulo
+        if (nodo == null) {
+            return "_";
+        }
+
+        // anidar lectura de arreglo para bases con indice
+        if (nodo instanceof VarArray) {
+
+            // convertir la variable al tipo concreto
+            VarArray acceso = (VarArray) nodo;
+
+            // materializar la base interna primero para encadenar al infinito
+            String baseInterna = materializarBase(acceso.getVariable());
+
+            // evaluar el indice del acceso
+            String indice = "_";
+            if (acceso.getIndice() != null) {
+                indice = acceso.getIndice().accept(generador);
+            }
+
+            if (indice == null) {
+                indice = "_";
+            }
+
+            // leer la base intermedia como entero
+            String tempBase = ctx.getTemporales().nuevoTemporal();
+            ctx.getTiposConocidos().put(tempBase, "entero");
+            ctx.getCuartetas().add(new CuartetaAccesoArreglo("=[]", baseInterna, indice, tempBase, "_", "_", "entero"));
+
+            return tempBase;
+
+        }
+
+        // anidar lectura de miembro para bases con punto
+        if (nodo instanceof VarMiembro) {
+
+            // convertir la variable al tipo concreto
+            VarMiembro acceso = (VarMiembro) nodo;
+
+            // materializar la base interna primero para encadenar al infinito
+            String baseInterna = materializarBase(acceso.getVariable());
+
+            // leer el miembro intermedio con temporal
+            String tempBase = ctx.getTemporales().nuevoTemporal();
+            ctx.getCuartetas().add(new CuartetaAccesoMiembro(".", baseInterna, acceso.getMiembro(), tempBase, "_", "_", "_"));
+
+            return tempBase;
+
+        }
+
+        // devolver nombres y temporales directos sin tocar nada
+        String directo = nodo.accept(generador);
+        if (directo == null) {
+            return "_";
+        }
+
+        return directo;
 
     }
 

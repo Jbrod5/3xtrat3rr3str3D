@@ -2298,6 +2298,12 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
 
         }
 
+        // solo se soportan arreglos de una o dos dimensiones
+        if (expr.getDimensiones() != null && expr.getDimensiones().size() > 2) {
+            agregarError(expr, "solo se soportan arreglos de hasta dos dimensiones");
+            return null;
+        }
+
         // construir el tipo array con sus dimensiones
         Tipo tipoArray = crearTipoArray(tipoBase, expr.getDimensiones().size());
         return tipoArray;
@@ -2785,11 +2791,12 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
             return ambitoGlobal.buscarTipo("double");
         }
 
-        // conservar int si ambos son int
-        if ("int".equals(a.getNombre()) && "int".equals(b.getNombre())) {
+        // convertir al tipo de mayor jerarquia si alguno es int
+        if ("int".equals(a.getNombre()) || "int".equals(b.getNombre())) {
             return ambitoGlobal.buscarTipo("int");
         }
 
+        // conservar el primero en cualquier otro caso
         return a;
 
     }
@@ -2809,6 +2816,15 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
 
         // aceptar si los nombres coinciden
         if (origen.getNombre().equals(destino.getNombre())) {
+            return true;
+        }
+
+        // conversion implicita entre texto y numero en ambos sentidos
+        if ("String".equals(origen.getNombre()) && esTipoNumerico(destino)) {
+            return true;
+        }
+
+        if (esTipoNumerico(origen) && "String".equals(destino.getNombre())) {
             return true;
         }
 

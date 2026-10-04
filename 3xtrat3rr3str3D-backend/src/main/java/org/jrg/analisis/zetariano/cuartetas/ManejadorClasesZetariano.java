@@ -17,6 +17,9 @@ import org.jrg.model.ast.zetariano.miembro_clase.MiembroMetodo;
 import org.jrg.model.ast.zetariano.parametro.ParamArray;
 import org.jrg.model.ast.zetariano.parametro.ParamSimple;
 import org.jrg.model.cuarteta.Cuarteta;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaStructDef;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaFuncEnd;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaFuncBegin;
 
 // generar cuartetas de clases constructores y metodos en Zetariano
 public class ManejadorClasesZetariano {
@@ -43,7 +46,7 @@ public class ManejadorClasesZetariano {
         String campos = construirCamposClase(nodo.getMiembros());
 
         // agregar la definicion de la clase como struct a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta("struct_def", nodo.getNombre(), campos, "_", "_", "_", "_"));
+        ctx.getCuartetas().add(new CuartetaStructDef("struct_def", nodo.getNombre(), campos, "_", "_", "_", "_"));
 
         // recorrer cada miembro de la clase
         if (nodo.getMiembros() != null) {
@@ -236,7 +239,7 @@ public class ManejadorClasesZetariano {
         String nombreFuncion = componerNombre(nodo.getNombre() + "_" + nodo.getNombre(), contarParametros(nodo.getParametros()));
 
         // agregar marcador de inicio a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta("func_begin", nombreFuncion, tiposParams, "void", tiposParams, "_", "void"));
+        ctx.getCuartetas().add(new CuartetaFuncBegin("func_begin", nombreFuncion, tiposParams, "void", tiposParams, "_", "void"));
 
         // recorrer las instrucciones del cuerpo
         if (nodo.getInstrucciones() != null) {
@@ -250,7 +253,7 @@ public class ManejadorClasesZetariano {
         }
 
         // agregar marcador de fin a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta("func_end", nombreFuncion, "_", "_", "_", "_", "_"));
+        ctx.getCuartetas().add(new CuartetaFuncEnd("func_end", nombreFuncion, "_", "_", "_", "_", "_"));
 
         return null;
 
@@ -273,7 +276,7 @@ public class ManejadorClasesZetariano {
         String nombreFuncion = componerNombre(prefijo + "_" + nodo.getNombre(), contarParametros(nodo.getParametros()));
 
         // agregar marcador de inicio a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta("func_begin", nombreFuncion, tiposParams, "void", tiposParams, "_", "void"));
+        ctx.getCuartetas().add(new CuartetaFuncBegin("func_begin", nombreFuncion, tiposParams, "void", tiposParams, "_", "void"));
 
         // recorrer las instrucciones del cuerpo
         if (nodo.getInstrucciones() != null) {
@@ -287,7 +290,7 @@ public class ManejadorClasesZetariano {
         }
 
         // agregar marcador de fin a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta("func_end", nombreFuncion, "_", "_", "_", "_", "_"));
+        ctx.getCuartetas().add(new CuartetaFuncEnd("func_end", nombreFuncion, "_", "_", "_", "_", "_"));
 
         return null;
 
@@ -320,7 +323,7 @@ public class ManejadorClasesZetariano {
         String nombreFuncion = componerNombre(prefijo + "_" + nodo.getNombre(), contarParametros(nodo.getParametros()));
 
         // agregar marcador de inicio a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta("func_begin", nombreFuncion, tiposParams, tipoRetorno, tiposParams, "_", tipoRetorno));
+        ctx.getCuartetas().add(new CuartetaFuncBegin("func_begin", nombreFuncion, tiposParams, tipoRetorno, tiposParams, "_", tipoRetorno));
 
         // recorrer las instrucciones del cuerpo
         if (nodo.getInstrucciones() != null) {
@@ -334,7 +337,7 @@ public class ManejadorClasesZetariano {
         }
 
         // agregar marcador de fin a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta("func_end", nombreFuncion, "_", "_", "_", "_", "_"));
+        ctx.getCuartetas().add(new CuartetaFuncEnd("func_end", nombreFuncion, "_", "_", "_", "_", "_"));
 
         return null;
 

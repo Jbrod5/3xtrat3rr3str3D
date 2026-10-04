@@ -72,7 +72,6 @@ public class Main {
 
         // registrar ruta raiz de verificacion
         // app.get("/", ctx -> ctx.result("backend activo :D"));
-        // version nueva: la raiz sirve el index del frontend compilado :D
 
     }
 

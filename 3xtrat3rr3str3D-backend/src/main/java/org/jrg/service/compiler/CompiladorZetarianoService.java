@@ -109,6 +109,7 @@ public class CompiladorZetarianoService {
         List<Simbolo> simbolos = new ArrayList<>();
         List<Tipo> tipos = new ArrayList<>();
         List<CuartetaResultado> cuartetas = new ArrayList<>();
+        List<Cuarteta> crudasTipadas = new ArrayList<>();
 
         if (ast instanceof Programa) {
 
@@ -168,6 +169,7 @@ public class CompiladorZetarianoService {
                 List<Cuarteta> cuartetasCrudas = generadorCuartetas.getCuartetas();
                 for (int i = 0; i < cuartetasCrudas.size(); i++) {
                     cuartetas.add(new CuartetaResultado(cuartetasCrudas.get(i)));
+                    crudasTipadas.add(cuartetasCrudas.get(i));
                 }
 
             } catch (RuntimeException e) {
@@ -178,7 +180,7 @@ public class CompiladorZetarianoService {
 
         // generar codigo C a partir de las cuartetas
         TraductorC traductorC = new TraductorC();
-        String codigoC = traductorC.traducir(cuartetas);
+        String codigoC = traductorC.traducir(crudasTipadas);
 
         // avisar que el C puede ser invalido si hubo errores semanticos
         if (recolector.tieneErrores() && cuartetas.isEmpty() == false) {
@@ -192,7 +194,9 @@ public class CompiladorZetarianoService {
             resultadoGcc = compiladorC.compilar(codigoC);
         }
 
-        return construirResultado(recolector, arbolTextual, "", "", simbolos, tipos, new ArrayList<>(), cuartetas, codigoC, resultadoGcc);
+        ResultadoAnalisis resultadoFinal = construirResultado(recolector, arbolTextual, "", "", simbolos, tipos, new ArrayList<>(), cuartetas, codigoC, resultadoGcc);
+        resultadoFinal.setCrudasTipadas(crudasTipadas);
+        return resultadoFinal;
 
     }
 
@@ -398,6 +402,7 @@ public class CompiladorZetarianoService {
 
         // generar cuartetas por archivo con sus simbolos
         List<CuartetaResultado> cuartetas = new ArrayList<>();
+        List<Cuarteta> crudasTipadas = new ArrayList<>();
         for (int i = 0; i < programas.size(); i++) {
 
             // omitir archivos sin programa
@@ -428,6 +433,7 @@ public class CompiladorZetarianoService {
                 List<Cuarteta> cuartetasCrudas = generadorCuartetas.getCuartetas();
                 for (int j = 0; j < cuartetasCrudas.size(); j++) {
                     cuartetas.add(new CuartetaResultado(cuartetasCrudas.get(j)));
+                    crudasTipadas.add(cuartetasCrudas.get(j));
                 }
 
             } catch (RuntimeException e) {
@@ -449,7 +455,7 @@ public class CompiladorZetarianoService {
 
         // generar codigo C a partir de las cuartetas
         TraductorC traductorC = new TraductorC();
-        String codigoC = traductorC.traducir(cuartetas);
+        String codigoC = traductorC.traducir(crudasTipadas);
 
         // avisar que el C puede ser invalido si hubo errores semanticos
         if (recolectorMaestro.tieneErrores() && cuartetas.isEmpty() == false) {
@@ -463,7 +469,9 @@ public class CompiladorZetarianoService {
             resultadoGcc = compiladorC.compilar(codigoC);
         }
 
-        return construirResultado(recolectorMaestro, arboles.toString(), "", "", simbolos, tipos, new ArrayList<>(), cuartetas, codigoC, resultadoGcc);
+        ResultadoAnalisis resultadoFinal = construirResultado(recolectorMaestro, arboles.toString(), "", "", simbolos, tipos, new ArrayList<>(), cuartetas, codigoC, resultadoGcc);
+        resultadoFinal.setCrudasTipadas(crudasTipadas);
+        return resultadoFinal;
 
     }
 

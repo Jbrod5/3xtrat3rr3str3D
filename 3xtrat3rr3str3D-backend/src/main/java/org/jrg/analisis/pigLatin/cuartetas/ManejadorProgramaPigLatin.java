@@ -13,6 +13,8 @@ import org.jrg.model.ast.pigLatin.TipoDato;
 import org.jrg.model.ast.pigLatin.ValorPrimitivo;
 import org.jrg.model.ast.pigLatin.base.NodoAST;
 import org.jrg.model.cuarteta.Cuarteta;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaFuncEnd;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaFuncBegin;
 
 // generar cuartetas del programa y sus secciones en Pig Latin
 public class ManejadorProgramaPigLatin {
@@ -37,7 +39,7 @@ public class ManejadorProgramaPigLatin {
         }
 
         // agregar marcador de inicio del main a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta("func_begin", "main", "_", "void", "_", "_", "void"));
+        ctx.getCuartetas().add(new CuartetaFuncBegin("func_begin", "main", "_", "void", "_", "_", "void"));
 
         // visitar seccion maior si existe
         if (nodo.getSeccionMaior() != null) {
@@ -45,7 +47,7 @@ public class ManejadorProgramaPigLatin {
         }
 
         // agregar marcador de fin del main a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta("func_end", "main", "_", "_", "_", "_", "_"));
+        ctx.getCuartetas().add(new CuartetaFuncEnd("func_end", "main", "_", "_", "_", "_", "_"));
 
         return null;
 

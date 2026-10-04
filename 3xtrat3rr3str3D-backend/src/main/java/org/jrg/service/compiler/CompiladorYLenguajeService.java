@@ -112,6 +112,7 @@ public class CompiladorYLenguajeService {
         List<Simbolo> simbolos = new ArrayList<>();
         List<Tipo> tipos = new ArrayList<>();
         List<CuartetaResultado> cuartetas = new ArrayList<>();
+        List<Cuarteta> crudasTipadas = new ArrayList<>();
 
         if (ast instanceof Programa) {
 
@@ -148,6 +149,7 @@ public class CompiladorYLenguajeService {
                 List<Cuarteta> cuartetasCrudas = generadorCuartetas.getCuartetas();
                 for (int i = 0; i < cuartetasCrudas.size(); i++) {
                     cuartetas.add(new CuartetaResultado(cuartetasCrudas.get(i)));
+                    crudasTipadas.add(cuartetasCrudas.get(i));
                 }
 
             } catch (RuntimeException e) {
@@ -158,7 +160,7 @@ public class CompiladorYLenguajeService {
 
         // generar codigo C a partir de las cuartetas
         TraductorC traductorC = new TraductorC();
-        String codigoC = traductorC.traducir(cuartetas);
+        String codigoC = traductorC.traducir(crudasTipadas);
 
         // agregar error que avise que el C puede ser invalido si hubo errores semanticos
         if (recolector.tieneErrores() && cuartetas.isEmpty() == false) {
@@ -172,7 +174,9 @@ public class CompiladorYLenguajeService {
             resultadoGcc = compiladorC.compilar(codigoC);
         }
 
-        return construirResultado(recolector, arbolTextual, "", "", simbolos, tipos, new ArrayList<>(), cuartetas, codigoC, resultadoGcc);
+        ResultadoAnalisis resultadoFinal = construirResultado(recolector, arbolTextual, "", "", simbolos, tipos, new ArrayList<>(), cuartetas, codigoC, resultadoGcc);
+        resultadoFinal.setCrudasTipadas(crudasTipadas);
+        return resultadoFinal;
 
     }
 
@@ -368,6 +372,7 @@ public class CompiladorYLenguajeService {
 
         // generar cuartetas de cada archivo en orden
         List<CuartetaResultado> cuartetas = new ArrayList<>();
+        List<Cuarteta> crudasTipadas = new ArrayList<>();
         List<Simbolo> simbolosDelAnalisis = analizador.obtenerSimbolos();
         for (int k = 0; k < orden.size(); k++) {
 
@@ -398,13 +403,14 @@ public class CompiladorYLenguajeService {
             List<Cuarteta> cuartetasCrudas = generadorCuartetas.getCuartetas();
             for (int j = 0; j < cuartetasCrudas.size(); j++) {
                 cuartetas.add(new CuartetaResultado(cuartetasCrudas.get(j)));
+                    crudasTipadas.add(cuartetasCrudas.get(j));
             }
 
         }
 
         // generar codigo C a partir de las cuartetas
         TraductorC traductorC = new TraductorC();
-        String codigoC = traductorC.traducir(cuartetas);
+        String codigoC = traductorC.traducir(crudasTipadas);
 
         // agregar error que avise que el C puede ser invalido si hubo errores
         if (recolectorPedido.tieneErrores() && cuartetas.isEmpty() == false) {
@@ -418,7 +424,9 @@ public class CompiladorYLenguajeService {
             resultadoGcc = compiladorC.compilar(codigoC);
         }
 
-        return construirResultado(recolectorPedido, arboles.get(indicePedido), "", "", simbolos, tipos, new ArrayList<>(), cuartetas, codigoC, resultadoGcc);
+        ResultadoAnalisis resultadoFinal = construirResultado(recolectorPedido, arboles.get(indicePedido), "", "", simbolos, tipos, new ArrayList<>(), cuartetas, codigoC, resultadoGcc);
+        resultadoFinal.setCrudasTipadas(crudasTipadas);
+        return resultadoFinal;
 
     }
 

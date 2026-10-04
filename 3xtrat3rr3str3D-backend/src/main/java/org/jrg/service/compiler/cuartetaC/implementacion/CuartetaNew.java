@@ -1,11 +1,11 @@
 package org.jrg.service.compiler.cuartetaC.implementacion;
 
 import org.jrg.service.compiler.cuartetaC.ContextoTraduccion;
-import org.jrg.service.compiler.cuartetaC.CuartetaC;
+import org.jrg.model.cuarteta.Cuarteta;
 import org.jrg.service.compiler.cuartetaC.SlotHS;
 
 // instanciar un struct u objeto con campos en heap
-public class CuartetaNew extends CuartetaC {
+public class CuartetaNew extends Cuarteta {
 
     /**
      * Crear una instanciacion con operador explicito.
@@ -24,42 +24,49 @@ public class CuartetaNew extends CuartetaC {
     public String obtenerCodigoC(ContextoTraduccion ctx) {
 
         // omitir destinos sin nombre valido
-        if (resultado == null || resultado.isEmpty() || resultado.equals("_")) {
+        if (getResultado() == null || getResultado().isEmpty() || getResultado().equals("_")) {
             ctx.limpiarParams();
             return "";
         }
 
         // contar campos del struct o usar uno por defecto
         int campos = 1;
-        if (arg1 != null && ctx.ordenCampos.containsKey(arg1)) {
+        if (getArg1() != null && ctx.ordenCampos.containsKey(getArg1())) {
 
-            campos = ctx.ordenCampos.get(arg1).size();
+            campos = ctx.ordenCampos.get(getArg1()).size();
             if (campos <= 0) {
                 campos = 1;
             }
 
         }
 
-        // declarar el destino como base entera
-        SlotHS slot = ctx.declararSlot(resultado, "entero");
+        // resolver donde vive la base segun campo propio o slot
+        StringBuilder lineas = new StringBuilder();
+        String destino = null;
+        if (ctx.esCampoPropio(getResultado())) {
+            destino = ctx.baseDeCampo(getResultado());
+        } else {
 
-        // recordar el struct duenio del objeto
-        if (arg1 != null && arg1.isEmpty() == false && arg1.equals("_") == false) {
-            ctx.mapaBases.put(resultado, arg1);
+            SlotHS slot = ctx.declararSlot(getResultado(), "entero");
+            destino = slot.getArreglo() + "[framepointer + " + slot.getIndice() + "]";
+
+            // recordar el struct duenio del objeto
+            if (getArg1() != null && getArg1().isEmpty() == false && getArg1().equals("_") == false) {
+                ctx.mapaBases.put(getResultado(), getArg1());
+            }
+
         }
 
         // tomar la base actual y avanzar por los campos
-        String destino = slot.getArreglo() + "[framepointer + " + slot.getIndice() + "]";
-        StringBuilder lineas = new StringBuilder();
         lineas.append(destino).append(" = heappointer;\n    ");
         lineas.append("heappointer = heappointer + ").append(String.valueOf(campos)).append(";");
 
         // llamar al constructor solo con new de clase conocida
-        if ("new".equals(operador) && arg1 != null && ctx.structs.containsKey(arg1)) {
+        if ("new".equals(getOperador()) && getArg1() != null && ctx.structs.containsKey(getArg1())) {
 
             // armar el nombre con conteo de params reales
             int numeroArgs = ctx.paramsPendientes.size();
-            String ctor = arg1 + "_" + arg1;
+            String ctor = getArg1() + "_" + getArg1();
             if (numeroArgs > 0) {
                 ctor = ctor + "_" + numeroArgs;
             }

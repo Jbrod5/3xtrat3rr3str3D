@@ -20,6 +20,16 @@ import org.jrg.model.ast.zetariano.variable_asignable.VarArray;
 import org.jrg.model.ast.zetariano.variable_asignable.VarMiembro;
 import org.jrg.model.ast.zetariano.variable_asignable.VarSimple;
 import org.jrg.model.cuarteta.Cuarteta;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaAritmetica;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaConcatenacion;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaRetorno;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaGoto;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaAsignacionSimple;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaAsignacionMiembro;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaAsignacionArreglo;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaAlloc;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaAccesoMiembro;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaAccesoArreglo;
 
 // generar cuartetas de declaraciones y asignaciones en Zetariano
 public class ManejadorDeclaracionesZetariano {
@@ -74,11 +84,11 @@ public class ManejadorDeclaracionesZetariano {
             }
 
             // agregar el retorno con valor a la lista de cuartetas
-            ctx.getCuartetas().add(new Cuarteta("return", valor, "_", "_", ctx.inferirTipoDe(valor, ctx.getTiposConocidos()), "_", "_"));
+            ctx.getCuartetas().add(new CuartetaRetorno("return", valor, "_", "_", ctx.inferirTipoDe(valor, ctx.getTiposConocidos()), "_", "_"));
 
         } else {
             // agregar el retorno sin valor a la lista de cuartetas
-            ctx.getCuartetas().add(new Cuarteta("return", "_", "_", "_", "_", "_", "_"));
+            ctx.getCuartetas().add(new CuartetaRetorno("return", "_", "_", "_", "_", "_", "_"));
         }
 
         return null;
@@ -90,7 +100,7 @@ public class ManejadorDeclaracionesZetariano {
 
         // agregar salto a la etiqueta de romper si existe a la lista de cuartetas
         if (ctx.getEtiquetaBreakActual() != null) {
-            ctx.getCuartetas().add(new Cuarteta("goto", ctx.getEtiquetaBreakActual(), "_", "_", "_", "_", "_"));
+            ctx.getCuartetas().add(new CuartetaGoto("goto", ctx.getEtiquetaBreakActual(), "_", "_", "_", "_", "_"));
         }
 
         return null;
@@ -102,7 +112,7 @@ public class ManejadorDeclaracionesZetariano {
 
         // agregar salto a la etiqueta de continuar si existe a la lista de cuartetas
         if (ctx.getEtiquetaContinueActual() != null) {
-            ctx.getCuartetas().add(new Cuarteta("goto", ctx.getEtiquetaContinueActual(), "_", "_", "_", "_", "_"));
+            ctx.getCuartetas().add(new CuartetaGoto("goto", ctx.getEtiquetaContinueActual(), "_", "_", "_", "_", "_"));
         }
 
         return null;
@@ -139,7 +149,7 @@ public class ManejadorDeclaracionesZetariano {
             }
 
             // agregar la reserva de memoria con la cantidad de dimensiones a la lista de cuartetas
-            ctx.getCuartetas().add(new Cuarteta("alloc", tipoBase, String.valueOf(nodo.getDimensiones()), nodo.getIdentificador(), tipoBase, "entero", tipoBase));
+            ctx.getCuartetas().add(new CuartetaAlloc("alloc", tipoBase, String.valueOf(nodo.getDimensiones()), nodo.getIdentificador(), tipoBase, "entero", tipoBase));
 
             // agregar la asignacion inicial si hay valor a la lista de cuartetas
             if (nodo.getValor() != null) {
@@ -164,7 +174,7 @@ public class ManejadorDeclaracionesZetariano {
 
                 }
 
-                ctx.getCuartetas().add(new Cuarteta(":=", valor, "_", nodo.getIdentificador(), ctx.inferirTipoDe(valor, ctx.getTiposConocidos()), "_", tipoResZ1));
+                ctx.getCuartetas().add(new CuartetaAsignacionSimple(":=", valor, "_", nodo.getIdentificador(), ctx.inferirTipoDe(valor, ctx.getTiposConocidos()), "_", tipoResZ1));
 
             }
 
@@ -201,7 +211,7 @@ public class ManejadorDeclaracionesZetariano {
 
             }
 
-            ctx.getCuartetas().add(new Cuarteta(":=", valor, "_", nodo.getIdentificador(), ctx.inferirTipoDe(valor, ctx.getTiposConocidos()), "_", tipoDeclZ));
+            ctx.getCuartetas().add(new CuartetaAsignacionSimple(":=", valor, "_", nodo.getIdentificador(), ctx.inferirTipoDe(valor, ctx.getTiposConocidos()), "_", tipoDeclZ));
 
         }
 
@@ -228,7 +238,7 @@ public class ManejadorDeclaracionesZetariano {
             }
 
             // agregar la reserva de memoria con la cantidad de valores a la lista de cuartetas
-            ctx.getCuartetas().add(new Cuarteta("alloc", String.valueOf(cantidad), "_", nodo.getIdentificador(), "entero", "_", "_"));
+            ctx.getCuartetas().add(new CuartetaAlloc("alloc", String.valueOf(cantidad), "_", nodo.getIdentificador(), "entero", "_", "_"));
 
             // recorrer cada valor de la lista
             if (listaExpresiones.getExpresiones() != null) {
@@ -243,7 +253,7 @@ public class ManejadorDeclaracionesZetariano {
                     }
 
                     // agregar la asignacion a la posicion actual a la lista de cuartetas
-                    ctx.getCuartetas().add(new Cuarteta("[]=", nodo.getIdentificador(), String.valueOf(i), valor, "_", "entero", "_"));
+                    ctx.getCuartetas().add(new CuartetaAsignacionArreglo("[]=", nodo.getIdentificador(), String.valueOf(i), valor, "_", "entero", "_"));
 
                 }
 
@@ -272,7 +282,7 @@ public class ManejadorDeclaracionesZetariano {
         int total = contarHojasMatriz(nodo.getValores());
 
         // agregar la reserva de memoria con el total a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta("alloc", tipoBase, String.valueOf(total), nodo.getIdentificador(), tipoBase, "entero", tipoBase));
+        ctx.getCuartetas().add(new CuartetaAlloc("alloc", tipoBase, String.valueOf(total), nodo.getIdentificador(), tipoBase, "entero", tipoBase));
 
         // llenar las posiciones con indice lineal desde cero
         llenarNivelMatriz(nodo.getIdentificador(), nodo.getValores(), 0);
@@ -340,7 +350,7 @@ public class ManejadorDeclaracionesZetariano {
                 }
 
                 // agregar la asignacion a la posicion actual a la lista de cuartetas
-                ctx.getCuartetas().add(new Cuarteta("[]=", destino, String.valueOf(posicion), val, "_", "entero", "_"));
+                ctx.getCuartetas().add(new CuartetaAsignacionArreglo("[]=", destino, String.valueOf(posicion), val, "_", "entero", "_"));
 
                 // avanzar el indice lineal
                 posicion = posicion + 1;
@@ -372,9 +382,11 @@ public class ManejadorDeclaracionesZetariano {
             // convertir la variable al tipo concreto
             VarArray acceso = (VarArray) nodo.getVariable();
 
-            // evaluar la base del acceso
+            // materializar la base si viene compuesta con indice o punto
             String base = "_";
-            if (acceso.getVariable() != null) {
+            if (acceso.getVariable() instanceof VarArray || acceso.getVariable() instanceof VarMiembro) {
+                base = materializarBase(acceso.getVariable());
+            } else if (acceso.getVariable() != null) {
                 base = acceso.getVariable().accept(generador);
             }
 
@@ -394,7 +406,7 @@ public class ManejadorDeclaracionesZetariano {
             }
 
             // agregar la asignacion a la posicion a la lista de cuartetas
-            ctx.getCuartetas().add(new Cuarteta("[]=", base, indice, derecha, "_", "entero", "_"));
+            ctx.getCuartetas().add(new CuartetaAsignacionArreglo("[]=", base, indice, derecha, "_", "entero", "_"));
 
             return null;
 
@@ -402,6 +414,21 @@ public class ManejadorDeclaracionesZetariano {
 
         // evaluar la variable destino
         String izquierda = "_";
+        if (nodo.getVariable() instanceof VarMiembro) {
+
+            // convertir la variable al tipo concreto
+            VarMiembro accesoMiembro = (VarMiembro) nodo.getVariable();
+
+            // materializar la base si viene compuesta con indice o punto
+            if (accesoMiembro.getVariable() instanceof VarArray || accesoMiembro.getVariable() instanceof VarMiembro) {
+                String baseMiembro = materializarBase(accesoMiembro.getVariable());
+                ctx.getCuartetas().add(new CuartetaAsignacionMiembro(".,=", baseMiembro, accesoMiembro.getMiembro(), derecha, "_", "_", "_"));
+
+                return null;
+            }
+
+        }
+
         if (nodo.getVariable() != null) {
             izquierda = nodo.getVariable().accept(generador);
         }
@@ -411,7 +438,7 @@ public class ManejadorDeclaracionesZetariano {
         }
 
         // agregar la asignacion a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta(":=", derecha, "_", izquierda, ctx.inferirTipoDe(derecha, ctx.getTiposConocidos()), "_", "_"));
+        ctx.getCuartetas().add(new CuartetaAsignacionSimple(":=", derecha, "_", izquierda, ctx.inferirTipoDe(derecha, ctx.getTiposConocidos()), "_", "_"));
 
         return null;
 
@@ -462,7 +489,13 @@ public class ManejadorDeclaracionesZetariano {
 
         // registrar el temporal con el tipo inferido
         ctx.getTiposConocidos().put(temp, tipoResComp);
-        ctx.getCuartetas().add(new Cuarteta(aritmetico, izquierda, derecha, temp, ctx.tipoAritmetico(izquierda), ctx.tipoAritmetico(derecha), tipoResComp));
+
+        // usar concat cuando el mas junta texto
+        if ("+".equals(aritmetico) && (ctx.esTipoCadena(ctx.inferirTipoDe(izquierda, ctx.getTiposConocidos())) || ctx.esTipoCadena(ctx.inferirTipoDe(derecha, ctx.getTiposConocidos())))) {
+            ctx.getCuartetas().add(new CuartetaConcatenacion(aritmetico, izquierda, derecha, temp, ctx.tipoAritmetico(izquierda), ctx.tipoAritmetico(derecha), tipoResComp));
+        } else {
+            ctx.getCuartetas().add(new CuartetaAritmetica(aritmetico, izquierda, derecha, temp, ctx.tipoAritmetico(izquierda), ctx.tipoAritmetico(derecha), tipoResComp));
+        }
 
         // manejar la asignacion a posicion de arreglo con []=
         if (nodo.getVariable() instanceof VarArray) {
@@ -473,7 +506,10 @@ public class ManejadorDeclaracionesZetariano {
             // evaluar la base del acceso
             String base = "_";
 
-            if (acceso.getVariable() != null) {
+            // materializar la base si viene compuesta con indice o punto
+            if (acceso.getVariable() instanceof VarArray || acceso.getVariable() instanceof VarMiembro) {
+                base = materializarBase(acceso.getVariable());
+            } else if (acceso.getVariable() != null) {
                 base = acceso.getVariable().accept(generador);
             }
 
@@ -492,14 +528,14 @@ public class ManejadorDeclaracionesZetariano {
             }
 
             // agregar la asignacion a la posicion a la lista de cuartetas
-            ctx.getCuartetas().add(new Cuarteta("[]=", base, indice, temp, "_", "entero", "_"));
+            ctx.getCuartetas().add(new CuartetaAsignacionArreglo("[]=", base, indice, temp, "_", "entero", "_"));
 
             return null;
 
         }
 
         // agregar la asignacion del temporal a la variable a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta(":=", temp, "_", izquierda, ctx.inferirTipoDe(temp, ctx.getTiposConocidos()), "_", "_"));
+        ctx.getCuartetas().add(new CuartetaAsignacionSimple(":=", temp, "_", izquierda, ctx.inferirTipoDe(temp, ctx.getTiposConocidos()), "_", "_"));
 
         return null;
 
@@ -555,6 +591,69 @@ public class ManejadorDeclaracionesZetariano {
 
         // devolver la referencia compuesta sin agregar cuarteta a la lista
         return base + "." + nodo.getMiembro();
+
+    }
+
+    // materializar una base compuesta en un temporal listo para usar
+    private String materializarBase(NodoASTZetariano nodo) {
+
+        // verificar si el nodo es nulo
+        if (nodo == null) {
+            return "_";
+        }
+
+        // anidar lectura de arreglo para bases con indice
+        if (nodo instanceof VarArray) {
+
+            // convertir la variable al tipo concreto
+            VarArray acceso = (VarArray) nodo;
+
+            // materializar la base interna primero para encadenar al infinito
+            String baseInterna = materializarBase(acceso.getVariable());
+
+            // evaluar el indice del acceso
+            String indice = "_";
+            if (acceso.getIndice() != null) {
+                indice = acceso.getIndice().accept(generador);
+            }
+
+            if (indice == null) {
+                indice = "_";
+            }
+
+            // leer la base intermedia como entero
+            String tempBase = ctx.getTemporales().nuevoTemporal();
+            ctx.getTiposConocidos().put(tempBase, "entero");
+            ctx.getCuartetas().add(new CuartetaAccesoArreglo("=[]", baseInterna, indice, tempBase, "_", "_", "entero"));
+
+            return tempBase;
+
+        }
+
+        // anidar lectura de miembro para bases con punto
+        if (nodo instanceof VarMiembro) {
+
+            // convertir la variable al tipo concreto
+            VarMiembro acceso = (VarMiembro) nodo;
+
+            // materializar la base interna primero para encadenar al infinito
+            String baseInterna = materializarBase(acceso.getVariable());
+
+            // leer el miembro intermedio con temporal
+            String tempBase = ctx.getTemporales().nuevoTemporal();
+            ctx.getCuartetas().add(new CuartetaAccesoMiembro(".", baseInterna, acceso.getMiembro(), tempBase, "_", "_", "_"));
+
+            return tempBase;
+
+        }
+
+        // devolver nombres y temporales directos sin tocar nada
+        String directo = nodo.accept(generador);
+        if (directo == null) {
+            return "_";
+        }
+
+        return directo;
 
     }
 

@@ -420,7 +420,15 @@ class ContextoSemanticoPigLatin {
         }
 
         // no permitir duplicados en el mismo ambito
-        if (ambitoActual().buscarSimboloLocal(nombre) != null) {
+        // if (ambitoActual().buscarSimboloLocal(nombre) != null) {
+        // lo local gana a lo importado de otro archivo sin pelear
+        Simbolo previo = ambitoActual().buscarSimboloLocal(nombre);
+        if (previo != null && esExtranjero(previo)) {
+            ambitoActual().eliminarSimbolo(nombre);
+            previo = null;
+        }
+
+        if (previo != null) {
             agregarError(nodo, "declaracion duplicada en el mismo ambito");
             return false;
         }
@@ -435,6 +443,24 @@ class ContextoSemanticoPigLatin {
         }
 
         return true;
+
+    }
+
+    // verificar si un simbolo viene de otro archivo importado
+    boolean esExtranjero(Simbolo simbolo) {
+
+        // sin simbolo o sin archivo no es extranjero
+        if (simbolo == null || simbolo.getArchivo() == null || simbolo.getArchivo().isEmpty()) {
+            return false;
+        }
+
+        // sin archivo actual todo lo marcado es extranjero
+        if (this.archivoActual == null || this.archivoActual.isEmpty()) {
+            return true;
+        }
+
+        // extranjero si su archivo difiere del que se analiza
+        return simbolo.getArchivo().equals(this.archivoActual) == false;
 
     }
 
@@ -512,6 +538,15 @@ class ContextoSemanticoPigLatin {
 
         // dos numericos siempre compatibles
         if (esNumerico(esperado) && esNumerico(real)) {
+            return true;
+        }
+
+        // conversion implicita entre texto y numero en ambos sentidos
+        if (esTexto(esperado) && esNumerico(real)) {
+            return true;
+        }
+
+        if (esNumerico(esperado) && esTexto(real)) {
             return true;
         }
 
@@ -604,8 +639,12 @@ class ContextoSemanticoPigLatin {
     // buscar un campo dentro de un tipo no primitivo
     Simbolo campo(Tipo tipo, String nombre, NodoAST nodo) {
 
+        // usar el canonico registrado que si trae los campos
+        // los tipos copiados de imports llegan vacios y fallan la busqueda
+        Tipo real = canonicoDe(tipo);
+
         // solo se puede acceder a miembros de tipos no primitivoes
-        if (!esNoPrimitivo(tipo)) {
+        if (!esNoPrimitivo(real)) {
 
             if (nodo != null) {
                 agregarError(nodo, "acceso a miembro invalido");
@@ -616,13 +655,13 @@ class ContextoSemanticoPigLatin {
         }
 
         // buscar el campo en el tipo
-        Simbolo existente = tipo.buscarCampo(nombre);
+        Simbolo existente = real.buscarCampo(nombre);
         if (existente != null) {
             return existente;
         }
 
         // si no conocemos el esquema no podemos decir que no exista
-        if (!tieneEsquemaConocido(tipo)) {
+        if (!tieneEsquemaConocido(real)) {
             return null;
         }
 
@@ -725,6 +764,24 @@ class ContextoSemanticoPigLatin {
         for (Ambito hijo : ambito.getAmbitos()) {
             colectarSimbolos(hijo, resultado);
         }
+
+    }
+
+    // resolver el tipo canonico registrado con el mismo nombre
+    private Tipo canonicoDe(Tipo tipo) {
+
+        // dejar primitivos y nulos como estan
+        if (tipo == null || tipo.esPrimitivo()) {
+            return tipo;
+        }
+
+        // buscar el registrado con el mismo nombre
+        Tipo canonico = this.tiposNoPrimitivos.get(tipo.getNombre());
+        if (canonico != null) {
+            return canonico;
+        }
+
+        return tipo;
 
     }
 

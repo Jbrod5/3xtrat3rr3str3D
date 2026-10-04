@@ -15,6 +15,11 @@ import org.jrg.model.ast.zetariano.paso_for.PasoForAsig;
 import org.jrg.model.ast.zetariano.paso_for.PasoForExpr;
 import org.jrg.model.ast.zetariano.seleccion.StatementSwitch;
 import org.jrg.model.cuarteta.Cuarteta;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaIfFalse;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaGoto;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaEtiqueta;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaComparacion;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaAsignacionSimple;
 
 // generar cuartetas de flujo seleccion y ciclos en Zetariano
 public class ManejadorFlujoZetariano {
@@ -87,7 +92,7 @@ public class ManejadorFlujoZetariano {
         String lSiguiente = ctx.getTemporales().nuevaEtiqueta();
 
         // agregar el salto a la rama que sigue si la condicion es falsa a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta("if_false", condicion, lSiguiente, "_", "booleano", "_", "_"));
+        ctx.getCuartetas().add(new CuartetaIfFalse("if_false", condicion, lSiguiente, "_", "booleano", "_", "_"));
 
         // visitar el bloque principal si existe
         if (nodo.getBloque() != null) {
@@ -95,10 +100,10 @@ public class ManejadorFlujoZetariano {
         }
 
         // agregar el salto al final a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta("goto", lFin, "_", "_", "_", "_", "_"));
+        ctx.getCuartetas().add(new CuartetaGoto("goto", lFin, "_", "_", "_", "_", "_"));
 
         // agregar la etiqueta de la rama que sigue a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta("label", lSiguiente, "_", "_", "_", "_", "_"));
+        ctx.getCuartetas().add(new CuartetaEtiqueta("label", lSiguiente, "_", "_", "_", "_", "_"));
 
         // recorrer las ramas sino si si existen
         if (nodo.getCondicionesSinoSi() != null) {
@@ -119,7 +124,7 @@ public class ManejadorFlujoZetariano {
                 String lSiguienteSino = ctx.getTemporales().nuevaEtiqueta();
 
                 // agregar el salto si la condicion es falsa a la lista de cuartetas
-                ctx.getCuartetas().add(new Cuarteta("if_false", condicionSino, lSiguienteSino, "_", "booleano", "_", "_"));
+                ctx.getCuartetas().add(new CuartetaIfFalse("if_false", condicionSino, lSiguienteSino, "_", "booleano", "_", "_"));
 
                 // visitar el bloque de la rama actual si existe
                 if (nodo.getBloquesSinoSi() != null) {
@@ -133,10 +138,10 @@ public class ManejadorFlujoZetariano {
                 }
 
                 // agregar el salto al final a la lista de cuartetas
-                ctx.getCuartetas().add(new Cuarteta("goto", lFin, "_", "_", "_", "_", "_"));
+                ctx.getCuartetas().add(new CuartetaGoto("goto", lFin, "_", "_", "_", "_", "_"));
 
                 // agregar la etiqueta de la rama que sigue a la lista de cuartetas
-                ctx.getCuartetas().add(new Cuarteta("label", lSiguienteSino, "_", "_", "_", "_", "_"));
+                ctx.getCuartetas().add(new CuartetaEtiqueta("label", lSiguienteSino, "_", "_", "_", "_", "_"));
 
             }
 
@@ -148,7 +153,7 @@ public class ManejadorFlujoZetariano {
         }
 
         // agregar la etiqueta final a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta("label", lFin, "_", "_", "_", "_", "_"));
+        ctx.getCuartetas().add(new CuartetaEtiqueta("label", lFin, "_", "_", "_", "_", "_"));
         return null;
 
     }
@@ -207,20 +212,20 @@ public class ManejadorFlujoZetariano {
 
                     // registrar el temporal con el tipo inferido
                     ctx.getTiposConocidos().put(tCaso, tipoCaso);
-                    ctx.getCuartetas().add(new Cuarteta("=", valorCaso, "_", tCaso, tipoCaso, "_", tipoCaso));
+                    ctx.getCuartetas().add(new CuartetaAsignacionSimple("=", valorCaso, "_", tCaso, tipoCaso, "_", tipoCaso));
 
                     // comparar el selector con el valor del caso
                     String tComparacion = ctx.getTemporales().nuevoTemporal();
 
                     // registrar el temporal como booleano
                     ctx.getTiposConocidos().put(tComparacion, "booleano");
-                    ctx.getCuartetas().add(new Cuarteta("==", selector, tCaso, tComparacion, ctx.inferirTipoDe(selector, ctx.getTiposConocidos()), ctx.inferirTipoDe(tCaso, ctx.getTiposConocidos()), "booleano"));
+                    ctx.getCuartetas().add(new CuartetaComparacion("==", selector, tCaso, tComparacion, ctx.inferirTipoDe(selector, ctx.getTiposConocidos()), ctx.inferirTipoDe(tCaso, ctx.getTiposConocidos()), "booleano"));
 
                     // crear la etiqueta del caso que sigue
                     String lSiguiente = ctx.getTemporales().nuevaEtiqueta();
 
                     // agregar el salto si no hay coincidencia a la lista de cuartetas
-                    ctx.getCuartetas().add(new Cuarteta("if_false", tComparacion, lSiguiente, "_", "booleano", "_", "_"));
+                    ctx.getCuartetas().add(new CuartetaIfFalse("if_false", tComparacion, lSiguiente, "_", "booleano", "_", "_"));
 
                     // visitar las instrucciones del caso
                     if (casoSwitch.getInstrucciones() != null) {
@@ -237,10 +242,10 @@ public class ManejadorFlujoZetariano {
                     }
 
                     // agregar el salto al final a la lista de cuartetas
-                    ctx.getCuartetas().add(new Cuarteta("goto", lFin, "_", "_", "_", "_", "_"));
+                    ctx.getCuartetas().add(new CuartetaGoto("goto", lFin, "_", "_", "_", "_", "_"));
 
                     // agregar la etiqueta del caso que sigue a la lista de cuartetas
-                    ctx.getCuartetas().add(new Cuarteta("label", lSiguiente, "_", "_", "_", "_", "_"));
+                    ctx.getCuartetas().add(new CuartetaEtiqueta("label", lSiguiente, "_", "_", "_", "_", "_"));
 
                 } else {
                     // visitar el caso directamente
@@ -257,7 +262,7 @@ public class ManejadorFlujoZetariano {
         }
 
         // agregar la etiqueta final a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta("label", lFin, "_", "_", "_", "_", "_"));
+        ctx.getCuartetas().add(new CuartetaEtiqueta("label", lFin, "_", "_", "_", "_", "_"));
 
         return null;
 
@@ -290,10 +295,10 @@ public class ManejadorFlujoZetariano {
         }
 
         // saltar a la condicion para no correr el paso antes
-        ctx.getCuartetas().add(new Cuarteta("goto", lInicio, "_", "_", "_", "_", "_"));
+        ctx.getCuartetas().add(new CuartetaGoto("goto", lInicio, "_", "_", "_", "_", "_"));
 
         // agregar la etiqueta del paso a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta("label", lPaso, "_", "_", "_", "_", "_"));
+        ctx.getCuartetas().add(new CuartetaEtiqueta("label", lPaso, "_", "_", "_", "_", "_"));
 
         // visitar el paso si existe
         if (nodo.getPaso() != null) {
@@ -301,7 +306,7 @@ public class ManejadorFlujoZetariano {
         }
 
         // agregar la etiqueta de inicio a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta("label", lInicio, "_", "_", "_", "_", "_"));
+        ctx.getCuartetas().add(new CuartetaEtiqueta("label", lInicio, "_", "_", "_", "_", "_"));
 
         // evaluar la condicion si existe
         if (nodo.getCondicion() != null) {
@@ -314,7 +319,7 @@ public class ManejadorFlujoZetariano {
             }
 
             // agregar el salto al final si la condicion es falsa a la lista de cuartetas
-            ctx.getCuartetas().add(new Cuarteta("if_false", condicion, lFin, "_", "booleano", "_", "_"));
+            ctx.getCuartetas().add(new CuartetaIfFalse("if_false", condicion, lFin, "_", "booleano", "_", "_"));
 
         }
 
@@ -330,10 +335,10 @@ public class ManejadorFlujoZetariano {
         // el paso ya salio arriba junto a su etiqueta
 
         // agregar el salto al paso a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta("goto", lPaso, "_", "_", "_", "_", "_"));
+        ctx.getCuartetas().add(new CuartetaGoto("goto", lPaso, "_", "_", "_", "_", "_"));
 
         // agregar la etiqueta final a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta("label", lFin, "_", "_", "_", "_", "_"));
+        ctx.getCuartetas().add(new CuartetaEtiqueta("label", lFin, "_", "_", "_", "_", "_"));
 
         // restaurar las etiquetas anteriores
         ctx.setEtiquetaBreakActual(anteriorBreak);
@@ -359,7 +364,7 @@ public class ManejadorFlujoZetariano {
         ctx.setEtiquetaContinueActual(lInicio);
 
         // agregar la etiqueta de inicio a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta("label", lInicio, "_", "_", "_", "_", "_"));
+        ctx.getCuartetas().add(new CuartetaEtiqueta("label", lInicio, "_", "_", "_", "_", "_"));
 
         // evaluar la condicion
         String condicion = "_";
@@ -372,7 +377,7 @@ public class ManejadorFlujoZetariano {
         }
 
         // agregar el salto al final si la condicion es falsa a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta("if_false", condicion, lFin, "_", "booleano", "_", "_"));
+        ctx.getCuartetas().add(new CuartetaIfFalse("if_false", condicion, lFin, "_", "booleano", "_", "_"));
 
         // visitar el bloque si existe
         if (nodo.getBloque() != null) {
@@ -380,10 +385,10 @@ public class ManejadorFlujoZetariano {
         }
 
         // agregar el salto al inicio a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta("goto", lInicio, "_", "_", "_", "_", "_"));
+        ctx.getCuartetas().add(new CuartetaGoto("goto", lInicio, "_", "_", "_", "_", "_"));
 
         // agregar la etiqueta final a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta("label", lFin, "_", "_", "_", "_", "_"));
+        ctx.getCuartetas().add(new CuartetaEtiqueta("label", lFin, "_", "_", "_", "_", "_"));
 
         // restaurar las etiquetas anteriores
         ctx.setEtiquetaBreakActual(anteriorBreak);
@@ -410,7 +415,7 @@ public class ManejadorFlujoZetariano {
         ctx.setEtiquetaContinueActual(lContinuar);
 
         // agregar la etiqueta de inicio a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta("label", lInicio, "_", "_", "_", "_", "_"));
+        ctx.getCuartetas().add(new CuartetaEtiqueta("label", lInicio, "_", "_", "_", "_", "_"));
 
         // visitar el bloque si existe
         if (nodo.getBloque() != null) {
@@ -418,7 +423,7 @@ public class ManejadorFlujoZetariano {
         }
 
         // agregar la etiqueta de continuar a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta("label", lContinuar, "_", "_", "_", "_", "_"));
+        ctx.getCuartetas().add(new CuartetaEtiqueta("label", lContinuar, "_", "_", "_", "_", "_"));
 
         // evaluar la condicion
         String condicion = "_";
@@ -432,13 +437,13 @@ public class ManejadorFlujoZetariano {
         }
 
         // agregar el salto al final si la condicion es falsa a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta("if_false", condicion, lFin, "_", "booleano", "_", "_"));
+        ctx.getCuartetas().add(new CuartetaIfFalse("if_false", condicion, lFin, "_", "booleano", "_", "_"));
 
         // agregar el salto al inicio a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta("goto", lInicio, "_", "_", "_", "_", "_"));
+        ctx.getCuartetas().add(new CuartetaGoto("goto", lInicio, "_", "_", "_", "_", "_"));
 
         // agregar la etiqueta final a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta("label", lFin, "_", "_", "_", "_", "_"));
+        ctx.getCuartetas().add(new CuartetaEtiqueta("label", lFin, "_", "_", "_", "_", "_"));
 
         // restaurar las etiquetas anteriores
         ctx.setEtiquetaBreakActual(anteriorBreak);
@@ -462,7 +467,7 @@ public class ManejadorFlujoZetariano {
             }
 
             // agregar la asignacion a la variable a la lista de cuartetas
-            ctx.getCuartetas().add(new Cuarteta(":=", valor, "_", nodo.getIdentificador(), ctx.inferirTipoDe(valor, ctx.getTiposConocidos()), "_", "_"));
+            ctx.getCuartetas().add(new CuartetaAsignacionSimple(":=", valor, "_", nodo.getIdentificador(), ctx.inferirTipoDe(valor, ctx.getTiposConocidos()), "_", "_"));
 
         }
 
@@ -495,7 +500,7 @@ public class ManejadorFlujoZetariano {
         }
 
         // agregar la asignacion a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta(":=", valor, "_", variable, ctx.inferirTipoDe(valor, ctx.getTiposConocidos()), "_", "_"));
+        ctx.getCuartetas().add(new CuartetaAsignacionSimple(":=", valor, "_", variable, ctx.inferirTipoDe(valor, ctx.getTiposConocidos()), "_", "_"));
 
         return null;
 
@@ -537,7 +542,7 @@ public class ManejadorFlujoZetariano {
         }
 
         // agregar la asignacion a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta(":=", valor, "_", variable, ctx.inferirTipoDe(valor, ctx.getTiposConocidos()), "_", "_"));
+        ctx.getCuartetas().add(new CuartetaAsignacionSimple(":=", valor, "_", variable, ctx.inferirTipoDe(valor, ctx.getTiposConocidos()), "_", "_"));
         return null;
 
     }

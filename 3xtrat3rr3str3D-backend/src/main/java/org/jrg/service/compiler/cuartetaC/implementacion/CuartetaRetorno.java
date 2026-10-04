@@ -1,10 +1,10 @@
 package org.jrg.service.compiler.cuartetaC.implementacion;
 
 import org.jrg.service.compiler.cuartetaC.ContextoTraduccion;
-import org.jrg.service.compiler.cuartetaC.CuartetaC;
+import org.jrg.model.cuarteta.Cuarteta;
 
 // devolver un valor por registro AX y limpiar el marco
-public class CuartetaRetorno extends CuartetaC {
+public class CuartetaRetorno extends Cuarteta {
 
     /**
      * Crear un retorno con operador explicito.
@@ -25,14 +25,14 @@ public class CuartetaRetorno extends CuartetaC {
         String epilogo = "stackpointer = framepointer;\n    framestackpointer = framestackpointer - 1;\n    framepointer = framestack[framestackpointer];\n    return;";
 
         // retornar solo el epilogo cuando no hay valor
-        if (arg1 == null || arg1.equals("_")) {
+        if (getArg1() == null || getArg1().equals("_")) {
             return epilogo;
         }
 
         // dejar el valor en su registro natural
-        String valor = ctx.expresionOperando(arg1);
+        String valor = ctx.expresionOperando(getArg1());
         String regNat = "AX_INT";
-        String arreglo = ctx.arregloDe(arg1);
+        String arreglo = ctx.arregloDe(getArg1());
         if ("stackfloat".equals(arreglo)) {
             regNat = "AX_FLOAT";
         } else if ("stackstring".equals(arreglo)) {
@@ -41,13 +41,13 @@ public class CuartetaRetorno extends CuartetaC {
             regNat = "AX_CHAR";
         } else if ("stackboolean".equals(arreglo)) {
             regNat = "AX_BOOLEAN";
-        } else if ("double".equals(tipoArg1) || "decimalis".equals(tipoArg1) || "flotante".equals(tipoArg1)) {
+        } else if ("double".equals(getTipoArg1()) || "decimalis".equals(getTipoArg1()) || "flotante".equals(getTipoArg1())) {
             regNat = "AX_FLOAT";
-        } else if ("char*".equals(tipoArg1) || "cadena".equals(tipoArg1) || "textum".equals(tipoArg1) || "String".equals(tipoArg1)) {
+        } else if ("char*".equals(getTipoArg1()) || "cadena".equals(getTipoArg1()) || "textum".equals(getTipoArg1()) || "String".equals(getTipoArg1())) {
             regNat = "AX_STRING";
-        } else if ("char".equals(tipoArg1) || "caracter".equals(tipoArg1) || "littera".equals(tipoArg1)) {
+        } else if ("char".equals(getTipoArg1()) || "caracter".equals(getTipoArg1()) || "littera".equals(getTipoArg1())) {
             regNat = "AX_CHAR";
-        } else if ("bool".equals(tipoArg1) || "boolean".equals(tipoArg1) || "booleano".equals(tipoArg1)) {
+        } else if ("bool".equals(getTipoArg1()) || "boolean".equals(getTipoArg1()) || "booleano".equals(getTipoArg1())) {
             regNat = "AX_BOOLEAN";
         }
 

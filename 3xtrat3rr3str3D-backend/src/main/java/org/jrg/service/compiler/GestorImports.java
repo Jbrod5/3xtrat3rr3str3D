@@ -104,7 +104,6 @@ public class GestorImports {
         //     acumularCuartetas(resultado);
         //     return resultado;
         // }
-        // version nueva: se compila arriba con analizarConjuntoY para ver hermanos
         if ("z".equals(extension)) {
 
             ResultadoAnalisis resultado = analizarConjuntoZetariano(rutaAbsoluta, linea, columna);
@@ -381,6 +380,13 @@ public class GestorImports {
     private void acumularCuartetas(ResultadoAnalisis resultado) {
 
         if (resultado == null) {
+            return;
+        }
+
+        // acumular directo las tipadas para no perder las emisoras
+        List<Cuarteta> tipadas = resultado.getCrudasTipadas();
+        if (tipadas != null && tipadas.isEmpty() == false) {
+            this.cuartetasAcumuladas.addAll(tipadas);
             return;
         }
 

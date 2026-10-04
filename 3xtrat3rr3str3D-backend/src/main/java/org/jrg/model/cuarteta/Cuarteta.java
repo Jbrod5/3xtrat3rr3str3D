@@ -1,5 +1,8 @@
 package org.jrg.model.cuarteta;
 
+import org.jrg.service.compiler.cuartetaC.ContextoTraduccion;
+import org.jrg.service.compiler.riscv.ContextoRiscV;
+
 // clase que representa una cuarteta para codigo de tres direcciones
 public class Cuarteta {
 
@@ -73,6 +76,26 @@ public class Cuarteta {
     public String toString() {
         // usar el formato solicitado
         return "(" + operador + ", " + arg1 + ", " + arg2 + ", " + resultado + ")";
+    }
+
+    /**
+     * Sacar las lineas de codigo C de la cuarteta.
+     */
+    public String obtenerCodigoC(ContextoTraduccion ctx) {
+
+        // marcar pendiente cuando no hay emisora concreta
+        return "// pendiente: " + operador + ";";
+
+    }
+
+    /**
+     * Sacar las lineas de ensamblador RISC-V de la cuarteta.
+     */
+    public String obtenerCodigoRiscv(ContextoRiscV ctx) {
+
+        // marcar pendiente cuando no hay emisora concreta
+        return "# pendiente: " + operador;
+
     }
 
 }

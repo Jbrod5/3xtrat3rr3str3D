@@ -21,6 +21,13 @@ import org.jrg.model.ast.pigLatin.declaracion_variable.DeclConTipoYValor;
 import org.jrg.model.ast.pigLatin.declaracion_variable.DeclEstructuraConValores;
 import org.jrg.model.ast.pigLatin.declaracion_variable.DeclObjetoNovus;
 import org.jrg.model.cuarteta.Cuarteta;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaParametro;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaNew;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaAsignacionSimple;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaAsignacionMiembro;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaAsignacionArreglo;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaAritmetica;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaAlloc;
 
 // generar cuartetas de declaraciones y asignaciones en Pig Latin
 public class ManejadorDeclaracionesPigLatin {
@@ -65,7 +72,7 @@ public class ManejadorDeclaracionesPigLatin {
 
         // agregar parametros a la lista de cuartetas
         for (int i = 0; i < args.size(); i++) {
-            ctx.getCuartetas().add(new Cuarteta("param", args.get(i), "_", "_", ctx.inferirTipoDe(args.get(i), ctx.getTiposConocidos()), "_", "_"));
+            ctx.getCuartetas().add(new CuartetaParametro("param", args.get(i), "_", "_", ctx.inferirTipoDe(args.get(i), ctx.getTiposConocidos()), "_", "_"));
         }
 
         // crear objeto
@@ -73,13 +80,13 @@ public class ManejadorDeclaracionesPigLatin {
 
         // registrar el temporal con el tipo del objeto
         ctx.getTiposConocidos().put(temp, nodo.getTipo());
-        ctx.getCuartetas().add(new Cuarteta("new", nodo.getTipo(), String.valueOf(args.size()), temp, nodo.getTipo(), "_", nodo.getTipo()));
+        ctx.getCuartetas().add(new CuartetaNew("new", nodo.getTipo(), String.valueOf(args.size()), temp, nodo.getTipo(), "_", nodo.getTipo()));
 
         // asignar a variable
         // ctx.getCuartetas().add(new Cuarteta(":=", temp, "_", nodo.getIdentificador(), ctx.inferirTipoDe(temp, ctx.getTiposConocidos()), "_", "_"));
         // registrar la variable con el tipo del objeto
         ctx.getTiposConocidos().put(nodo.getIdentificador(), nodo.getTipo());
-        ctx.getCuartetas().add(new Cuarteta(":=", temp, "_", nodo.getIdentificador(), ctx.inferirTipoDe(temp, ctx.getTiposConocidos()), "_", nodo.getTipo()));
+        ctx.getCuartetas().add(new CuartetaAsignacionSimple(":=", temp, "_", nodo.getIdentificador(), ctx.inferirTipoDe(temp, ctx.getTiposConocidos()), "_", nodo.getTipo()));
         return null;
 
     }
@@ -92,7 +99,7 @@ public class ManejadorDeclaracionesPigLatin {
 
         // registrar el temporal con el tipo de la estructura
         ctx.getTiposConocidos().put(temp, nodo.getTipo());
-        ctx.getCuartetas().add(new Cuarteta("new_struct", nodo.getTipo(), "_", temp, nodo.getTipo(), "_", nodo.getTipo()));
+        ctx.getCuartetas().add(new CuartetaNew("new_struct", nodo.getTipo(), "_", temp, nodo.getTipo(), "_", nodo.getTipo()));
 
         // evaluar los atributos
         if (nodo.getAtributos() instanceof ListaAtributosInstancia) {
@@ -120,7 +127,7 @@ public class ManejadorDeclaracionesPigLatin {
                     textoVal = val;
                 }
 
-                ctx.getCuartetas().add(new Cuarteta(".,=", temp, nombreCampo, textoVal, "_", "_", ctx.inferirTipoDe(val, ctx.getTiposConocidos())));
+                ctx.getCuartetas().add(new CuartetaAsignacionMiembro(".,=", temp, nombreCampo, textoVal, "_", "_", ctx.inferirTipoDe(val, ctx.getTiposConocidos())));
 
             }
 
@@ -130,7 +137,7 @@ public class ManejadorDeclaracionesPigLatin {
         // ctx.getCuartetas().add(new Cuarteta(":=", temp, "_", nodo.getIdentificador(), ctx.inferirTipoDe(temp, ctx.getTiposConocidos()), "_", "_"));
         // registrar la variable con el tipo de la estructura
         ctx.getTiposConocidos().put(nodo.getIdentificador(), nodo.getTipo());
-        ctx.getCuartetas().add(new Cuarteta(":=", temp, "_", nodo.getIdentificador(), ctx.inferirTipoDe(temp, ctx.getTiposConocidos()), "_", nodo.getTipo()));
+        ctx.getCuartetas().add(new CuartetaAsignacionSimple(":=", temp, "_", nodo.getIdentificador(), ctx.inferirTipoDe(temp, ctx.getTiposConocidos()), "_", nodo.getTipo()));
         return null;
 
     }
@@ -167,7 +174,7 @@ public class ManejadorDeclaracionesPigLatin {
             }
 
             // ctx.getCuartetas().add(new Cuarteta(":=", textoVal, "_", nodo.getIdentificador(), ctx.inferirTipoDe(val, ctx.getTiposConocidos()), "_", "_"));
-            ctx.getCuartetas().add(new Cuarteta(":=", textoVal, "_", nodo.getIdentificador(), ctx.inferirTipoDe(val, ctx.getTiposConocidos()), "_", tipoResDecl));
+            ctx.getCuartetas().add(new CuartetaAsignacionSimple(":=", textoVal, "_", nodo.getIdentificador(), ctx.inferirTipoDe(val, ctx.getTiposConocidos()), "_", tipoResDecl));
 
         }
 
@@ -179,7 +186,7 @@ public class ManejadorDeclaracionesPigLatin {
     public String visitDeclBooleanaImplicita(DeclBooleanaImplicita nodo) {
 
         // agregar asignacion con el valor implicito del nodo a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta(":=", nodo.getValor(), "_", nodo.getIdentificador(), ctx.inferirTipoLiteral(nodo.getValor()), "_", "_"));
+        ctx.getCuartetas().add(new CuartetaAsignacionSimple(":=", nodo.getValor(), "_", nodo.getIdentificador(), ctx.inferirTipoLiteral(nodo.getValor()), "_", "_"));
         return null;
 
     }
@@ -223,7 +230,7 @@ public class ManejadorDeclaracionesPigLatin {
 
         // usar el tipo base declarado para la reserva
         String tipoBase = nombreTipoBase(nodo.getTipo(), tamano);
-        ctx.getCuartetas().add(new Cuarteta("alloc", tipoBase, textoTamano, nodo.getIdentificador(), tipoBase, "entero", tipoBase));
+        ctx.getCuartetas().add(new CuartetaAlloc("alloc", tipoBase, textoTamano, nodo.getIdentificador(), tipoBase, "entero", tipoBase));
         return null;
 
     }
@@ -244,7 +251,7 @@ public class ManejadorDeclaracionesPigLatin {
 
         // usar el tipo base declarado para la reserva
         String tipoBaseArr = nombreTipoBase(nodo.getTipo(), tamano);
-        ctx.getCuartetas().add(new Cuarteta("alloc", tipoBaseArr, textoTamano, nodo.getIdentificador(), tipoBaseArr, "entero", tipoBaseArr));
+        ctx.getCuartetas().add(new CuartetaAlloc("alloc", tipoBaseArr, textoTamano, nodo.getIdentificador(), tipoBaseArr, "entero", tipoBaseArr));
         if (nodo.getValores() != null) {
 
             for (int i = 0; i < nodo.getValores().size(); i++) {
@@ -257,7 +264,7 @@ public class ManejadorDeclaracionesPigLatin {
                     textoVal = val;
                 }
 
-                ctx.getCuartetas().add(new Cuarteta("[]=", nodo.getIdentificador(), String.valueOf(i), textoVal, "_", "entero", "_"));
+                ctx.getCuartetas().add(new CuartetaAsignacionArreglo("[]=", nodo.getIdentificador(), String.valueOf(i), textoVal, "_", "entero", "_"));
 
             }
 
@@ -287,7 +294,7 @@ public class ManejadorDeclaracionesPigLatin {
             tipoEstruct = "entero";
         }
 
-        ctx.getCuartetas().add(new Cuarteta("alloc", tipoEstruct, textoTamano, nodo.getIdentificador(), tipoEstruct, "entero", tipoEstruct));
+        ctx.getCuartetas().add(new CuartetaAlloc("alloc", tipoEstruct, textoTamano, nodo.getIdentificador(), tipoEstruct, "entero", tipoEstruct));
         return null;
 
     }
@@ -324,10 +331,10 @@ public class ManejadorDeclaracionesPigLatin {
 
         // multiplicar filas por columnas en un temporal
         String tempTotal = ctx.getTemporales().nuevoTemporal();
-        ctx.getCuartetas().add(new Cuarteta("*", textoFilas, textoColumnas, tempTotal, ctx.tipoAritmetico(textoFilas), ctx.tipoAritmetico(textoColumnas), ctx.tipoResultadoAritmetico(textoFilas, textoColumnas)));
+        ctx.getCuartetas().add(new CuartetaAritmetica("*", textoFilas, textoColumnas, tempTotal, ctx.tipoAritmetico(textoFilas), ctx.tipoAritmetico(textoColumnas), ctx.tipoResultadoAritmetico(textoFilas, textoColumnas)));
 
         // agregar la reserva de memoria con el total a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta("alloc", tipoBase, tempTotal, nodo.getIdentificador(), tipoBase, "entero", tipoBase));
+        ctx.getCuartetas().add(new CuartetaAlloc("alloc", tipoBase, tempTotal, nodo.getIdentificador(), tipoBase, "entero", tipoBase));
         return null;
 
     }
@@ -364,10 +371,10 @@ public class ManejadorDeclaracionesPigLatin {
 
         // multiplicar filas por columnas en un temporal
         String tempTotal = ctx.getTemporales().nuevoTemporal();
-        ctx.getCuartetas().add(new Cuarteta("*", textoFilas, textoColumnas, tempTotal, ctx.tipoAritmetico(textoFilas), ctx.tipoAritmetico(textoColumnas), ctx.tipoResultadoAritmetico(textoFilas, textoColumnas)));
+        ctx.getCuartetas().add(new CuartetaAritmetica("*", textoFilas, textoColumnas, tempTotal, ctx.tipoAritmetico(textoFilas), ctx.tipoAritmetico(textoColumnas), ctx.tipoResultadoAritmetico(textoFilas, textoColumnas)));
 
         // agregar la reserva de memoria con el total a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta("alloc", tipoBase, tempTotal, nodo.getIdentificador(), tipoBase, "entero", tipoBase));
+        ctx.getCuartetas().add(new CuartetaAlloc("alloc", tipoBase, tempTotal, nodo.getIdentificador(), tipoBase, "entero", tipoBase));
 
         // recorrer cada fila con sus valores
         if (nodo.getFilas() != null) {
@@ -394,12 +401,12 @@ public class ManejadorDeclaracionesPigLatin {
 
                     // calcular el indice lineal como fila por columnas mas columna
                     String tempFila = ctx.getTemporales().nuevoTemporal();
-                    ctx.getCuartetas().add(new Cuarteta("*", String.valueOf(f), textoColumnas, tempFila, "entero", ctx.tipoAritmetico(textoColumnas), ctx.tipoResultadoAritmetico(String.valueOf(f), textoColumnas)));
+                    ctx.getCuartetas().add(new CuartetaAritmetica("*", String.valueOf(f), textoColumnas, tempFila, "entero", ctx.tipoAritmetico(textoColumnas), ctx.tipoResultadoAritmetico(String.valueOf(f), textoColumnas)));
                     String tempIndice = ctx.getTemporales().nuevoTemporal();
-                    ctx.getCuartetas().add(new Cuarteta("+", tempFila, String.valueOf(c), tempIndice, ctx.tipoAritmetico(tempFila), "entero", ctx.tipoResultadoAritmetico(tempFila, String.valueOf(c))));
+                    ctx.getCuartetas().add(new CuartetaAritmetica("+", tempFila, String.valueOf(c), tempIndice, ctx.tipoAritmetico(tempFila), "entero", ctx.tipoResultadoAritmetico(tempFila, String.valueOf(c))));
 
                     // agregar la asignacion a la posicion actual a la lista de cuartetas
-                    ctx.getCuartetas().add(new Cuarteta("[]=", nodo.getIdentificador(), tempIndice, textoVal, "_", "entero", "_"));
+                    ctx.getCuartetas().add(new CuartetaAsignacionArreglo("[]=", nodo.getIdentificador(), tempIndice, textoVal, "_", "entero", "_"));
 
                 }
 
@@ -464,14 +471,14 @@ public class ManejadorDeclaracionesPigLatin {
             }
 
             // agregar la asignacion a la posicion a la lista de cuartetas
-            ctx.getCuartetas().add(new Cuarteta("[]=", base, indice, derArr, "_", "entero", "_"));
+            ctx.getCuartetas().add(new CuartetaAsignacionArreglo("[]=", base, indice, derArr, "_", "entero", "_"));
             return null;
 
         }
 
         String izq = a.getVariable().accept(generador);
         String der = a.getValor().accept(generador);
-        ctx.getCuartetas().add(new Cuarteta(":=", der, "_", izq, ctx.inferirTipoDe(der, ctx.getTiposConocidos()), "_", "_"));
+        ctx.getCuartetas().add(new CuartetaAsignacionSimple(":=", der, "_", izq, ctx.inferirTipoDe(der, ctx.getTiposConocidos()), "_", "_"));
         return null;
 
     }

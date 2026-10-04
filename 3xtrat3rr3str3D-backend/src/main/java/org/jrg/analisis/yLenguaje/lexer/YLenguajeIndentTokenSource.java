@@ -26,6 +26,7 @@ public class YLenguajeIndentTokenSource implements TokenSource {
     private Token ultimoTokenReal;
     private boolean inicioDeLinea;
     private boolean finDeArchivoProcesado;
+    private boolean vistoContenido;
 
     public YLenguajeIndentTokenSource(Lexer lexerDelegado) {
 
@@ -35,6 +36,7 @@ public class YLenguajeIndentTokenSource implements TokenSource {
         this.ultimoTokenReal = null;
         this.inicioDeLinea = true;
         this.finDeArchivoProcesado = false;
+        this.vistoContenido = false;
 
         // el nivel base (columna 0) siempre esta en la pila
         this.pilaIndentacion.push(0);
@@ -58,6 +60,14 @@ public class YLenguajeIndentTokenSource implements TokenSource {
         if (token.getChannel() != Token.DEFAULT_CHANNEL) {
             return token;
         }
+
+        // omitir saltos iniciales como hace python con lineas en blanco
+        if (vistoContenido == false && token.getType() == YLenguajeLexer.NEWLINE) {
+            return nextToken();
+        }
+
+        // marcar contenido al primer token real
+        vistoContenido = true;
 
         if (inicioDeLinea && token.getType() != YLenguajeLexer.NEWLINE) {
             manejarIndentacion(token);

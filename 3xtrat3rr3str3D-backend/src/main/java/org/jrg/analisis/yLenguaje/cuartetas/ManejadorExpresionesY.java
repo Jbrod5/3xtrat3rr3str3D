@@ -19,8 +19,22 @@ import org.jrg.model.ast.yLenguaje.expresion.ExprPostIncremento;
 import org.jrg.model.ast.yLenguaje.expresion.ExprPrimitivo;
 import org.jrg.model.ast.yLenguaje.expresion.ExprRelacional;
 import org.jrg.model.ast.yLenguaje.expresion.ExprSumaResta;
+import org.jrg.model.ast.yLenguaje.base.NodoASTY;
+import org.jrg.model.ast.yLenguaje.variable_asignable.VarArray;
+import org.jrg.model.ast.yLenguaje.variable_asignable.VarMiembro;
 import org.jrg.model.base.TipoPrimitivo;
 import org.jrg.model.cuarteta.Cuarteta;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaComparacion;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaConcatenacion;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaUminus;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaParametro;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaNegacion;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaLogica;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaLlamada;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaAsignacionSimple;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaAritmetica;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaAccesoMiembro;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaAccesoArreglo;
 
 // generar cuartetas de expresiones en el lenguaje Y
 public class ManejadorExpresionesY {
@@ -74,12 +88,12 @@ public class ManejadorExpresionesY {
 
         // agregar un param por cada argumento a la lista de cuartetas
         for (int i = 0; i < argumentos.size(); i++) {
-            ctx.getCuartetas().add(new Cuarteta("param", argumentos.get(i), "_", "_", ctx.inferirTipoDe(argumentos.get(i), ctx.getTiposConocidos()), "_", "_"));
+            ctx.getCuartetas().add(new CuartetaParametro("param", argumentos.get(i), "_", "_", ctx.inferirTipoDe(argumentos.get(i), ctx.getTiposConocidos()), "_", "_"));
         }
 
         // agregar la llamada y guardar el resultado en un temporal a la lista de cuartetas
         String temp = ctx.getTemporales().nuevoTemporal();
-        ctx.getCuartetas().add(new Cuarteta("call", nodo.getNombre(), String.valueOf(argumentos.size()), temp, "_", "_", "_"));
+        ctx.getCuartetas().add(new CuartetaLlamada("call", nodo.getNombre(), String.valueOf(argumentos.size()), temp, "_", "_", "_"));
 
         return temp;
 
@@ -90,7 +104,9 @@ public class ManejadorExpresionesY {
 
         // evaluar el objeto del acceso
         String objeto = "_";
-        if (nodo.getObjeto() != null) {
+        if (nodo.getObjeto() instanceof VarArray || nodo.getObjeto() instanceof VarMiembro) {
+            objeto = materializarBase(nodo.getObjeto());
+        } else if (nodo.getObjeto() != null) {
             objeto = nodo.getObjeto().accept(generador);
         }
 
@@ -111,7 +127,7 @@ public class ManejadorExpresionesY {
 
         // generar el acceso a arreglo con temporal
         String temp = ctx.getTemporales().nuevoTemporal();
-        ctx.getCuartetas().add(new Cuarteta("=[]", objeto, indice, temp, "_", "entero", "_"));
+        ctx.getCuartetas().add(new CuartetaAccesoArreglo("=[]", objeto, indice, temp, "_", "entero", "_"));
 
         return temp;
 
@@ -122,7 +138,9 @@ public class ManejadorExpresionesY {
 
         // evaluar el objeto del acceso
         String objeto = "_";
-        if (nodo.getObjeto() != null) {
+        if (nodo.getObjeto() instanceof VarArray || nodo.getObjeto() instanceof VarMiembro) {
+            objeto = materializarBase(nodo.getObjeto());
+        } else if (nodo.getObjeto() != null) {
             objeto = nodo.getObjeto().accept(generador);
         }
 
@@ -132,7 +150,7 @@ public class ManejadorExpresionesY {
 
         // agregar el acceso a miembro con temporal a la lista de cuartetas
         String temp = ctx.getTemporales().nuevoTemporal();
-        ctx.getCuartetas().add(new Cuarteta(".", objeto, nodo.getMiembro(), temp, "_", "_", "_"));
+        ctx.getCuartetas().add(new CuartetaAccesoMiembro(".", objeto, nodo.getMiembro(), temp, "_", "_", "_"));
 
         return temp;
 
@@ -152,7 +170,7 @@ public class ManejadorExpresionesY {
         }
 
         // agregar el incremento sobre la misma variable a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta("+", variable, "1", variable, ctx.inferirTipoDe(variable, ctx.getTiposConocidos()), "entero", ctx.inferirTipoDe(variable, ctx.getTiposConocidos())));
+        ctx.getCuartetas().add(new CuartetaAritmetica("+", variable, "1", variable, ctx.inferirTipoDe(variable, ctx.getTiposConocidos()), "entero", ctx.inferirTipoDe(variable, ctx.getTiposConocidos())));
 
         return variable;
 
@@ -172,7 +190,7 @@ public class ManejadorExpresionesY {
         }
 
         // agregar el decremento sobre la misma variable a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta("-", variable, "1", variable, ctx.inferirTipoDe(variable, ctx.getTiposConocidos()), "entero", ctx.inferirTipoDe(variable, ctx.getTiposConocidos())));
+        ctx.getCuartetas().add(new CuartetaAritmetica("-", variable, "1", variable, ctx.inferirTipoDe(variable, ctx.getTiposConocidos()), "entero", ctx.inferirTipoDe(variable, ctx.getTiposConocidos())));
 
         return variable;
 
@@ -208,7 +226,7 @@ public class ManejadorExpresionesY {
         ctx.getTiposConocidos().put(temp, tipoNeg);
 
         // agregar menos unario con opcode propio a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta("uminus", valor, "_", temp, tipoNeg, "_", tipoNeg));
+        ctx.getCuartetas().add(new CuartetaUminus("uminus", valor, "_", temp, tipoNeg, "_", tipoNeg));
 
         return temp;
 
@@ -232,7 +250,7 @@ public class ManejadorExpresionesY {
 
         // registrar el temporal como booleano
         ctx.getTiposConocidos().put(temp, "booleano");
-        ctx.getCuartetas().add(new Cuarteta("!", valor, "_", temp, ctx.inferirTipoDe(valor, ctx.getTiposConocidos()), "_", "booleano"));
+        ctx.getCuartetas().add(new CuartetaNegacion("!", valor, "_", temp, ctx.inferirTipoDe(valor, ctx.getTiposConocidos()), "_", "booleano"));
 
         return temp;
 
@@ -270,7 +288,7 @@ public class ManejadorExpresionesY {
 
         // registrar el temporal con el tipo inferido
         ctx.getTiposConocidos().put(temp, tipoResMult);
-        ctx.getCuartetas().add(new Cuarteta(nodo.getOperador(), izquierdo, derecho, temp, ctx.tipoAritmetico(izquierdo), ctx.tipoAritmetico(derecho), tipoResMult));
+        ctx.getCuartetas().add(new CuartetaAritmetica(nodo.getOperador(), izquierdo, derecho, temp, ctx.tipoAritmetico(izquierdo), ctx.tipoAritmetico(derecho), tipoResMult));
 
         return temp;
 
@@ -309,11 +327,12 @@ public class ManejadorExpresionesY {
         // adivinar que tipo sale de la cuenta
         String tipoResSuma = ctx.tipoResultadoAritmetico(izquierdo, derecho);
 
+        // detectar texto en los lados para elegir concat
+        boolean izqEsCadenaSuma = ctx.esTipoCadena(tipoIzqSuma);
+        boolean derEsCadenaSuma = ctx.esTipoCadena(tipoDerSuma);
+
         // usar cadena cuando se concatena texto con mas
         if ("+".equals(nodo.getOperador())) {
-
-            boolean izqEsCadenaSuma = ctx.esTipoCadena(tipoIzqSuma);
-            boolean derEsCadenaSuma = ctx.esTipoCadena(tipoDerSuma);
 
             if (izqEsCadenaSuma || derEsCadenaSuma) {
                 tipoResSuma = "cadena";
@@ -323,7 +342,13 @@ public class ManejadorExpresionesY {
 
         // registrar el temporal con el tipo inferido
         ctx.getTiposConocidos().put(temp, tipoResSuma);
-        ctx.getCuartetas().add(new Cuarteta(nodo.getOperador(), izquierdo, derecho, temp, ctx.tipoAritmetico(izquierdo), ctx.tipoAritmetico(derecho), tipoResSuma));
+
+        // usar concat cuando el mas junta texto
+        if ("+".equals(nodo.getOperador()) && (izqEsCadenaSuma || derEsCadenaSuma)) {
+            ctx.getCuartetas().add(new CuartetaConcatenacion(nodo.getOperador(), izquierdo, derecho, temp, ctx.tipoAritmetico(izquierdo), ctx.tipoAritmetico(derecho), tipoResSuma));
+        } else {
+            ctx.getCuartetas().add(new CuartetaAritmetica(nodo.getOperador(), izquierdo, derecho, temp, ctx.tipoAritmetico(izquierdo), ctx.tipoAritmetico(derecho), tipoResSuma));
+        }
 
         return temp;
 
@@ -358,7 +383,7 @@ public class ManejadorExpresionesY {
 
         // registrar el temporal como booleano
         ctx.getTiposConocidos().put(temp, "booleano");
-        ctx.getCuartetas().add(new Cuarteta(nodo.getOperador(), izquierdo, derecho, temp, ctx.inferirTipoDe(izquierdo, ctx.getTiposConocidos()), ctx.inferirTipoDe(derecho, ctx.getTiposConocidos()), "booleano"));
+        ctx.getCuartetas().add(new CuartetaComparacion(nodo.getOperador(), izquierdo, derecho, temp, ctx.inferirTipoDe(izquierdo, ctx.getTiposConocidos()), ctx.inferirTipoDe(derecho, ctx.getTiposConocidos()), "booleano"));
 
         return temp;
 
@@ -392,7 +417,7 @@ public class ManejadorExpresionesY {
 
         // registrar el temporal como booleano
         ctx.getTiposConocidos().put(temp, "booleano");
-        ctx.getCuartetas().add(new Cuarteta("&&", izquierdo, derecho, temp, ctx.inferirTipoDe(izquierdo, ctx.getTiposConocidos()), ctx.inferirTipoDe(derecho, ctx.getTiposConocidos()), "booleano"));
+        ctx.getCuartetas().add(new CuartetaLogica("&&", izquierdo, derecho, temp, ctx.inferirTipoDe(izquierdo, ctx.getTiposConocidos()), ctx.inferirTipoDe(derecho, ctx.getTiposConocidos()), "booleano"));
 
         return temp;
 
@@ -427,7 +452,7 @@ public class ManejadorExpresionesY {
 
         // registrar el temporal como booleano
         ctx.getTiposConocidos().put(temp, "booleano");
-        ctx.getCuartetas().add(new Cuarteta("||", izquierdo, derecho, temp, ctx.inferirTipoDe(izquierdo, ctx.getTiposConocidos()), ctx.inferirTipoDe(derecho, ctx.getTiposConocidos()), "booleano"));
+        ctx.getCuartetas().add(new CuartetaLogica("||", izquierdo, derecho, temp, ctx.inferirTipoDe(izquierdo, ctx.getTiposConocidos()), ctx.inferirTipoDe(derecho, ctx.getTiposConocidos()), "booleano"));
 
         return temp;
 
@@ -455,13 +480,76 @@ public class ManejadorExpresionesY {
 
             // registrar el temporal con el tipo inferido
             ctx.getTiposConocidos().put(temp, tipoLiteral);
-            ctx.getCuartetas().add(new Cuarteta("=", primitivo.getValor(), "_", temp, tipoLiteral, "_", tipoLiteral));
+            ctx.getCuartetas().add(new CuartetaAsignacionSimple("=", primitivo.getValor(), "_", temp, tipoLiteral, "_", tipoLiteral));
 
             return temp;
 
         }
 
         return null;
+
+    }
+
+    // materializar una base compuesta en un temporal listo para usar
+    private String materializarBase(NodoASTY nodo) {
+
+        // verificar si el nodo es nulo
+        if (nodo == null) {
+            return "_";
+        }
+
+        // anidar lectura de arreglo para bases con indice
+        if (nodo instanceof VarArray) {
+
+            // convertir la variable al tipo concreto
+            VarArray acceso = (VarArray) nodo;
+
+            // materializar la base interna primero para encadenar al infinito
+            String baseInterna = materializarBase(acceso.getBase());
+
+            // evaluar el indice del acceso
+            String indice = "_";
+            if (acceso.getIndice() != null) {
+                indice = acceso.getIndice().accept(generador);
+            }
+
+            if (indice == null) {
+                indice = "_";
+            }
+
+            // leer la base intermedia como entero
+            String tempBase = ctx.getTemporales().nuevoTemporal();
+            ctx.getTiposConocidos().put(tempBase, "entero");
+            ctx.getCuartetas().add(new CuartetaAccesoArreglo("=[]", baseInterna, indice, tempBase, "_", "_", "entero"));
+
+            return tempBase;
+
+        }
+
+        // anidar lectura de miembro para bases con punto
+        if (nodo instanceof VarMiembro) {
+
+            // convertir la variable al tipo concreto
+            VarMiembro acceso = (VarMiembro) nodo;
+
+            // materializar la base interna primero para encadenar al infinito
+            String baseInterna = materializarBase(acceso.getBase());
+
+            // leer el miembro intermedio con temporal
+            String tempBase = ctx.getTemporales().nuevoTemporal();
+            ctx.getCuartetas().add(new CuartetaAccesoMiembro(".", baseInterna, acceso.getMiembro(), tempBase, "_", "_", "_"));
+
+            return tempBase;
+
+        }
+
+        // devolver nombres y temporales directos sin tocar nada
+        String directo = nodo.accept(generador);
+        if (directo == null) {
+            return "_";
+        }
+
+        return directo;
 
     }
 

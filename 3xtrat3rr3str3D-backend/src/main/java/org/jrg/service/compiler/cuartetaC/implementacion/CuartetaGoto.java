@@ -1,10 +1,10 @@
 package org.jrg.service.compiler.cuartetaC.implementacion;
 
 import org.jrg.service.compiler.cuartetaC.ContextoTraduccion;
-import org.jrg.service.compiler.cuartetaC.CuartetaC;
+import org.jrg.model.cuarteta.Cuarteta;
 
 // saltar siempre a una etiqueta
-public class CuartetaGoto extends CuartetaC {
+public class CuartetaGoto extends Cuarteta {
 
     /**
      * Crear un salto con operador explicito.
@@ -21,7 +21,7 @@ public class CuartetaGoto extends CuartetaC {
     @Override
     public String obtenerCodigoC(ContextoTraduccion ctx) {
         // saltar a la etiqueta del primer argumento
-        return "goto " + arg1 + ";";
+        return "goto " + getArg1() + ";";
     }
 
 }

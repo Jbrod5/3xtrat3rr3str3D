@@ -1,10 +1,10 @@
 package org.jrg.service.compiler.cuartetaC.implementacion;
 
 import org.jrg.service.compiler.cuartetaC.ContextoTraduccion;
-import org.jrg.service.compiler.cuartetaC.CuartetaC;
+import org.jrg.model.cuarteta.Cuarteta;
 
 // terminar el programa limpiando el marco
-public class CuartetaHalt extends CuartetaC {
+public class CuartetaHalt extends Cuarteta {
 
     /**
      * Crear un halt con operador explicito.

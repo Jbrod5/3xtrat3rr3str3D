@@ -1,11 +1,11 @@
 package org.jrg.service.compiler.cuartetaC.implementacion;
 
 import org.jrg.service.compiler.cuartetaC.ContextoTraduccion;
-import org.jrg.service.compiler.cuartetaC.CuartetaC;
+import org.jrg.model.cuarteta.Cuarteta;
 import org.jrg.service.compiler.cuartetaC.SlotHS;
 
 // reservar un bloque en heap con base en heappointer
-public class CuartetaAlloc extends CuartetaC {
+public class CuartetaAlloc extends Cuarteta {
 
     /**
      * Crear una reserva con operador explicito.
@@ -23,24 +23,39 @@ public class CuartetaAlloc extends CuartetaC {
     public String obtenerCodigoC(ContextoTraduccion ctx) {
 
         // omitir destinos sin nombre valido
-        if (resultado == null || resultado.isEmpty() || resultado.equals("_")) {
+        if (getResultado() == null || getResultado().isEmpty() || getResultado().equals("_")) {
             return "";
         }
 
         // resolver la dimension a expresion
-        String dim = ctx.expresionOperando(arg2);
+        String dim = ctx.expresionOperando(getArg2());
 
         // declarar el destino como base entera
-        SlotHS slot = ctx.declararSlot(resultado, "entero");
+        // usar temporal intermedio cuando el destino es campo propio
+        String nombreDestino = getResultado();
+        boolean destinoCampo = ctx.esCampoPropio(getResultado());
+        if (destinoCampo) {
+            nombreDestino = "__reserva" + ctx.contadorCadenas;
+            ctx.contadorCadenas = ctx.contadorCadenas + 1;
+        }
+
+        SlotHS slot = ctx.declararSlot(nombreDestino, "entero");
 
         // recordar el struct base del arreglo si trae
-        if (arg1 != null && arg1.isEmpty() == false && arg1.equals("_") == false) {
-            ctx.mapaBases.put(resultado, arg1);
+        if (getArg1() != null && getArg1().isEmpty() == false && getArg1().equals("_") == false) {
+            ctx.mapaBases.put(nombreDestino, getArg1());
         }
 
         // tomar la base actual y avanzar el puntero
         String destino = slot.getArreglo() + "[framepointer + " + slot.getIndice() + "]";
-        return destino + " = heappointer;\n    heappointer = heappointer + " + dim + ";";
+        String reserva = destino + " = heappointer;\n    heappointer = heappointer + " + dim + ";";
+
+        // guardar en el heap cuando el destino es campo propio
+        if (destinoCampo) {
+            reserva = reserva + "\n    " + ctx.guardarEnCampo(getResultado(), destino);
+        }
+
+        return reserva;
 
     }
 

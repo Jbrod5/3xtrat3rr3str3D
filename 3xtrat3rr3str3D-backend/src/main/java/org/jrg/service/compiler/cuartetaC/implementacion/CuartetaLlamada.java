@@ -1,11 +1,11 @@
 package org.jrg.service.compiler.cuartetaC.implementacion;
 
 import org.jrg.service.compiler.cuartetaC.ContextoTraduccion;
-import org.jrg.service.compiler.cuartetaC.CuartetaC;
+import org.jrg.model.cuarteta.Cuarteta;
 import org.jrg.service.compiler.cuartetaC.SlotHS;
 
 // pasar args por pila llamar y recoger retorno en AX
-public class CuartetaLlamada extends CuartetaC {
+public class CuartetaLlamada extends Cuarteta {
 
     /**
      * Crear una llamada con operador explicito.
@@ -24,10 +24,14 @@ public class CuartetaLlamada extends CuartetaC {
     public String obtenerCodigoC(ContextoTraduccion ctx) {
 
         // copiar el nombre para operar sin mutar el campo
-        String nombre = arg1;
+        String nombre = getArg1();
+
+        // distinguir llamada simple de llamada a metodo con receptor
+        boolean esLlamadaSimple = "call".equals(getOperador());
 
         // atender impresion con su forma de maquina
-        if ("imprimir".equals(nombre) || "println".equals(nombre) || "print".equals(nombre)) {
+        // solo en llamada simple para no tragarse metodos homonimos
+        if (esLlamadaSimple && ("imprimir".equals(nombre) || "println".equals(nombre) || "print".equals(nombre))) {
 
             String salida = "";
             if (ctx.paramsPendientes.isEmpty()) {
@@ -36,7 +40,12 @@ public class CuartetaLlamada extends CuartetaC {
 
                 // resolver el unico argumento pendiente
                 String valor = ctx.expresionOperando(ctx.paramsPendientes.get(0));
-                String tipo0 = ctx.tiposParamsPendientes.isEmpty() ? "_" : ctx.tiposParamsPendientes.get(0);
+
+                // usar guion bajo si no hay tipo pendiente
+                String tipo0 = "_";
+                if (ctx.tiposParamsPendientes.isEmpty() == false) {
+                    tipo0 = ctx.tiposParamsPendientes.get(0);
+                }
                 String arreglo = ctx.arregloDe(ctx.paramsPendientes.get(0));
                 if (arreglo == null) {
                     arreglo = ctx.arregloPara(tipo0);
@@ -68,7 +77,8 @@ public class CuartetaLlamada extends CuartetaC {
         }
 
         // atender leer y readln con su builtin
-        if ("leer".equals(nombre) || "readln".equals(nombre)) {
+        // solo en llamada simple para no tragarse metodos homonimos
+        if (esLlamadaSimple && ("leer".equals(nombre) || "readln".equals(nombre))) {
 
             if (ctx.builtinsUsados.contains("leer") == false) {
                 ctx.builtinsUsados.add("leer");
@@ -77,7 +87,7 @@ public class CuartetaLlamada extends CuartetaC {
             ctx.limpiarParams();
 
             // leer siempre devuelve texto
-            SlotHS slot = ctx.redeclararSlot(resultado, "cadena");
+            SlotHS slot = ctx.redeclararSlot(getResultado(), "cadena");
             String destino = slot.getArreglo() + "[framepointer + " + slot.getIndice() + "]";
             return destino + " = leer();";
 
@@ -89,7 +99,7 @@ public class CuartetaLlamada extends CuartetaC {
         // calificar llamadas a metodos de la clase actual sin receptor
         String nombreLlamada = nombre;
         boolean calificado = false;
-        if ("call".equals(operador) && nombre != null && nombre.indexOf('_') < 0 && ctx.nombreClaseActual.isEmpty() == false) {
+        if ("call".equals(getOperador()) && nombre != null && nombre.indexOf('_') < 0 && ctx.nombreClaseActual.isEmpty() == false) {
 
             String candidato = ctx.nombreClaseActual + "_" + nombre;
             int numeroArgs = ctx.paramsPendientes.size();
@@ -128,7 +138,7 @@ public class CuartetaLlamada extends CuartetaC {
         }
 
         // calificar con el receptor cuando trae metodo
-        if ("call_method".equals(operador)) {
+        if ("call_method".equals(getOperador())) {
 
             String receptorTipo = null;
             if (ctx.tiposParamsPendientes.isEmpty() == false) {
@@ -153,7 +163,7 @@ public class CuartetaLlamada extends CuartetaC {
 
         // contar args reales sin receptor para el nombre con numero
         int numeroReales = ctx.paramsPendientes.size();
-        if ("call_method".equals(operador) && numeroReales > 0) {
+        if ("call_method".equals(getOperador()) && numeroReales > 0) {
             numeroReales = numeroReales - 1;
         }
 
@@ -170,19 +180,36 @@ public class CuartetaLlamada extends CuartetaC {
         ctx.limpiarParams();
 
         // llamar sin guardar cuando no hay destino
-        if (resultado == null || resultado.isEmpty() || resultado.equals("_")) {
+        if (getResultado() == null || getResultado().isEmpty() || getResultado().equals("_")) {
             lineas.append(nombreLlamada).append("();");
             return lineas.toString();
         }
 
         // declarar el destino con el retorno conocido si hay
-        String tipoRet = tipoResultado;
+        String tipoRet = getTipoResultado();
         String conocido = ctx.retornosFuncion.get(nombreLlamada);
         if (conocido != null && conocido.isEmpty() == false && conocido.equals("_") == false) {
             tipoRet = conocido;
         }
 
-        SlotHS slot = ctx.redeclararSlot(resultado, tipoRet);
+        // llamar y recoger el retorno directo en el heap si es campo propio
+        if (ctx.esCampoPropio(getResultado())) {
+
+            // elegir el registro del tipo del campo
+            String tipoCampoLlamada = ctx.structs.get(ctx.nombreClaseActual).get(getResultado());
+            String regCampo = ctx.registroPara(ctx.arregloHeapPara(tipoCampoLlamada));
+
+            // elegir el registro del tipo retornado
+            String regOrigen = ctx.registroPara(ctx.arregloPara(tipoRet));
+            lineas.append(nombreLlamada).append("();\n    ");
+            lineas.append(regCampo).append(" = ").append(regOrigen).append(";\n    ");
+            lineas.append(ctx.guardarEnCampo(getResultado(), regCampo));
+
+            return lineas.toString();
+
+        }
+
+        SlotHS slot = ctx.redeclararSlot(getResultado(), tipoRet);
 
         // llamar y recoger el retorno desde AX
         String reg = ctx.registroPara(slot.getArreglo());

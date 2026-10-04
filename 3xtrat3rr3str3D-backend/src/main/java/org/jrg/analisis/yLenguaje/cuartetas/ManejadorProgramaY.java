@@ -14,8 +14,14 @@ import org.jrg.model.ast.yLenguaje.TipoDato;
 import org.jrg.model.ast.yLenguaje.ValorPrimitivo;
 import org.jrg.model.ast.yLenguaje.base.NodoASTY;
 import org.jrg.model.ast.yLenguaje.variable_asignable.VarArray;
+import org.jrg.model.ast.yLenguaje.variable_asignable.VarMiembro;
 import org.jrg.model.base.TipoPrimitivo;
 import org.jrg.model.cuarteta.Cuarteta;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaAsignacionSimple;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaAsignacionMiembro;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaAsignacionArreglo;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaAccesoMiembro;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaAccesoArreglo;
 
 // generar cuartetas del programa y sus secciones en el lenguaje Y
 public class ManejadorProgramaY {
@@ -165,7 +171,9 @@ public class ManejadorProgramaY {
 
             // evaluar la base del acceso
             String base = "_";
-            if (acceso.getBase() != null) {
+            if (acceso.getBase() instanceof VarArray || acceso.getBase() instanceof VarMiembro) {
+                base = materializarBase(acceso.getBase());
+            } else if (acceso.getBase() != null) {
                 base = acceso.getBase().accept(generador);
             }
 
@@ -185,13 +193,40 @@ public class ManejadorProgramaY {
             }
 
             // agregar la asignacion a la posicion a la lista de cuartetas
-            ctx.getCuartetas().add(new Cuarteta("[]=", base, indice, derechaArr, "_", "entero", "_"));
+            ctx.getCuartetas().add(new CuartetaAsignacionArreglo("[]=", base, indice, derechaArr, "_", "entero", "_"));
             return null;
 
         }
 
         // evaluar la variable destino
         String izquierda = "_";
+        if (nodo.getVariable() instanceof VarMiembro) {
+
+            // convertir la variable al tipo concreto
+            VarMiembro accesoMiembro = (VarMiembro) nodo.getVariable();
+
+            // materializar la base si viene compuesta con indice o punto
+            if (accesoMiembro.getBase() instanceof VarArray || accesoMiembro.getBase() instanceof VarMiembro) {
+                String baseMiembro = materializarBase(accesoMiembro.getBase());
+
+                // evaluar el valor a asignar
+                String derechaMiembro = "_";
+                if (nodo.getValor() != null) {
+                    derechaMiembro = nodo.getValor().accept(generador);
+                }
+
+                if (derechaMiembro == null) {
+                    derechaMiembro = "_";
+                }
+
+                // agregar la asignacion al miembro con .,=
+                ctx.getCuartetas().add(new CuartetaAsignacionMiembro(".,=", baseMiembro, accesoMiembro.getMiembro(), derechaMiembro, "_", "_", "_"));
+
+                return null;
+            }
+
+        }
+
         if (nodo.getVariable() != null) {
             izquierda = nodo.getVariable().accept(generador);
         }
@@ -211,9 +246,72 @@ public class ManejadorProgramaY {
         }
 
         // agregar la asignacion a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta(":=", derecha, "_", izquierda, ctx.inferirTipoDe(derecha, ctx.getTiposConocidos()), "_", "_"));
+        ctx.getCuartetas().add(new CuartetaAsignacionSimple(":=", derecha, "_", izquierda, ctx.inferirTipoDe(derecha, ctx.getTiposConocidos()), "_", "_"));
 
         return null;
+
+    }
+
+    // materializar una base compuesta en un temporal listo para usar
+    private String materializarBase(NodoASTY nodo) {
+
+        // verificar si el nodo es nulo
+        if (nodo == null) {
+            return "_";
+        }
+
+        // anidar lectura de arreglo para bases con indice
+        if (nodo instanceof VarArray) {
+
+            // convertir la variable al tipo concreto
+            VarArray acceso = (VarArray) nodo;
+
+            // materializar la base interna primero para encadenar al infinito
+            String baseInterna = materializarBase(acceso.getBase());
+
+            // evaluar el indice del acceso
+            String indice = "_";
+            if (acceso.getIndice() != null) {
+                indice = acceso.getIndice().accept(generador);
+            }
+
+            if (indice == null) {
+                indice = "_";
+            }
+
+            // leer la base intermedia como entero
+            String tempBase = ctx.getTemporales().nuevoTemporal();
+            ctx.getTiposConocidos().put(tempBase, "entero");
+            ctx.getCuartetas().add(new CuartetaAccesoArreglo("=[]", baseInterna, indice, tempBase, "_", "_", "entero"));
+
+            return tempBase;
+
+        }
+
+        // anidar lectura de miembro para bases con punto
+        if (nodo instanceof VarMiembro) {
+
+            // convertir la variable al tipo concreto
+            VarMiembro acceso = (VarMiembro) nodo;
+
+            // materializar la base interna primero para encadenar al infinito
+            String baseInterna = materializarBase(acceso.getBase());
+
+            // leer el miembro intermedio con temporal
+            String tempBase = ctx.getTemporales().nuevoTemporal();
+            ctx.getCuartetas().add(new CuartetaAccesoMiembro(".", baseInterna, acceso.getMiembro(), tempBase, "_", "_", "_"));
+
+            return tempBase;
+
+        }
+
+        // devolver nombres y temporales directos sin tocar nada
+        String directo = nodo.accept(generador);
+        if (directo == null) {
+            return "_";
+        }
+
+        return directo;
 
     }
 
@@ -262,7 +360,6 @@ public class ManejadorProgramaY {
     // visitar el valor primitivo cargandolo en un temporal
     public String visitarValorPrimitivo(ValorPrimitivo nodo) {
 
-        // version anterior: no generaba nada y los caso quedaban en 0
         // devolver el identificador directo sin crear temporal
         if (nodo.getTipo() == TipoPrimitivo.IDENTIFICADOR) {
             return nodo.getValor();
@@ -276,7 +373,7 @@ public class ManejadorProgramaY {
 
         // registrar el temporal con el tipo inferido
         ctx.getTiposConocidos().put(temp, tipoLiteral);
-        ctx.getCuartetas().add(new Cuarteta("=", nodo.getValor(), "_", temp, tipoLiteral, "_", tipoLiteral));
+        ctx.getCuartetas().add(new CuartetaAsignacionSimple("=", nodo.getValor(), "_", temp, tipoLiteral, "_", tipoLiteral));
         return temp;
 
     }

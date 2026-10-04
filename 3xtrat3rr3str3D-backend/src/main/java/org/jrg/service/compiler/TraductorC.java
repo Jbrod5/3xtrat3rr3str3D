@@ -3,31 +3,8 @@ package org.jrg.service.compiler;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import org.jrg.model.resultado.CuartetaResultado;
+import org.jrg.model.cuarteta.Cuarteta;
 import org.jrg.service.compiler.cuartetaC.ContextoTraduccion;
-import org.jrg.service.compiler.cuartetaC.CuartetaC;
-import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaAritmetica;
-import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaAsignacionSimple;
-import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaAsignacionArreglo;
-import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaAsignacionMiembro;
-import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaAccesoArreglo;
-import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaAccesoMiembro;
-import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaAlloc;
-import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaLlamada;
-import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaComparacion;
-import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaConcatenacion;
-import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaEtiqueta;
-import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaGoto;
-import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaHalt;
-import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaIfFalse;
-import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaLogica;
-import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaNegacion;
-import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaNew;
-import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaParametro;
-import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaPrint;
-import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaRead;
-import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaRetorno;
-import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaUminus;
 
 // armar la traduccion de cuartetas a maquina Heap Stack
 public class TraductorC {
@@ -35,9 +12,9 @@ public class TraductorC {
     private ContextoTraduccion ctx;
     private StringBuilder cuerpo;
     private List<String> prototipos;
-    private List<CuartetaResultado> preMain;
+    private List<Cuarteta> preMain;
     private String funcionActual;
-    private List<CuartetaResultado> crudasFuncion;
+    private List<Cuarteta> crudasFuncion;
     private List<String> nombresParams;
     private List<String> tiposParams;
     private boolean preMainColocado;
@@ -56,7 +33,7 @@ public class TraductorC {
     /**
      * Traducir una lista de cuartetas a maquina Heap Stack.
      */
-    public String traducir(List<CuartetaResultado> cuartetas) {
+    public String traducir(List<Cuarteta> cuartetas) {
 
         // crear un contexto fresco para esta traduccion
         this.ctx = new ContextoTraduccion();
@@ -76,7 +53,7 @@ public class TraductorC {
         // prepasar funciones conocidas y retornos para llamadas adelantadas
         for (int i = 0; i < cuartetas.size(); i++) {
 
-            CuartetaResultado c = cuartetas.get(i);
+            Cuarteta c = cuartetas.get(i);
 
             // omitir cuartetas nulas
             if (c == null) {
@@ -114,7 +91,7 @@ public class TraductorC {
         this.hayMain = false;
         for (int i = 0; i < cuartetas.size(); i++) {
 
-            CuartetaResultado c = cuartetas.get(i);
+            Cuarteta c = cuartetas.get(i);
             if (c != null && "func_begin".equals(c.getOperador()) && "main".equals(c.getArg1())) {
                 this.hayMain = true;
             }
@@ -124,7 +101,7 @@ public class TraductorC {
         // recorrer cada cuarteta de la lista
         for (int i = 0; i < cuartetas.size(); i++) {
 
-            CuartetaResultado c = cuartetas.get(i);
+            Cuarteta c = cuartetas.get(i);
 
             // omitir cuartetas nulas
             if (c == null) {
@@ -170,162 +147,9 @@ public class TraductorC {
 
     }
 
-    // crear la cuarteta correcta segun el operador
-    private CuartetaC crearCuarteta(CuartetaResultado c) {
-
-        // extraer el operador de la cuarteta
-        String op = c.getOperador();
-        String a1 = c.getArg1();
-        String a2 = c.getArg2();
-        String res = c.getResultado();
-        String t1 = c.getTipoArg1();
-        String t2 = c.getTipoArg2();
-        String tr = c.getTipoResultado();
-
-        // asignaciones con el mismo molde
-        if (":=".equals(op) || "=".equals(op)) {
-            return new CuartetaAsignacionSimple(op, a1, a2, res, t1, t2, tr);
-        }
-
-        // suma con concat cuando hay texto en medio
-        if ("+".equals(op)) {
-
-            if (esTexto(a1, t1) || esTexto(a2, t2)) {
-                return new CuartetaConcatenacion(op, a1, a2, res, t1, t2, tr);
-            }
-
-            return new CuartetaAritmetica(op, a1, a2, res, t1, t2, tr);
-
-        }
-
-        // resta multiplicacion division y modulo numericos
-        if ("-".equals(op) || "*".equals(op) || "/".equals(op) || "%".equals(op)) {
-            return new CuartetaAritmetica(op, a1, a2, res, t1, t2, tr);
-        }
-
-        // comparaciones a booleano
-        if ("==".equals(op) || "!=".equals(op) || "<".equals(op) || ">".equals(op) || "<=".equals(op) || ">=".equals(op)) {
-            return new CuartetaComparacion(op, a1, a2, res, t1, t2, tr);
-        }
-
-        // operadores logicos binarios
-        if ("&&".equals(op) || "||".equals(op)) {
-            return new CuartetaLogica(op, a1, a2, res, t1, t2, tr);
-        }
-
-        // negacion logica
-        if ("!".equals(op)) {
-            return new CuartetaNegacion(op, a1, a2, res, t1, t2, tr);
-        }
-
-        // menos unario con opcode propio
-        if ("uminus".equals(op)) {
-            return new CuartetaUminus(op, a1, a2, res, t1, t2, tr);
-        }
-
-        // etiquetas y saltos
-        if ("label".equals(op)) {
-            return new CuartetaEtiqueta(op, a1, a2, res, t1, t2, tr);
-        }
-
-        if ("goto".equals(op)) {
-            return new CuartetaGoto(op, a1, a2, res, t1, t2, tr);
-        }
-
-        if ("if_false".equals(op)) {
-            return new CuartetaIfFalse(op, a1, a2, res, t1, t2, tr);
-        }
-
-        // retorno y halt
-        if ("return".equals(op)) {
-            return new CuartetaRetorno(op, a1, a2, res, t1, t2, tr);
-        }
-
-        if ("halt".equals(op)) {
-            return new CuartetaHalt(op, a1, a2, res, t1, t2, tr);
-        }
-
-        // impresion y lectura
-        if ("print".equals(op)) {
-            return new CuartetaPrint(op, a1, a2, res, t1, t2, tr);
-        }
-
-        // acumular params sin generar linea
-        if ("param".equals(op)) {
-            return new CuartetaParametro(op, a1, a2, res, t1, t2, tr);
-        }
-
-        // llamadas con marco de pila
-        if ("call".equals(op) || "call_method".equals(op)) {
-            return new CuartetaLlamada(op, a1, a2, res, t1, t2, tr);
-        }
-
-        // reserva de arreglos en heap
-        if ("alloc".equals(op)) {
-            return new CuartetaAlloc(op, a1, a2, res, t1, t2, tr);
-        }
-
-        // instanciacion de objetos y structs en heap
-        if ("new".equals(op) || "new_struct".equals(op)) {
-            return new CuartetaNew(op, a1, a2, res, t1, t2, tr);
-        }
-
-        // acceso y escritura de miembros por offset
-        if (".".equals(op)) {
-            return new CuartetaAccesoMiembro(op, a1, a2, res, t1, t2, tr);
-        }
-
-        if (".,=".equals(op)) {
-            return new CuartetaAsignacionMiembro(op, a1, a2, res, t1, t2, tr);
-        }
-
-        // acceso y escritura de arreglos por indice
-        if ("=[]".equals(op)) {
-            return new CuartetaAccesoArreglo(op, a1, a2, res, t1, t2, tr);
-        }
-
-        if ("[]=".equals(op)) {
-            return new CuartetaAsignacionArreglo(op, a1, a2, res, t1, t2, tr);
-        }
-
-        if ("read".equals(op)) {
-            return new CuartetaRead(op, a1, a2, res, t1, t2, tr);
-        }
-
-        // operadores que falten salen comentados
-        return null;
-
-    }
-
-    // verificar si un operando trae texto para concatenar
-    private boolean esTexto(String valor, String tipo) {
-
-        // aceptar literales entre comillas
-        if (valor != null && valor.startsWith("\"")) {
-            return true;
-        }
-
-        // aceptar tipos de texto de los tres lenguajes
-        if ("cadena".equals(tipo) || "textum".equals(tipo) || "String".equals(tipo) || "char*".equals(tipo)) {
-            return true;
-        }
-
-        // aceptar slots ya vistos como texto
-        if (valor != null) {
-
-            String arreglo = ctx.arregloDe(valor);
-            if ("stackstring".equals(arreglo)) {
-                return true;
-            }
-
-        }
-
-        return false;
-
-    }
 
     // preparar la funcion con sus params
-    private void iniciarFuncion(CuartetaResultado c) {
+    private void iniciarFuncion(Cuarteta c) {
 
         // guardar el nombre de la funcion actual
         this.funcionActual = c.getArg1();
@@ -362,11 +186,13 @@ public class TraductorC {
         // limpiar params anteriores
         this.nombresParams = new ArrayList<>();
         this.tiposParams = new ArrayList<>();
+        ctx.tiposDeParams.clear();
 
         // agregar this primero cuando es metodo de clase
         if (ctx.nombreClaseActual.isEmpty() == false) {
             this.nombresParams.add("this");
             this.tiposParams.add(ctx.nombreClaseActual);
+            ctx.tiposDeParams.put("this", ctx.nombreClaseActual);
         }
 
         // partir los params por coma cuando existan
@@ -383,11 +209,13 @@ public class TraductorC {
                 if (dosPuntos > 0) {
                     this.nombresParams.add(parte.substring(0, dosPuntos).trim());
                     this.tiposParams.add(parte.substring(dosPuntos + 1).trim());
+                    ctx.tiposDeParams.put(parte.substring(0, dosPuntos).trim(), parte.substring(dosPuntos + 1).trim());
                 } else {
 
                     // numerar cuando solo trae tipos
                     this.nombresParams.add("p" + (i + 1));
                     this.tiposParams.add(parte);
+                    ctx.tiposDeParams.put("p" + (i + 1), parte);
 
                 }
 
@@ -428,7 +256,7 @@ public class TraductorC {
         }
 
         // juntar previas globales al main o a la primera funcion
-        List<CuartetaResultado> todas = new ArrayList<>();
+        List<Cuarteta> todas = new ArrayList<>();
         boolean esMain = "main".equals(this.funcionActual);
         if (esMain || (this.hayMain == false && this.preMainColocado == false)) {
 
@@ -460,15 +288,14 @@ public class TraductorC {
         // traducir cada cruda en orden
         for (int i = 0; i < todas.size(); i++) {
 
-            CuartetaC cuarteta = crearCuarteta(todas.get(i));
-
-            // marcar operadores pendientes con comentario
-            String linea = null;
-            if (cuarteta != null) {
-                linea = cuarteta.obtenerCodigoC(ctx);
-            } else {
-                linea = "// pendiente: " + todas.get(i).getOperador();
+            // omitir cuartetas nulas
+            if (todas.get(i) == null) {
+                continue;
             }
+
+            // pedir el codigo a la cuarteta tipada
+            Cuarteta cuarteta = todas.get(i);
+            String linea = cuarteta.obtenerCodigoC(ctx);
 
             // omitir lineas vacias
             if (linea == null || linea.isEmpty()) {
@@ -504,12 +331,12 @@ public class TraductorC {
     }
 
     // contar locales y temporales antes de reservar
-    private void precontarLocales(List<CuartetaResultado> crudas) {
+    private void precontarLocales(List<Cuarteta> crudas) {
 
         // recorrer cada cuarteta buscando destinos con tipo
         for (int i = 0; i < crudas.size(); i++) {
 
-            CuartetaResultado c = crudas.get(i);
+            Cuarteta c = crudas.get(i);
             if (c == null) {
                 continue;
             }
@@ -523,7 +350,35 @@ public class TraductorC {
             // registrar el destino con su tipo
             String tipo = c.getTipoResultado();
             if ("read".equals(op)) {
+                // respetar el tipo que trae la lectura y caer a entero
+                if (tipo == null || tipo.isEmpty() || tipo.equals("_")) {
+                    tipo = "entero";
+                }
+            }
+
+            // en copias el resultado hereda el tipo del origen
+            if (("=".equals(op) || ":=".equals(op)) && (tipo == null || tipo.isEmpty() || tipo.equals("_"))) {
+                tipo = c.getTipoArg1();
+            }
+
+            // en alloc la base siempre es entera y el elemento va al mapa
+            if ("alloc".equals(op)) {
+
+                // resolver el tipo elemento del primer argumento
+                String elemento = c.getArg1();
+                if (elemento == null || elemento.isEmpty() || elemento.equals("_")) {
+                    elemento = c.getTipoArg1();
+                }
+
+                // guardar el elemento para accesos con tipo
+                if (c.getResultado() != null && c.getResultado().isEmpty() == false && c.getResultado().equals("_") == false) {
+                    if (elemento != null && elemento.isEmpty() == false && elemento.equals("_") == false) {
+                        ctx.mapaBases.put(c.getResultado(), elemento);
+                    }
+                }
+
                 tipo = "entero";
+
             }
 
             registrarNombre(c.getResultado(), tipo);

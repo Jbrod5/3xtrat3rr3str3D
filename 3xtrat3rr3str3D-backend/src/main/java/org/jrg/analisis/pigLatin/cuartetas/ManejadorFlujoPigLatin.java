@@ -21,6 +21,12 @@ import org.jrg.model.ast.pigLatin.instruccion_lectura.LecturaConsolaSimple;
 import org.jrg.model.ast.pigLatin.paso_per.PasoPerAsig;
 import org.jrg.model.ast.pigLatin.paso_per.PasoPerExpr;
 import org.jrg.model.cuarteta.Cuarteta;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaRead;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaPrint;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaIfFalse;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaGoto;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaEtiqueta;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaAsignacionSimple;
 
 // generar cuartetas de flujo lectura e impresion en Pig Latin
 public class ManejadorFlujoPigLatin {
@@ -97,7 +103,7 @@ public class ManejadorFlujoPigLatin {
 
         // agregar salto a la etiqueta de break actual si existe a la lista de cuartetas
         if (ctx.getEtiquetaBreakActual() != null) {
-            ctx.getCuartetas().add(new Cuarteta("goto", ctx.getEtiquetaBreakActual(), "_", "_", "_", "_", "_"));
+            ctx.getCuartetas().add(new CuartetaGoto("goto", ctx.getEtiquetaBreakActual(), "_", "_", "_", "_", "_"));
         }
 
         return null;
@@ -109,7 +115,7 @@ public class ManejadorFlujoPigLatin {
 
         // agregar salto a la etiqueta de continue actual si existe a la lista de cuartetas
         if (ctx.getEtiquetaContinueActual() != null) {
-            ctx.getCuartetas().add(new Cuarteta("goto", ctx.getEtiquetaContinueActual(), "_", "_", "_", "_", "_"));
+            ctx.getCuartetas().add(new CuartetaGoto("goto", ctx.getEtiquetaContinueActual(), "_", "_", "_", "_", "_"));
         }
 
         return null;
@@ -128,7 +134,6 @@ public class ManejadorFlujoPigLatin {
     }
 
     // generar el si con ramas aliter y aliter final
-    // version anterior: solo sacaba la rama principal y el aliter final, botaba los aliter intermedios
 
     // generar el si con ramas aliter y aliter final
     public String visitStatementSi(StatementSi stmt) {
@@ -152,7 +157,7 @@ public class ManejadorFlujoPigLatin {
         }
 
         // generar salto a la rama que sigue si es falso
-        ctx.getCuartetas().add(new Cuarteta("if_false", textoCond, LSiguiente, "_", "booleano", "_", "_"));
+        ctx.getCuartetas().add(new CuartetaIfFalse("if_false", textoCond, LSiguiente, "_", "booleano", "_", "_"));
 
         // bloque principal
         if (stmt.getBloque() != null) {
@@ -160,10 +165,10 @@ public class ManejadorFlujoPigLatin {
         }
 
         // salto al final
-        ctx.getCuartetas().add(new Cuarteta("goto", Lfin, "_", "_", "_", "_", "_"));
+        ctx.getCuartetas().add(new CuartetaGoto("goto", Lfin, "_", "_", "_", "_", "_"));
 
         // etiqueta de la rama que sigue
-        ctx.getCuartetas().add(new Cuarteta("label", LSiguiente, "_", "_", "_", "_", "_"));
+        ctx.getCuartetas().add(new CuartetaEtiqueta("label", LSiguiente, "_", "_", "_", "_", "_"));
 
         // recorrer las ramas aliter si existen
         if (stmt.getCondicionesAliter() != null) {
@@ -184,7 +189,7 @@ public class ManejadorFlujoPigLatin {
                 String LSiguienteAliter = ctx.getTemporales().nuevaEtiqueta();
 
                 // generar salto si la condicion es falsa
-                ctx.getCuartetas().add(new Cuarteta("if_false", condAliter, LSiguienteAliter, "_", "booleano", "_", "_"));
+                ctx.getCuartetas().add(new CuartetaIfFalse("if_false", condAliter, LSiguienteAliter, "_", "booleano", "_", "_"));
 
                 // visitar el bloque de la rama actual si existe
                 if (stmt.getBloquesAliter() != null) {
@@ -198,10 +203,10 @@ public class ManejadorFlujoPigLatin {
                 }
 
                 // salto al final
-                ctx.getCuartetas().add(new Cuarteta("goto", Lfin, "_", "_", "_", "_", "_"));
+                ctx.getCuartetas().add(new CuartetaGoto("goto", Lfin, "_", "_", "_", "_", "_"));
 
                 // etiqueta de la rama que sigue
-                ctx.getCuartetas().add(new Cuarteta("label", LSiguienteAliter, "_", "_", "_", "_", "_"));
+                ctx.getCuartetas().add(new CuartetaEtiqueta("label", LSiguienteAliter, "_", "_", "_", "_", "_"));
 
             }
 
@@ -213,7 +218,7 @@ public class ManejadorFlujoPigLatin {
         }
 
         // etiqueta final
-        ctx.getCuartetas().add(new Cuarteta("label", Lfin, "_", "_", "_", "_", "_"));
+        ctx.getCuartetas().add(new CuartetaEtiqueta("label", Lfin, "_", "_", "_", "_", "_"));
         return null;
 
     }
@@ -229,7 +234,7 @@ public class ManejadorFlujoPigLatin {
         ctx.setEtiquetaContinueActual(Linicio);
 
         // etiqueta inicio
-        ctx.getCuartetas().add(new Cuarteta("label", Linicio, "_", "_", "_", "_", "_"));
+        ctx.getCuartetas().add(new CuartetaEtiqueta("label", Linicio, "_", "_", "_", "_", "_"));
 
         // evaluar condicion
         String cond = null;
@@ -244,7 +249,7 @@ public class ManejadorFlujoPigLatin {
         }
 
         // salto si es falso
-        ctx.getCuartetas().add(new Cuarteta("if_false", textoCond, Lfin, "_", "booleano", "_", "_"));
+        ctx.getCuartetas().add(new CuartetaIfFalse("if_false", textoCond, Lfin, "_", "booleano", "_", "_"));
 
         // bloque
         if (ciclo.getBloque() != null) {
@@ -252,10 +257,10 @@ public class ManejadorFlujoPigLatin {
         }
 
         // salto al inicio
-        ctx.getCuartetas().add(new Cuarteta("goto", Linicio, "_", "_", "_", "_", "_"));
+        ctx.getCuartetas().add(new CuartetaGoto("goto", Linicio, "_", "_", "_", "_", "_"));
 
         // etiqueta final
-        ctx.getCuartetas().add(new Cuarteta("label", Lfin, "_", "_", "_", "_", "_"));
+        ctx.getCuartetas().add(new CuartetaEtiqueta("label", Lfin, "_", "_", "_", "_", "_"));
 
         // restaurar etiquetas
         ctx.setEtiquetaBreakActual(anteriorBreak);
@@ -277,7 +282,7 @@ public class ManejadorFlujoPigLatin {
         ctx.setEtiquetaContinueActual(Lcont);
 
         // etiqueta inicio
-        ctx.getCuartetas().add(new Cuarteta("label", Linicio, "_", "_", "_", "_", "_"));
+        ctx.getCuartetas().add(new CuartetaEtiqueta("label", Linicio, "_", "_", "_", "_", "_"));
 
         // bloque (se ejecuta al menos una vez)
         if (ciclo.getBloque() != null) {
@@ -285,7 +290,7 @@ public class ManejadorFlujoPigLatin {
         }
 
         // etiqueta continue (donde salta perge)
-        ctx.getCuartetas().add(new Cuarteta("label", Lcont, "_", "_", "_", "_", "_"));
+        ctx.getCuartetas().add(new CuartetaEtiqueta("label", Lcont, "_", "_", "_", "_", "_"));
 
         // evaluar condicion
         String cond = null;
@@ -300,11 +305,11 @@ public class ManejadorFlujoPigLatin {
         }
 
         // si la condicion es verdadera, volver al inicio
-        ctx.getCuartetas().add(new Cuarteta("if_false", textoCond, Lfin, "_", "booleano", "_", "_"));
-        ctx.getCuartetas().add(new Cuarteta("goto", Linicio, "_", "_", "_", "_", "_"));
+        ctx.getCuartetas().add(new CuartetaIfFalse("if_false", textoCond, Lfin, "_", "booleano", "_", "_"));
+        ctx.getCuartetas().add(new CuartetaGoto("goto", Linicio, "_", "_", "_", "_", "_"));
 
         // etiqueta final
-        ctx.getCuartetas().add(new Cuarteta("label", Lfin, "_", "_", "_", "_", "_"));
+        ctx.getCuartetas().add(new CuartetaEtiqueta("label", Lfin, "_", "_", "_", "_", "_"));
 
         // restaurar etiquetas
         ctx.setEtiquetaBreakActual(anteriorBreak);
@@ -335,10 +340,10 @@ public class ManejadorFlujoPigLatin {
         }
 
         // saltar a la condicion para no correr el paso antes
-        ctx.getCuartetas().add(new Cuarteta("goto", Linicio, "_", "_", "_", "_", "_"));
+        ctx.getCuartetas().add(new CuartetaGoto("goto", Linicio, "_", "_", "_", "_", "_"));
 
         // etiqueta paso
-        ctx.getCuartetas().add(new Cuarteta("label", Lpaso, "_", "_", "_", "_", "_"));
+        ctx.getCuartetas().add(new CuartetaEtiqueta("label", Lpaso, "_", "_", "_", "_", "_"));
 
         // paso
         if (ciclo.getPaso() != null) {
@@ -346,7 +351,7 @@ public class ManejadorFlujoPigLatin {
         }
 
         // etiqueta inicio
-        ctx.getCuartetas().add(new Cuarteta("label", Linicio, "_", "_", "_", "_", "_"));
+        ctx.getCuartetas().add(new CuartetaEtiqueta("label", Linicio, "_", "_", "_", "_", "_"));
 
         // evaluar condicion
         String cond = null;
@@ -361,7 +366,7 @@ public class ManejadorFlujoPigLatin {
         }
 
         // salto si falso
-        ctx.getCuartetas().add(new Cuarteta("if_false", textoCond, Lfin, "_", "booleano", "_", "_"));
+        ctx.getCuartetas().add(new CuartetaIfFalse("if_false", textoCond, Lfin, "_", "booleano", "_", "_"));
 
         // bloque
         if (ciclo.getBloque() != null) {
@@ -374,10 +379,10 @@ public class ManejadorFlujoPigLatin {
         // }
         // el paso ya salio arriba junto a su etiqueta
         // salto al paso
-        ctx.getCuartetas().add(new Cuarteta("goto", Lpaso, "_", "_", "_", "_", "_"));
+        ctx.getCuartetas().add(new CuartetaGoto("goto", Lpaso, "_", "_", "_", "_", "_"));
 
         // etiqueta final
-        ctx.getCuartetas().add(new Cuarteta("label", Lfin, "_", "_", "_", "_", "_"));
+        ctx.getCuartetas().add(new CuartetaEtiqueta("label", Lfin, "_", "_", "_", "_", "_"));
 
         // restaurar etiquetas
         ctx.setEtiquetaBreakActual(anteriorBreak);
@@ -400,7 +405,7 @@ public class ManejadorFlujoPigLatin {
                 textoVal = val;
             }
 
-            ctx.getCuartetas().add(new Cuarteta(":=", textoVal, "_", init.getIdentificador(), ctx.inferirTipoDe(val, ctx.getTiposConocidos()), "_", "_"));
+            ctx.getCuartetas().add(new CuartetaAsignacionSimple(":=", textoVal, "_", init.getIdentificador(), ctx.inferirTipoDe(val, ctx.getTiposConocidos()), "_", "_"));
 
         }
 
@@ -426,7 +431,7 @@ public class ManejadorFlujoPigLatin {
             textoVal = val;
         }
 
-        ctx.getCuartetas().add(new Cuarteta(":=", textoVal, "_", textoVar, ctx.inferirTipoDe(val, ctx.getTiposConocidos()), "_", "_"));
+        ctx.getCuartetas().add(new CuartetaAsignacionSimple(":=", textoVal, "_", textoVar, ctx.inferirTipoDe(val, ctx.getTiposConocidos()), "_", "_"));
         return null;
 
     }
@@ -460,7 +465,7 @@ public class ManejadorFlujoPigLatin {
             textoVal = val;
         }
 
-        ctx.getCuartetas().add(new Cuarteta(":=", textoVal, "_", textoVar, ctx.inferirTipoDe(val, ctx.getTiposConocidos()), "_", "_"));
+        ctx.getCuartetas().add(new CuartetaAsignacionSimple(":=", textoVal, "_", textoVar, ctx.inferirTipoDe(val, ctx.getTiposConocidos()), "_", "_"));
         return null;
 
     }
@@ -469,7 +474,7 @@ public class ManejadorFlujoPigLatin {
     public String visitLecturaConsolaSimple(LecturaConsolaSimple lectura) {
 
         // agregar lectura sin variable destino a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta("read", "_", "_", "_", "_", "_", "_"));
+        ctx.getCuartetas().add(new CuartetaRead("read", "_", "_", "_", "_", "_", "_"));
         return null;
 
     }
@@ -489,7 +494,13 @@ public class ManejadorFlujoPigLatin {
             textoVar = var;
         }
 
-        ctx.getCuartetas().add(new Cuarteta("read", "_", "_", textoVar, "_", "_", "_"));
+        // pasar el tipo declarado para leer con el formato correcto
+        String tipoLectura = "_";
+        if (var != null) {
+            tipoLectura = ctx.inferirTipoDe(var, ctx.getTiposConocidos());
+        }
+
+        ctx.getCuartetas().add(new CuartetaRead("read", "_", "_", textoVar, "_", "_", tipoLectura));
         return null;
 
     }
@@ -530,7 +541,7 @@ public class ManejadorFlujoPigLatin {
                         textoVal = val;
                     }
 
-                    ctx.getCuartetas().add(new Cuarteta("print", textoVal, "_", "_", tipoValor, "_", "_"));
+                    ctx.getCuartetas().add(new CuartetaPrint("print", textoVal, "_", "_", tipoValor, "_", "_"));
 
                 }
 

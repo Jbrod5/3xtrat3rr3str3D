@@ -9,6 +9,8 @@ import org.jrg.model.ast.yLenguaje.parametro.ParamArray;
 import org.jrg.model.ast.yLenguaje.parametro.ParamEstructura;
 import org.jrg.model.ast.yLenguaje.parametro.ParamSimple;
 import org.jrg.model.cuarteta.Cuarteta;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaFuncEnd;
+import org.jrg.service.compiler.cuartetaC.implementacion.CuartetaFuncBegin;
 
 // generar cuartetas de funciones en el lenguaje Y
 public class ManejadorFuncionesY {
@@ -31,7 +33,7 @@ public class ManejadorFuncionesY {
         String tiposParams = extraerTiposParametros(nodo.getParametros());
 
         // agregar marcador de inicio a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta("func_begin", nodo.getNombre(), tiposParams, "void", tiposParams, "_", "void"));
+        ctx.getCuartetas().add(new CuartetaFuncBegin("func_begin", nodo.getNombre(), tiposParams, "void", tiposParams, "_", "void"));
 
         // visitar el cuerpo de la funcion si existe
         if (nodo.getCuerpo() != null) {
@@ -39,7 +41,7 @@ public class ManejadorFuncionesY {
         }
 
         // agregar marcador de fin a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta("func_end", nodo.getNombre(), "_", "_", "_", "_", "_"));
+        ctx.getCuartetas().add(new CuartetaFuncEnd("func_end", nodo.getNombre(), "_", "_", "_", "_", "_"));
 
         return null;
 
@@ -63,7 +65,7 @@ public class ManejadorFuncionesY {
         }
 
         // agregar marcador de inicio a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta("func_begin", nodo.getNombre(), tiposParams, tipoRetorno, tiposParams, "_", tipoRetorno));
+        ctx.getCuartetas().add(new CuartetaFuncBegin("func_begin", nodo.getNombre(), tiposParams, tipoRetorno, tiposParams, "_", tipoRetorno));
 
         // visitar el cuerpo de la funcion si existe
         if (nodo.getCuerpo() != null) {
@@ -71,7 +73,7 @@ public class ManejadorFuncionesY {
         }
 
         // agregar marcador de fin a la lista de cuartetas
-        ctx.getCuartetas().add(new Cuarteta("func_end", nodo.getNombre(), "_", "_", "_", "_", "_"));
+        ctx.getCuartetas().add(new CuartetaFuncEnd("func_end", nodo.getNombre(), "_", "_", "_", "_", "_"));
 
         return null;
 

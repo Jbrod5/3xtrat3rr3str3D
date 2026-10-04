@@ -1,10 +1,10 @@
 package org.jrg.service.compiler.cuartetaC.implementacion;
 
 import org.jrg.service.compiler.cuartetaC.ContextoTraduccion;
-import org.jrg.service.compiler.cuartetaC.CuartetaC;
+import org.jrg.model.cuarteta.Cuarteta;
 
 // escribir un elemento por indice desde la base del arreglo
-public class CuartetaAsignacionArreglo extends CuartetaC {
+public class CuartetaAsignacionArreglo extends Cuarteta {
 
     /**
      * Crear una asignacion a arreglo con operador explicito.
@@ -21,19 +21,19 @@ public class CuartetaAsignacionArreglo extends CuartetaC {
     @Override
     public String obtenerCodigoC(ContextoTraduccion ctx) {
 
-        // resolver el struct base de los elementos si hay
-        String baseElem = ctx.mapaBases.get(arg1);
-
-        // elegir arreglo de heap segun el base o entero por defecto
-        String arregloElem = "heapinteger";
-        if (baseElem != null && baseElem.isEmpty() == false && baseElem.equals("_") == false) {
-            arregloElem = ctx.arregloHeapPara(baseElem);
+        // resolver el tipo elemento por campo base registrada o entero
+        String tipoElem = ctx.tipoElementoDe(getArg1());
+        if (tipoElem == null || tipoElem.isEmpty()) {
+            tipoElem = "entero";
         }
 
+        // elegir arreglo de heap segun el elemento
+        String arregloElem = ctx.arregloHeapPara(tipoElem);
+
         // escribir en el heap con base mas indice
-        String base = ctx.expresionOperando(arg1);
-        String indice = ctx.expresionOperando(arg2);
-        String valor = ctx.expresionOperando(resultado);
+        String base = ctx.expresionOperando(getArg1());
+        String indice = ctx.expresionOperando(getArg2());
+        String valor = ctx.expresionOperando(getResultado());
         return arregloElem + "[" + base + " + " + indice + "] = " + valor + ";";
 
     }

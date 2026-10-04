@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.jrg.model.resultado.CuartetaResultado;
+import org.jrg.model.cuarteta.Cuarteta;
 
 // estado compartido para la traduccion de cuartetas a maquina Heap Stack
 public class ContextoTraduccion {
@@ -35,6 +35,8 @@ public class ContextoTraduccion {
 
     public Map<String, String> mapaBases;  // struct base de cada arreglo instancia u objeto
 
+    public Map<String, String> tiposDeParams;  // tipo declarado de cada parametro en curso
+
     public List<String> ordenLocales;  // orden de locales y temporales precontados
 
     public List<String> paramsPendientes;  // valores pendientes del siguiente call
@@ -62,6 +64,7 @@ public class ContextoTraduccion {
         this.retornosFuncion = new HashMap<>();
         this.funcionesConocidas = new ArrayList<>();
         this.mapaBases = new HashMap<>();
+        this.tiposDeParams = new HashMap<>();
         this.ordenLocales = new ArrayList<>();
         this.paramsPendientes = new ArrayList<>();
         this.tiposParamsPendientes = new ArrayList<>();
@@ -127,7 +130,6 @@ public class ContextoTraduccion {
      * Reasignar el arreglo de un slot sin mover su indice.
      */
     public SlotHS redeclararSlot(String nombre, String tipoFuente) {
-
         // declarar normal si no existe
         SlotHS previo = this.slots.get(nombre);
         if (previo == null) {
@@ -138,6 +140,64 @@ public class ContextoTraduccion {
         SlotHS nuevo = new SlotHS(previo.getIndice(), arregloPara(tipoFuente));
         this.slots.put(nombre, nuevo);
         return nuevo;
+
+    }
+
+    /**
+     * Verificar si un nombre es campo propio sin slot local.
+     */
+    public boolean esCampoPropio(String nombre) {
+
+        // los slots locales siempre ganan a los campos
+        if (nombre == null || nombre.isEmpty() || nombre.equals("_")) {
+            return false;
+        }
+
+        if (this.slots.containsKey(nombre)) {
+            return false;
+        }
+
+        // solo dentro de metodos con clase conocida
+        if (this.nombreClaseActual == null || this.nombreClaseActual.isEmpty()) {
+            return false;
+        }
+
+        // buscar el nombre entre los campos de la clase
+        Map<String, String> campos = this.structs.get(this.nombreClaseActual);
+        if (campos == null) {
+            return false;
+        }
+
+        return campos.containsKey(nombre);
+
+    }
+
+    /**
+     * Guardar un valor en un campo propio del heap.
+     */
+    public String guardarEnCampo(String nombre, String valorExpresion) {
+
+        // armar la escritura sobre la base del campo
+        return baseDeCampo(nombre) + " = " + valorExpresion + ";";
+
+    }
+
+    /**
+     * Resolver la expresion base de un campo propio del heap.
+     */
+    public String baseDeCampo(String nombre) {
+
+        // resolver el tipo del campo para elegir el arreglo
+        String tipoCampo = "entero";
+        Map<String, String> campos = this.structs.get(this.nombreClaseActual);
+        if (campos != null && campos.get(nombre) != null) {
+            tipoCampo = campos.get(nombre);
+        }
+
+        // armar la lectura del campo desde el this con su offset
+        int off = offsetDe(this.nombreClaseActual, nombre);
+        String baseThis = expresionOperando("this");
+        return arregloHeapPara(tipoCampo) + "[" + baseThis + " + " + off + "]";
 
     }
 
@@ -220,10 +280,71 @@ public class ContextoTraduccion {
     }
 
     /**
+     * Resolver el tipo elemento de una base de arreglo.
+     */
+    public String tipoElementoDe(String nombreBase) {
+
+        // omitir nulos vacios y guiones
+        if (nombreBase == null || nombreBase.isEmpty() || nombreBase.equals("_")) {
+            return null;
+        }
+
+        // los slots locales nunca son campos
+        if (slots.containsKey(nombreBase)) {
+            // usar la base registrada en alloc o new
+            String baseSlot = mapaBases.get(nombreBase);
+            if (baseSlot != null && baseSlot.isEmpty() == false && baseSlot.equals("_") == false) {
+                return sinCorchetes(baseSlot);
+            }
+
+            return null;
+        }
+
+        // quitar corchetes del tipo declarado
+        // sin corchetes el mismo nombre es el elemento
+        if (nombreClaseActual != null && nombreClaseActual.isEmpty() == false) {
+
+            Map<String, String> campos = structs.get(nombreClaseActual);
+            if (campos != null && campos.get(nombreBase) != null) {
+                return sinCorchetes(campos.get(nombreBase));
+            }
+
+        }
+
+        // usar la base registrada en alloc o new
+        String base = mapaBases.get(nombreBase);
+        if (base != null && base.isEmpty() == false && base.equals("_") == false) {
+            return sinCorchetes(base);
+        }
+
+        return null;
+
+    }
+
+    /**
+     * Quitar los corchetes finales de un tipo arreglo.
+     */
+    public String sinCorchetes(String tipo) {
+
+        // devolver vacio si no hay tipo
+        if (tipo == null || tipo.isEmpty()) {
+            return tipo;
+        }
+
+        // recortar pares de corchetes del final
+        String recorte = tipo.trim();
+        while (recorte.endsWith("[]")) {
+            recorte = recorte.substring(0, recorte.length() - 2).trim();
+        }
+
+        return recorte;
+
+    }
+
+    /**
      * Mapear un tipo fuente a su arreglo de heap.
      */
     public String arregloHeapPara(String tipo) {
-
         // usar enteros cuando el tipo es desconocido
         if (tipo == null || tipo.equals("_") || tipo.isEmpty()) {
             return "heapinteger";
@@ -611,7 +732,7 @@ public class ContextoTraduccion {
     /**
      * Preprocesar las definiciones de structs de la lista.
      */
-    public void preprocesarStructs(List<CuartetaResultado> cuartetas) {
+    public void preprocesarStructs(List<Cuarteta> cuartetas) {
 
         // reiniciar las estructuras de structs
         this.structs = new HashMap<>();
@@ -621,7 +742,7 @@ public class ContextoTraduccion {
         // registrar definiciones en una pasada global
         for (int i = 0; i < cuartetas.size(); i++) {
 
-            CuartetaResultado c = cuartetas.get(i);
+            Cuarteta c = cuartetas.get(i);
 
             // omitir cuartetas nulas
             if (c == null) {

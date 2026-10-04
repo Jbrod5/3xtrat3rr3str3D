@@ -92,6 +92,7 @@ public class CompiladorPigLatinService {
         List<Simbolo> simbolos = new ArrayList<>();
         List<Tipo> tipos = new ArrayList<>();
         List<CuartetaResultado> cuartetas = new ArrayList<>();
+        List<Cuarteta> crudasTipadas = new ArrayList<>();
         if (ast instanceof Programa) {
 
             try {
@@ -105,6 +106,7 @@ public class CompiladorPigLatinService {
                 List<Cuarteta> cuartetasImportadas = analizador.getCuartetasImportadas();
                 for (int i = 0; i < cuartetasImportadas.size(); i++) {
                     cuartetas.add(new CuartetaResultado(cuartetasImportadas.get(i)));
+                    crudasTipadas.add(cuartetasImportadas.get(i));
                 }
 
                 // luego las cuartetas del archivo principal
@@ -165,6 +167,7 @@ public class CompiladorPigLatinService {
                 List<Cuarteta> cuartetasCrudas = generadorCuartetas.getCuartetas();
                 for (int i = 0; i < cuartetasCrudas.size(); i++) {
                     cuartetas.add(new CuartetaResultado(cuartetasCrudas.get(i)));
+                    crudasTipadas.add(cuartetasCrudas.get(i));
                 }
 
             } catch (RuntimeException e) {
@@ -173,9 +176,9 @@ public class CompiladorPigLatinService {
 
         }
 
-        // generar codigo C a partir de las cuartetas
+        // generar codigo C a partir de las cuartetas tipadas
         TraductorC traductorC = new TraductorC();
-        String codigoC = traductorC.traducir(cuartetas);
+        String codigoC = traductorC.traducir(crudasTipadas);
 
         // avisar que el C puede ser invalido si hubo errores semanticos
         if (recolector.tieneErrores() && cuartetas.isEmpty() == false) {
@@ -189,7 +192,10 @@ public class CompiladorPigLatinService {
             resultadoGcc = compiladorC.compilar(codigoC);
         }
 
-        return construirResultado(recolector, arbolTextual, "", "", simbolos, tipos, new ArrayList<>(), cuartetas, codigoC, resultadoGcc);
+        // marcar las tipadas para importaciones conjuntas
+        ResultadoAnalisis resultadoFinal = construirResultado(recolector, arbolTextual, "", "", simbolos, tipos, new ArrayList<>(), cuartetas, codigoC, resultadoGcc);
+        resultadoFinal.setCrudasTipadas(crudasTipadas);
+        return resultadoFinal;
 
     }
 

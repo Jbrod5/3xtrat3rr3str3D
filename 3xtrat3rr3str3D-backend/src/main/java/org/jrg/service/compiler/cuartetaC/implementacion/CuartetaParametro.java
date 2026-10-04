@@ -1,10 +1,10 @@
 package org.jrg.service.compiler.cuartetaC.implementacion;
 
 import org.jrg.service.compiler.cuartetaC.ContextoTraduccion;
-import org.jrg.service.compiler.cuartetaC.CuartetaC;
+import org.jrg.model.cuarteta.Cuarteta;
 
 // acumular un param para el siguiente call sin generar linea
-public class CuartetaParametro extends CuartetaC {
+public class CuartetaParametro extends Cuarteta {
 
     /**
      * Crear un param con operador explicito.
@@ -22,8 +22,8 @@ public class CuartetaParametro extends CuartetaC {
     public String obtenerCodigoC(ContextoTraduccion ctx) {
 
         // acumular el valor con su tipo para el call
-        ctx.paramsPendientes.add(arg1);
-        ctx.tiposParamsPendientes.add(tipoArg1);
+        ctx.paramsPendientes.add(getArg1());
+        ctx.tiposParamsPendientes.add(getTipoArg1());
 
         // los params no generan linea propia
         return "";

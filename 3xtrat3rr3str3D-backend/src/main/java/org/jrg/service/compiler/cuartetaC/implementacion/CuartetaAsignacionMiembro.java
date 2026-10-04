@@ -2,10 +2,10 @@ package org.jrg.service.compiler.cuartetaC.implementacion;
 
 import java.util.List;
 import org.jrg.service.compiler.cuartetaC.ContextoTraduccion;
-import org.jrg.service.compiler.cuartetaC.CuartetaC;
+import org.jrg.model.cuarteta.Cuarteta;
 
 // escribir un campo por offset desde la base del objeto
-public class CuartetaAsignacionMiembro extends CuartetaC {
+public class CuartetaAsignacionMiembro extends Cuarteta {
 
     /**
      * Crear una asignacion a miembro con operador explicito.
@@ -24,9 +24,9 @@ public class CuartetaAsignacionMiembro extends CuartetaC {
     public String obtenerCodigoC(ContextoTraduccion ctx) {
 
         // resolver el campo por indice cuando viene numerico
-        String campo = arg2;
+        String campo = getArg2();
         if (campo != null && ctx.esNumerico(campo.trim())) {
-            campo = nombrePorIndice(ctx, arg1, campo.trim());
+            campo = nombrePorIndice(ctx, getArg1(), campo.trim());
         }
 
         // omitir campos nulos
@@ -35,7 +35,7 @@ public class CuartetaAsignacionMiembro extends CuartetaC {
         }
 
         // resolver el struct duenio del objeto
-        String structNombre = ctx.baseDe(arg1);
+        String structNombre = ctx.baseDe(getArg1());
 
         // buscar el tipo fuente del campo
         String tipoFuente = null;
@@ -55,8 +55,8 @@ public class CuartetaAsignacionMiembro extends CuartetaC {
         }
 
         // escribir en el heap con base mas offset
-        String base = ctx.expresionOperando(arg1);
-        String valor = ctx.expresionOperando(resultado);
+        String base = ctx.expresionOperando(getArg1());
+        String valor = ctx.expresionOperando(getResultado());
         return ctx.arregloHeapPara(tipoFuente) + "[" + base + " + " + offset + "] = " + valor + ";";
 
     }

@@ -1,11 +1,11 @@
 package org.jrg.service.compiler.cuartetaC.implementacion;
 
 import org.jrg.service.compiler.cuartetaC.ContextoTraduccion;
-import org.jrg.service.compiler.cuartetaC.CuartetaC;
+import org.jrg.model.cuarteta.Cuarteta;
 import org.jrg.service.compiler.cuartetaC.SlotHS;
 
 // concatenar dos textos con reserva en heap
-public class CuartetaConcatenacion extends CuartetaC {
+public class CuartetaConcatenacion extends Cuarteta {
 
     /**
      * Crear una concatenacion con operador explicito.
@@ -24,17 +24,17 @@ public class CuartetaConcatenacion extends CuartetaC {
     public String obtenerCodigoC(ContextoTraduccion ctx) {
 
         // omitir destinos sin nombre valido
-        if (resultado == null || resultado.isEmpty() || resultado.equals("_")) {
+        if (getResultado() == null || getResultado().isEmpty() || getResultado().equals("_")) {
             return "";
         }
 
         // preparar los operandos convirtiendo numericos
         StringBuilder previas = new StringBuilder();
-        String primero = preparar(ctx, arg1, tipoArg1, previas);
-        String segundo = preparar(ctx, arg2, tipoArg2, previas);
+        String primero = preparar(ctx, getArg1(), getTipoArg1(), previas);
+        String segundo = preparar(ctx, getArg2(), getTipoArg2(), previas);
 
         // declarar el temporal siempre texto
-        SlotHS slot = ctx.declararSlot(resultado, "cadena");
+        SlotHS slot = ctx.declararSlot(getResultado(), "cadena");
         String destino = slot.getArreglo() + "[framepointer + " + slot.getIndice() + "]";
 
         // agregar reserva copia y concatenado al cuerpo
