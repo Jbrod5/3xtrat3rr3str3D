@@ -477,6 +477,11 @@ COMENTARIO_LINEA
     : '//' ~[\r\n]* -> channel(HIDDEN)
     ;
 
+// comentario de bloque estilo java para documentar secciones
+COMENTARIO_BLOQUE
+    : '/*' .*? '*/' -> channel(HIDDEN)
+    ;
+
 // NEWLINE marca el final de cada instruccion y alimenta el calculo de INDENT y DEDENT en la capa previa al lexer
 NEWLINE
     : ('\r'? '\n')+
