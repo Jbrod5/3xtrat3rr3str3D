@@ -127,8 +127,8 @@ public class ContextoCuartetasPigLatin {
             return "booleano";
         }
 
-        // detectar flotante por punto decimal
-        if (valor.contains(".")) {
+        // detectar flotante por punto decimal solo en numeros
+        if (valor.contains(".") && valor.matches("-?\\d+\\.\\d+")) {
             return "flotante";
         }
 

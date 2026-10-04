@@ -1773,6 +1773,11 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
             agregarError(var, "el indice debe ser un entero");
         }
 
+        // bajar una dimension conservando el base para encadenar
+        if (tipoBase.getDimension() > 1 && tipoBase.getTipoBase() != null) {
+            return crearTipoArray(tipoBase.getTipoBase(), tipoBase.getDimension() - 1);
+        }
+
         return tipoBase.getTipoBase();
 
     }
@@ -2430,6 +2435,12 @@ public class AnalizadorSemanticoZetariano implements ZetarianoAstVisitor<Object>
         // verificar si el indice es entero
         if (tipoIndice != null && !esTipoEntero(tipoIndice)) {
             agregarError(expr, "el indice debe ser un entero");
+        }
+
+        // bajar una dimension conservando la base para encadenar
+        if (tipoArray.getDimension() > 1 && tipoArray.getTipoBase() != null) {
+            Tipo baseInterna = tipoArray.getTipoBase();
+            return crearTipoArray(baseInterna, tipoArray.getDimension() - 1);
         }
 
         return tipoArray.getTipoBase();

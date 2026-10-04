@@ -364,6 +364,12 @@ public class ContextoSemanticoY {
             return null;
         }
 
+        // bajar una dimension conservando la base para encadenar
+        if (tipo.getDimension() > 1 && tipo.getTipoBase() != null) {
+            Tipo baseInterna = tipo.getTipoBase();
+            return new Tipo(baseInterna.getNombre(), baseInterna.esPrimitivo(), tipo.getDimension() - 1, baseInterna.getTipoBase(), new ArrayList<>(), null);
+        }
+
         // si tiene tipo base apuntado, devolverlo
         if (tipo.getTipoBase() != null) {
             return tipo.getTipoBase();
@@ -447,6 +453,11 @@ public class ContextoSemanticoY {
 
         // caracter se puede asignar a entero
         if (esEntero(esperado) && esCaracter(real)) {
+            return true;
+        }
+
+        // un arreglo decae a entero con su base como en C
+        if (esEntero(esperado) && real.getDimension() > 0) {
             return true;
         }
 

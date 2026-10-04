@@ -385,6 +385,12 @@ class ContextoSemanticoPigLatin {
             return null;
         }
 
+        // bajar una dimension conservando la base para encadenar
+        if (tipo.getDimension() > 1 && tipo.getTipoBase() != null) {
+            Tipo baseInterna = tipo.getTipoBase();
+            return new Tipo(baseInterna.getNombre(), baseInterna.esPrimitivo(), tipo.getDimension() - 1, baseInterna.getTipoBase(), new ArrayList<>(), null);
+        }
+
         if (tipo.getTipoBase() != null) {
             return tipo.getTipoBase();
         }
